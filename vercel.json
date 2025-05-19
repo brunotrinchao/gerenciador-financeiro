@@ -29,7 +29,7 @@
 
         "DB_CONNECTION":"mysql",
         "DB_HOST": "fin_manager.mysql.dbaas.com.br",
-        "DB_PORT":3309,
+        "DB_PORT":"3309",
         "DB_DATABASE": "fin_manager",
         "DB_USERNAME": "fin_manager",
         "DB_PASSWORD": "Bruno@34Un016"
