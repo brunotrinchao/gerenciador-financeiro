@@ -21,7 +21,7 @@
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "true",
-        "APP_URL": "https://gerenciador-financeiro-khaki.vercel.app",
+        "APP_URL": "https://gerenciador-financeiro-qh0q1vz75-brunos-projects-a91408fd.vercel.app",
         "APP_KEY": "base64:bpmqMWIjz15g5Q/RmuxXXhljV30slTMCkfejJ6bIBGI=",
 
         "APP_CONFIG_CACHE": "/tmp/config.php",
