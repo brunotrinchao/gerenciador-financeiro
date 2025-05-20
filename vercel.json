@@ -6,12 +6,9 @@
     },
     "routes": [
         {
-            "src": "^/build/(.*)",
-            "dest": "/public/build/$1"
-        },
-        {
-            "src": "^/favicon.ico",
-            "dest": "/public/favicon.ico"
+            "src": "/(vendor/.*|build/.*|css/.*|js/.*|images/.*|favicon\\.ico)",
+            "headers": { "Cache-Control": "public,max-age=31536000,immutable" },
+            "dest": "/public/$1"
         },
         {
             "src": "/(.*)",
