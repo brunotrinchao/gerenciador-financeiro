@@ -8,6 +8,7 @@ use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentColor;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
