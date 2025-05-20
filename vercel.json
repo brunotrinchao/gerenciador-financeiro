@@ -2,21 +2,9 @@
     "version": 2,
     "framework": null,
     "functions": {
-        "api/index.php": { "runtime": "vercel-php@0.7.1" }
+        "api/index.php": { "runtime": "vercel-php@0.6.0" }
     },
     "routes": [
-        {
-            "src": "^/css/(.*)",
-            "dest": "/public/css/$1"
-        },
-        {
-            "src": "^/js/(.*)",
-            "dest": "/public/js/$1"
-        },
-        {
-            "src": "^/images/(.*)",
-            "dest": "/public/images/$1"
-        },
         {
             "src": "^/build/(.*)",
             "dest": "/public/build/$1"
@@ -53,6 +41,5 @@
         "DB_DATABASE": "fin_manager",
         "DB_USERNAME": "fin_manager",
         "DB_PASSWORD": "Bruno@34Un016"
-
     }
 }
