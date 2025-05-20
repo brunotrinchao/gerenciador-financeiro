@@ -2,9 +2,13 @@
     "version": 2,
     "framework": null,
     "functions": {
-        "api/index.php": { "runtime": "vercel-php@0.6.0" }
+        "api/index.php": { "runtime": "vercel-php@0.7.1" }
     },
     "routes": [
+        {
+            "src": "/(css/)?([a-zA-Z0-9_\\-]+\\.(ico|txt|webp|css|js|png|jpg))$",
+            "dest": "/public/$1$2"
+        },
         {
             "src": "/(.*)",
             "dest": "/api/index.php"
@@ -13,7 +17,7 @@
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "true",
-        "APP_URL": "https://your.url.from.vercel.app",
+        "APP_URL": "https://gerenciador-financeiro-khaki.vercel.app",
         "APP_KEY": "base64:bpmqMWIjz15g5Q/RmuxXXhljV30slTMCkfejJ6bIBGI=",
 
         "APP_CONFIG_CACHE": "/tmp/config.php",
