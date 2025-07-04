@@ -16,6 +16,7 @@ class TransactionItem extends Model
     protected $fillable = [
         'transaction_id',
         'payment_date',
+        'due_date',
         'amount',
         'status',
         'installment_number',

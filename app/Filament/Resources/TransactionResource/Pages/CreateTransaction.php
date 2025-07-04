@@ -24,19 +24,20 @@ class CreateTransaction extends CreateRecord
 
         $parcelas = $record->is_recurring ? $record->recurrence_interval : 1;
 
-        $value = floor($record->amount / $record->recurrence_interval);
+        $value = floor($record->amount / $parcelas);
 
-        $remainingAmount = $record->amount - ($value * $record->recurrence_interval);
+        $remainingAmount = $record->amount - ($value * $parcelas);
 
+        $date = $record->date;
         for($i = 0; $i < $parcelas; $i++) {
-            $date = Carbon::now();
+
             $parcela = $i + 1;
             $currentAmount = $parcela == $parcelas ? $value + $remainingAmount : $value;
 
             $paymentDate = $parcela == 1 ? $date : $date->addMonths($parcela);
             TransactionItem::create([
                 'transaction_id' => $record->id,
-                'payment_date' => $paymentDate,
+                'due_date' => $paymentDate,
                 'amount' => $currentAmount,
                 'installment_number' => $parcela,
                 'status' => 'PENDING',
