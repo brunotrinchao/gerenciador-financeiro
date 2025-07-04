@@ -36,7 +36,7 @@ class MarkScheduledAndDebitPaid extends Command
 
         try {
             $transactionsToUpdate = TransactionItem::whereIn('status', ['SCHEDULED', 'DEBIT'])
-                ->whereDate('due_date', '<=', $hoje)
+                ->whereDate('payment_date', '<=', $hoje)
                 ->get();
 
             $count = $transactionsToUpdate->count();
