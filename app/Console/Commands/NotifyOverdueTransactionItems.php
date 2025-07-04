@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Auth;
 
 class NotifyOverdueTransactionItems extends Command
 {
@@ -25,7 +26,11 @@ class NotifyOverdueTransactionItems extends Command
             return;
         }
 
-        $recipient = auth()->user() ?? User::where('email', env('EMAIL_USER_ADMIN'))->first();
+        $recepient = Auth::user() ?? \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
+        if(!$recepient){
+            return;
+        }
+
         if (!$recipient) {
             $this->error('Usuário destinatário não encontrado.');
             return;
