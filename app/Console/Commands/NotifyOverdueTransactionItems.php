@@ -27,11 +27,8 @@ class NotifyOverdueTransactionItems extends Command
         }
 
         $recepient = Auth::user() ?? \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
-        if(!$recepient){
-            return;
-        }
 
-        if (!$recipient) {
+        if (!$recepient) {
             $this->error('Usuário destinatário não encontrado.');
             return;
         }
@@ -48,7 +45,7 @@ class NotifyOverdueTransactionItems extends Command
                     "\nStatus: " . $this->getStatusLabel($item->status))
                 ->icon('heroicon-o-exclamation-circle')
                 ->iconColor('danger')
-                ->sendToDatabase($recipient);
+                ->sendToDatabase($recepient);
         }
 
         $this->info("Foram notificadas {$items->count()} transações em atraso.");
