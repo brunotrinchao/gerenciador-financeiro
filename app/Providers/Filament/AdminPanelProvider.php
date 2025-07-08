@@ -33,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Gerenciador financeiro')
             ->colors([
                 'primary' => Color::Amber,
                 'danger' => Color::Red,

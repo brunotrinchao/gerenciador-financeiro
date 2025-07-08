@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Disparar deploy no servidor
         run: |
-          curl -X POST "https://brunotrinchao.com.br/deploy.php?token=kWcqJEoujc79QLBsrgb6AcRO8c"
+          curl -A "Mozilla/5.0" -X POST "https://brunotrinchao.com.br/deploy.php?token=kWcqJEoujc79QLBsrgb6AcRO8c"
