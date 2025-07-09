@@ -32,7 +32,7 @@ class PermissionSeeder extends Seeder
         }
 
         // Cria a role ADMIN e atribui todas as permissões
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'ADMIN']);
         $adminRole->syncPermissions(Permission::all());
 
         // Cria um usuário admin se não existir

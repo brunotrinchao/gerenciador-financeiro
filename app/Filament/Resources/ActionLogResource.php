@@ -89,8 +89,9 @@ class ActionLogResource extends Resource
                         ->columns(2)
                     ])
                     ->fillForm(function ($record) {
+                        $user = User::find($record->user_id);
                         return [
-                            'user_id' => User::where('id', '=', $record->user_id)->first()->name,
+                            'user_id' => $user?->name ?? 'Desconhecido',
                             'action' => $record->action,
                             'model_type' => $record->model_type,
                             'model_id' => $record->model_id,
