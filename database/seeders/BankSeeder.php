@@ -15,21 +15,25 @@ class BankSeeder extends Seeder
      */
     public function run(): void
     {
+        $banks = [
+//            ['name' => 'Banco do Brasil',        'code' => 1],
+            ['name' => 'Banco da Amazônia',      'code' => 3],
+            ['name' => 'Banco do Nordeste',      'code' => 4],
+//            ['name' => 'Caixa Econômica Federal','code' => 104],
+//            ['name' => 'Bradesco',               'code' => 237],
+            ['name' => 'Santander',              'code' => 33],
+            ['name' => 'Itaú Unibanco',          'code' => 341],
+            ['name' => 'Banco Safra',            'code' => 422],
+            ['name' => 'Banco Inter',            'code' => 77],
+            ['name' => 'Nubank',                 'code' => 260],
+            ['name' => 'Banco Pan',              'code' => 623],
+            ['name' => 'Banco Original',         'code' => 212],
+            ['name' => 'C6 Bank',                'code' => 336],
+            ['name' => 'BTG Pactual',            'code' => 208],
+        ];
 
-        // Criando contas para o usuário Admin
-        Bank::create([
-            'name' => 'Banco do Brasil',
-            'code' => random_int(100, 999),
-        ]);
-
-        Bank::create([
-            'name' => 'Bradesco',
-            'code' => random_int(100, 999),
-        ]);
-
-        Bank::create([
-            'name' => 'Caixa Econômica',
-            'code' => random_int(100, 999),
-        ]);
+        foreach ($banks as $bank) {
+            Bank::create($bank);
+        }
     }
 }
