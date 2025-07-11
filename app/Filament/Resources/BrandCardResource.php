@@ -45,7 +45,7 @@ class BrandCardResource extends Resource
                     ->visible(false),
                 FileUpload::make('brand')
                     ->label('Bandeira')
-                    ->disk(env('FILESYSTEM_DISK', 'public'))
+                    ->disk('public')
                     ->directory('brand_card')
                     ->image()
                     ->imageEditor()
