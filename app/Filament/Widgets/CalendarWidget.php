@@ -110,9 +110,50 @@ class CalendarWidget extends FullCalendarWidget
     protected function viewAction(): \Filament\Actions\Action
     {
         return ViewAction::make()
+            ->modalHeading(fn (TransactionItem $record) => $record->transaction->description ?? '-')
+            ->slideOver(true)
             ->modalFooterActions(fn (ViewAction $viewAction) =>[
-                EditAction::make(),
+                EditAction::make()
+                    ->modalHeading(fn (TransactionItem $record) => $record->transaction->description ?? '-')
+                    ->icon('heroicon-m-pencil')
+                    ->slideOver(true)
+                ->form([
+                    Grid::make()
+                        ->schema([
+                            TextInput::make('amount')
+                                ->label('Valor')
+                                ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                                ->prefix('R$')
+                                ->required(),
+                            DatePicker::make('due_date')
+                                ->label('Data de vencimento')
+                                ->required(),
+                            DatePicker::make('payment_date')
+                                ->label('Data de pagemento')
+                                ->reactive()
+                                ->required(fn ($get) => $get('status') !== 'PENDING'),
+                            Select::make('status')
+                                ->label('Status')
+                                ->options([
+                                    'PENDING' => 'Pendente',
+                                    'PAID' => 'Pago',
+                                    'SCHEDULED' => 'Agendado',
+                                    'DEBIT' => 'Débito automático',
+                                ])
+                                ->default('PENDING')
+                                ->required(fn ($get) => filled($get('payment_date')))
+                                ->rules([
+                                    fn ($get) => filled($get('payment_date')) && $get('status') === 'PENDING'
+                                        ? 'not_in:PENDING'
+                                        : null,
+                                ])
+                                ->reactive()
+                        ])
+                ]),
                 DeleteAction::make()
+                    ->modalHeading(fn (TransactionItem $record) => $record->transaction->description ?? '-')
+                    ->icon('heroicon-m-trash')
+                    ->slideOver(true)
             ]);
     }
 
