@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\CalendarWidget;
 use App\Filament\Widgets\CountChartWidget;
 use App\Filament\Widgets\CountWidget;
 use App\Filament\Widgets\PerCardChartWidget;

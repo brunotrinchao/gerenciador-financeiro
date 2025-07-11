@@ -150,10 +150,13 @@ class TransactionItemResource extends Resource
                             ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
                             ->prefix('R$')
                             ->required(),
+                        DatePicker::make('due_date')
+                            ->label('Data de vencimento')
+                            ->required(),
                         DatePicker::make('payment_date')
                             ->label('Data de pagemento')
-                            ->required(),
-
+                            ->reactive()
+                            ->required(fn ($get) => $get('status') !== 'PENDING'),
                         Select::make('status')
                             ->label('Status')
                             ->options([
@@ -163,8 +166,13 @@ class TransactionItemResource extends Resource
                                 'DEBIT' => 'Débito automático',
                             ])
                             ->default('PENDING')
-                            ->required()
-                            ->reactive(),
+                            ->required(fn ($get) => filled($get('payment_date')))
+                            ->rules([
+                                fn ($get) => filled($get('payment_date')) && $get('status') === 'PENDING'
+                                    ? 'not_in:PENDING'
+                                    : null,
+                            ])
+                            ->reactive()
                     ])
                     ->modalHeading('Editar')
                     ->modalButton('Salvar alterações')
@@ -172,6 +180,7 @@ class TransactionItemResource extends Resource
                     ->icon('heroicon-m-pencil')
                     ->fillForm(fn ($record) => [
                         'amount' => $record->amount,
+                        'due_date' => $record->due_date,
                         'payment_date' => $record->payment_date,
                         'status' => $record->status,
                     ])

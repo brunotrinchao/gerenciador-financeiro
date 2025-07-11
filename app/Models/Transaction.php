@@ -16,7 +16,8 @@ class Transaction extends Model
         'date',
         'method',
         'is_recurring',
-        'recurrence_interval'
+        'recurrence_interval',
+        'description'
     ];
 
     protected $casts = [
