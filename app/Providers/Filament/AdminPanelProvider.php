@@ -94,7 +94,7 @@ class AdminPanelProvider extends PanelProvider
                     ->shouldShowBrowserSessionsForm()
                     ->shouldShowAvatarForm(
                         value: true,
-                        directory: 'uploads/avatars',
+                        directory: 'avatars',
                         rules: 'mimes:jpeg,png|max:1024'
                     ),
                 FilamentFullCalendarPlugin::make()
