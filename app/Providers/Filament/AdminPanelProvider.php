@@ -93,7 +93,9 @@ class AdminPanelProvider extends PanelProvider
                     ->shouldShowSanctumTokens()
                     ->shouldShowBrowserSessionsForm()
                     ->shouldShowAvatarForm(
-                        directory: 'uploads'
+                        value: true,
+                        directory: 'uploads/avatars',
+                        rules: 'mimes:jpeg,png|max:1024'
                     ),
                 FilamentFullCalendarPlugin::make()
                 ->selectable()
