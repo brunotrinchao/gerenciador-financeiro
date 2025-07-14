@@ -11,6 +11,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -23,6 +24,8 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
+use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -44,6 +47,12 @@ class AdminPanelProvider extends PanelProvider
                 'success' => Color::Green,
                 'warning' => Color::Amber,
                 'stone' => Color::Stone
+            ])
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label(fn() => auth()->user()->name)
+                    ->url(fn (): string => EditProfilePage::getUrl())
+                    ->icon('heroicon-m-user-circle')
             ])
             ->topNavigation()
             ->databaseNotifications()
@@ -69,13 +78,29 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->plugin(
+            ->plugins([
+                FilamentEditProfilePlugin::make()
+                    ->slug('profile')
+                    ->setTitle('Perfil')
+                    ->setNavigationLabel('Perfil')
+                    ->setNavigationGroup('Group Profile')
+                    ->setIcon('heroicon-o-user')
+                    ->setSort(10)
+//                    ->canAccess(fn () => auth()->user()->id === auth()->id())
+                    ->shouldRegisterNavigation(false)
+                    ->shouldShowEmailForm()
+                    ->shouldShowDeleteAccountForm(false)
+                    ->shouldShowSanctumTokens()
+                    ->shouldShowBrowserSessionsForm()
+                    ->shouldShowAvatarForm(
+                        directory: 'uploads'
+                    ),
                 FilamentFullCalendarPlugin::make()
                 ->selectable()
                 ->editable()
                 ->config([
 //                    'dayMaxEvents' => 3
                 ])
-            );
+            ]);
     }
 }
