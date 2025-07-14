@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\RolesEnum;
 use App\Filament\Resources\RoleResource\Pages;
 use App\Filament\Resources\RoleResource\RelationManagers;
 use App\Models\Role;
@@ -29,12 +30,12 @@ class RoleResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->check() && auth()->user()->hasRole('ADMIN');
+        return auth()->check() && auth()->user()->hasRole(RolesEnum::ADMIN->name);
     }
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole('ADMIN');
+        return auth()->user()?->hasRole(RolesEnum::ADMIN->name);
     }
 
 

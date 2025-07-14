@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Enum;
+
+enum RolesEnum: string
+{
+    case ADMIN = 'Admin';
+
+    case USER = 'Usuario';
+
+    case GUEST = 'Visitante';
+
+
+    public static function getLabel(string $name): ?string
+    {
+        return self::tryFromName($name)?->value;
+    }
+
+    private static function tryFromName(string $name): ?self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->name === $name) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+}
