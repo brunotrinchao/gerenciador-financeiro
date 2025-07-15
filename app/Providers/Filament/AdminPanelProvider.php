@@ -84,7 +84,7 @@ class AdminPanelProvider extends PanelProvider
                 EnvironmentIndicatorPlugin::make()
                     ->visible(fn () => auth()->user()?->hasRole(RolesEnum::ADMIN->name))
                     ->color(fn () => match (app()->environment()) {
-                        'production' => null,
+                        'production' => Color::Lime,
                         'staging' => Color::Orange,
                         default => Color::Blue,
                     })
