@@ -45,9 +45,9 @@ class UpcomingTransactionsWidget extends BaseWidget
             Tables\Columns\TextColumn::make('toOverdue')
                 ->label('Dias para vencer')
                 ->getStateUsing(function ($record) {
-                    $paymentDate = Carbon::parse($record->payment_date);
+                    $dueDate = Carbon::parse($record->due_date);
                     $today = Carbon::now();
-                    $diff = intval($today->diffInDays($paymentDate));
+                    $diff = intval($today->diffInDays($dueDate));
 
                     if ($diff === 0) {
                         return 'Vence hoje';
@@ -58,9 +58,9 @@ class UpcomingTransactionsWidget extends BaseWidget
                     }
                 })
                 ->color(function ($record) {
-                    $paymentDate = Carbon::parse($record->payment_date)->startOfDay();
+                    $dueDate = Carbon::parse($record->due_date)->startOfDay();
                     $today = Carbon::now()->startOfDay();
-                    $diff = intval($today->diffInDays($paymentDate));
+                    $diff = intval($today->diffInDays($dueDate));
 
                     if ($diff === 0) {
                         return 'warning'; // Hoje
