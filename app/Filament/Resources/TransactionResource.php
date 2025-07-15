@@ -230,7 +230,7 @@ class TransactionResource extends Resource
                         'method'              => $record->method,
                         'card_id'             => $record->card_id,
                         'account_id'          => $record->account_id,
-                        'amount'              => $record->amount, // para o currencyMask
+                        'amount'              => number_format($record->amount / 100, 2, ',', ''), // para o currencyMask
                         'date'                => $record->date,
                         'description'         => $record->description,
                         'is_recurring'        => $record->is_recurring,
