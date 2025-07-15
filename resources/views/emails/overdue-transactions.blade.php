@@ -3,7 +3,7 @@
 <ul style="list-style-type: none; padding: 0;">
     @foreach ($items as $item)
         <li style="padding: 12px; margin-bottom: 16px; border-bottom: 1px solid #ccc;">
-            {{ $item  }}
+            {{ str_replace('<br>', ' | ', $item)  }}
         </li>
     @endforeach
 </ul>
