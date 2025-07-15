@@ -48,10 +48,10 @@ class TransactionItemObserver
         Notification::make()
             ->title('Transação atualizada ('.$this->getStatusLabel($transactionItem->status).')')
             ->body("Valor: R$ " . number_format($transactionItem->amount, 2, ',', '.') .
-                "\nProduto: " .  $transaction->description .
-                "\nVencimento: " .  Carbon::parse($transactionItem->duw_date)->format('d/m/Y') .
-                "\nMétodo: " . $this->getMethod($transactionItem) .
-                "\nStatus: " . $this->getStatusLabel($transactionItem->status))
+                "<br>Produto: " .  $transaction->description .
+                "<br>Vencimento: " .  Carbon::parse($transactionItem->duw_date)->format('d/m/Y') .
+                "<br>Método: " . $this->getMethod($transactionItem) .
+                "<br>Status: " . $this->getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-pencil-square')
             ->iconColor('warning')
             ->sendToDatabase($recepient);
