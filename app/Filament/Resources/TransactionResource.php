@@ -187,7 +187,7 @@ class TransactionResource extends Resource
                         TextInput::make('amount')
                             ->required()
                             ->label('Valor')
-//                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 4)
                             ->prefix('R$'),
                         DatePicker::make('date')
                             ->required()
