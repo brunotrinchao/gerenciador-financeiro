@@ -40,6 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->profile(isSimple: false)
             ->login()
+            ->passwordReset()
             ->brandName('Gerenciador financeiro')
             ->colors([
                 'primary' => Color::Amber,
