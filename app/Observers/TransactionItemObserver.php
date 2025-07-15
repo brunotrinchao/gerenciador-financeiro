@@ -103,7 +103,7 @@ class TransactionItemObserver
      */
     protected function getMethod(TransactionItem $item): string
     {
-        return match ($item->payment_method) {
+        return match ($item->method) {
             'CARD' => 'Cartão de crédito',
             'ACCOUNT' => 'Conta',
             'CASH' => 'Dinheiro',
