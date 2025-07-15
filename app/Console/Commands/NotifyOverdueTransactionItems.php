@@ -48,7 +48,7 @@ class NotifyOverdueTransactionItems extends Command
             $htmlEmail[] = $html;
             Notification::make()
                 ->title('Transação em atraso')
-                ->body()
+                ->body($html)
                 ->icon('heroicon-o-exclamation-circle')
                 ->iconColor('danger')
                 ->sendToDatabase($recepient);
