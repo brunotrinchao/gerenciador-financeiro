@@ -25,7 +25,7 @@ class TransactionItemObserver
             ->title('Nova transação adicionada')
             ->body("Valor: R$ " . number_format($transactionItem->amount, 2, ',', '.') .
                 "\nProduto: " .  $transaction->description.
-                "\nVencimento: " .  Carbon::parse($transactionItem->payment_date)->format('d/m/Y') .
+                "\nVencimento: " .  Carbon::parse($transactionItem->due_date)->format('d/m/Y') .
                 "\nMétodo: " . $this->getMethod($transactionItem) .
                 "\nStatus: " . $this->getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-plus-circle')
@@ -49,7 +49,7 @@ class TransactionItemObserver
             ->title('Transação atualizada ('.$this->getStatusLabel($transactionItem->status).')')
             ->body("Valor: R$ " . number_format($transactionItem->amount, 2, ',', '.') .
                 "\nProduto: " .  $transaction->description .
-                "\nNova data: " .  Carbon::parse($transactionItem->payment_date)->format('d/m/Y') .
+                "\nVencimento: " .  Carbon::parse($transactionItem->duw_date)->format('d/m/Y') .
                 "\nMétodo: " . $this->getMethod($transactionItem) .
                 "\nStatus: " . $this->getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-pencil-square')
