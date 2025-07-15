@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Enum\RolesEnum;
 use App\Filament\Widgets\CountChartWidget;
 use App\Filament\Widgets\CountWidget;
 use App\Filament\Widgets\PerCardChartWidget;
@@ -26,6 +27,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
+use pxlrbt\FilamentEnvironmentIndicator\EnvironmentIndicatorPlugin;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -79,6 +81,14 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
+                EnvironmentIndicatorPlugin::make()
+                    ->visible(fn () => auth()->user()?->hasRole(RolesEnum::ADMIN->name))
+                    ->color(fn () => match (app()->environment()) {
+                        'production' => null,
+                        'staging' => Color::Orange,
+                        default => Color::Blue,
+                    })
+                    ->showBorder(false),
                 FilamentEditProfilePlugin::make()
                     ->slug('profile')
                     ->setTitle('Perfil')

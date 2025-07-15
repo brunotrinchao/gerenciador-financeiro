@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\RolesEnum;
 use App\Filament\Exports\TransactionItemExporter;
 use App\Filament\Resources\TransactionItemResource\Pages;
 use App\Filament\Resources\TransactionItemResource\RelationManagers;
@@ -200,6 +201,7 @@ class TransactionItemResource extends Resource
                             ->latest()
                             ->get(),
                     ]))
+                    ->visible(auth()->check() && auth()->user()->hasRole(RolesEnum::ADMIN->name))
                 ->slideOver()
             ])
             ->recordUrl(null)

@@ -4,14 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AccountResource\Pages;
 use App\Filament\Resources\AccountResource\RelationManagers;
+use App\Helpers\Filament\ActionHelper;
 use App\Models\Account;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -27,16 +30,6 @@ class AccountResource extends Resource
 
     public static function form(Form $form): Form
     {
-//        $moneyMask = RawJs::make('
-//            function($input){
-//
-//                let value = $input.replace(/\\D/g, \'\');
-//                value = (value / 100).toFixed(2);
-//                value = value.replace(\'.\', \',\');
-//                value = value.replace(/\\B(?=(\\d{3})+(?!\\d))/g, \'.\');
-//
-//                return value;
-//        }');
 
         return $form
             ->schema([
@@ -73,12 +66,86 @@ class AccountResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionHelper::makeSlideOver(
+                    name: 'editAccount',
+                    form: [
+                        Select::make('type')
+                            ->required()
+                            ->label('Tipo')
+                            ->options([
+                                1 => 'Conta Corrente',
+                                2 => 'Poupança'
+                            ]),
+                        Select::make('bank_id')
+                            ->required()
+                            ->label('Banco')
+                            ->relationship('bank', 'name'),
+                        \Filament\Forms\Components\TextInput::make('balance')
+                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                            ->prefix('R$')
+
+                    ],
+                    modalHeading: 'Editar conta bancária',
+                    label: 'Editar',
+                    fillForm: fn ($record) => [
+                        'name'     => $record->name,
+                        'bank_id'  => $record->bank_id,
+                        'type'     => $record->type,
+                        'balance'  => $record->balance,
+                    ]
+                ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])
+            ->recordUrl(null)
+            ->recordAction('editAccount')
+            ->headerActions([
+                ActionHelper::makeSlideOver(
+                    name: 'createAccount',
+                    form: [
+                        Select::make('type')
+                            ->required()
+                            ->label('Tipo')
+                            ->options([
+                                1 => 'Conta Corrente',
+                                2 => 'Poupança'
+                            ]),
+                        Select::make('bank_id')
+                            ->required()
+                            ->label('Banco')
+                            ->relationship('bank', 'name'),
+                        \Filament\Forms\Components\TextInput::make('balance')
+                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                            ->prefix('R$')
+                        ->default('0,0')
+
+                    ],
+                    modalHeading: 'Nova conta bancária',
+                    label: 'Criar',
+                    action: function (array $data, Action $action) {
+                        if (Account::where('name', $data['name'])->exists()) {
+                            Notification::make()
+                                ->title('Conta bancária já existe')
+                                ->body("Já existe uma  conta bancária '{$data['name']}' cadastrada.")
+                                ->danger()
+                                ->send();
+
+                            $action->cancel();
+                            return;
+                        }
+
+                        Account::create($data);
+
+                        Notification::make()
+                            ->title('Conta bancária criada')
+                            ->body('A nova conta bancária foi cadastrada com sucesso.')
+                            ->success()
+                            ->send();
+                    }
+                ),
             ]);
     }
 

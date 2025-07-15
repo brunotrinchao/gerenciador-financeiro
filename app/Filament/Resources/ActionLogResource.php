@@ -23,7 +23,7 @@ class ActionLogResource extends Resource
 {
     protected static ?string $model = ActionLog::class;
 
-    protected static ?string $navigationGroup = 'Administração';
+    protected static ?string $navigationGroup = 'Configuração';
 
 //    protected static ?string $navigationIcon = 'heroicon-o-bank';
     protected static ?string $pluralModelLabel = 'Logs'; // Listagem

@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource\RelationManagers;
+use App\Helpers\Filament\ActionHelper;
 use App\Models\Category;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -17,6 +19,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use function Livewire\before;
 
 class CategoryResource extends Resource
 {
@@ -50,23 +53,29 @@ class CategoryResource extends Resource
                 //
             ])
             ->actions([
-                Action::make('edit')
-                    ->label('Editar')
-                    ->modalWidth(MaxWidth::Medium)
-                ->form([
-                    Forms\Components\TextInput::make('name')
-                    ->label('Nome')
-                    ->required()
-                ]),
+                ActionHelper::makeSlideOver(
+                    name: 'editCategory',
+                    form: [
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nome')
+                            ->required()
+                    ],
+                    modalHeading: 'Editar categoria',
+                    label: 'Editar',
+                    fillForm: fn ($record) => [
+                        'name' => $record->name
+                    ]
+                ),
                 Tables\Actions\DeleteAction::make('delete')
                 ->label('Excluir')
                     ->before(function ($record, $action) {
-                        if ($record->transactions()->exists()) {
+                        $totalTransactions = $record->transactions()->count();
+                        if ($totalTransactions > 0) {
                             Notification::make()
                                 ->color('warning')
                                 ->warning()
                                 ->title('Ação permitida')
-                                ->body("A categoria '{$record->name}' possui transações associadas e não pode ser deletado.")
+                                ->body("A categoria '{$record->name}' possui {$totalTransactions} transações associadas e não pode ser deletada.")
                                 ->send();
                             $action->cancel();
                             return false;
@@ -74,19 +83,41 @@ class CategoryResource extends Resource
                         return true;
                     })
             ])
+            ->recordUrl(null)
+            ->recordAction('editCategory')
             ->bulkActions([
-//                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make()
-//                        ->before(function ($records,$action) {
-//                            foreach ($records as $record) {
-//                                if ($record->transactions()->exists()) {
-//                                    $action->failureNotificationTitle('Erro ao deletar');
-//                                    $action->cancel();
-//                                    return;
-//                                }
-//                            }
-//                        }),
-//                ]),
+            ])
+            ->headerActions([
+                ActionHelper::makeSlideOver(
+                    name: 'createCategory',
+                    form: [
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nome')
+                            ->required()
+                    ],
+                    modalHeading: 'Nova categoria',
+                    label: 'Criar',
+                    action: function (array $data, Action $action) {
+                        if (Category::where('name', $data['name'])->exists()) {
+                            Notification::make()
+                                ->title('Categoria já existe')
+                                ->body("Já existe uma  categoria '{$data['name']}' cadastrada.")
+                                ->danger()
+                                ->send();
+
+                            $action->cancel();
+                            return;
+                        }
+
+                        Category::create($data);
+
+                        Notification::make()
+                            ->title('Categoria criada')
+                            ->body('A nova categoria foi cadastrada com sucesso.')
+                            ->success()
+                            ->send();
+                    }
+                ),
             ]);
     }
 
