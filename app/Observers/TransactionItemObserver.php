@@ -23,11 +23,11 @@ class TransactionItemObserver
 
         Notification::make()
             ->title('Nova transação adicionada')
-            ->body("Valor: R$ " . number_format($transactionItem->amount, 2, ',', '.') .
-                "\nProduto: " .  $transaction->description.
-                "\nVencimento: " .  Carbon::parse($transactionItem->due_date)->format('d/m/Y') .
-                "\nMétodo: " . $this->getMethod($transactionItem) .
-                "\nStatus: " . $this->getStatusLabel($transactionItem->status))
+            ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount, 2, ',', '.') .
+                "<br><b>Produto:<b/> " .  $transaction->description.
+                "<br><b>Vencimento:<b/> " .  Carbon::parse($transactionItem->due_date)->format('d/m/Y') .
+                "<br><b>Método:<b/> " . $this->getMethod($transactionItem) .
+                "<br><b>Status:<b/> " . $this->getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-plus-circle')
             ->iconColor('success')
             ->sendToDatabase($recepient);
@@ -47,11 +47,11 @@ class TransactionItemObserver
 
         Notification::make()
             ->title('Transação atualizada ('.$this->getStatusLabel($transactionItem->status).')')
-            ->body("Valor: R$ " . number_format($transactionItem->amount, 2, ',', '.') .
-                "<br>Produto: " .  $transaction->description .
-                "<br>Vencimento: " .  Carbon::parse($transactionItem->duw_date)->format('d/m/Y') .
-                "<br>Método: " . $this->getMethod($transactionItem) .
-                "<br>Status: " . $this->getStatusLabel($transactionItem->status))
+            ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount, 2, ',', '.') .
+                "<br><b>Produto:<b/> " .  $transaction->description .
+                "<br><b>Vencimento:<b/> " .  Carbon::parse($transactionItem->duw_date)->format('d/m/Y') .
+                "<br><b>Método:<b/> " . $this->getMethod($transactionItem) .
+                "<br><b>Status:<b/> " . $this->getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-pencil-square')
             ->iconColor('warning')
             ->sendToDatabase($recepient);
@@ -72,9 +72,9 @@ class TransactionItemObserver
         Notification::make()
             ->title('Transação removida')
             ->body(
-                'Transação de R$ ' . number_format($transactionItem->amount, 2, ',', '.') .
-                ' com vencimento em ' . Carbon::parse($transactionItem->payment_date)->format('d/m/Y') .
-                ($transaction ? "\nProduto: " . $transaction->description : '')
+                'Transação de <b>R$ ' . number_format($transactionItem->amount, 2, ',', '.') .
+                '<b/> com vencimento em <b>' . Carbon::parse($transactionItem->payment_date)->format('d/m/Y') . '<b>.' .
+                ($transaction ? "<br><b>Produto:<b/> " . $transaction->description : '')
             )
             ->icon('heroicon-o-trash')
             ->iconColor('danger')
