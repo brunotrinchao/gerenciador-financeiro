@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\TranslateString;
 use App\Mail\OverdueTransactionItemsMail;
 use App\Models\TransactionItem;
 use App\Models\User;
@@ -43,8 +44,8 @@ class NotifyOverdueTransactionItems extends Command
                 ->body("Valor: R$ " . number_format($item->amount, 2, ',', '.') .
                     "\nProduto: " . $transaction->description .
                     "\nVencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
-                    "\nMétodo: " . $this->getMethod($item) .
-                    "\nStatus: " . $this->getStatusLabel($item->status))
+                    "\nMétodo: " . TranslateString::getMethod($item) .
+                    "\nStatus: " . TranslateString::getStatusLabel($item->status))
                 ->icon('heroicon-o-exclamation-circle')
                 ->iconColor('danger')
                 ->sendToDatabase($recepient);
@@ -56,18 +57,4 @@ class NotifyOverdueTransactionItems extends Command
         Mail::to($recepient->email)->send(new OverdueTransactionItemsMail($items));
     }
 
-    private function getMethod(TransactionItem $item): string
-    {
-        return $item->payment_method ?? 'Indefinido';
-    }
-
-    private function getStatusLabel(string $status): string
-    {
-        return match ($status) {
-            'PENDING' => 'Pendente',
-            'PAID' => 'Pago',
-            'CANCELLED' => 'Cancelado',
-            default => ucfirst(strtolower($status)),
-        };
-    }
 }

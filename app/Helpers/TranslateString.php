@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use App\Models\TransactionItem;
+
 class TranslateString
 {
     public static function formatRolePermission(string $permission): string
@@ -29,5 +31,26 @@ class TranslateString
         $entityLabel = $entityMap[$entity] ?? ucfirst($entity);
 
         return "{$actionLabel} - {$entityLabel}";
+    }
+
+    public static function getMethod(TransactionItem $item): string
+    {
+        return match ($item->transaction->method) {
+            'CARD' => 'Cartão de crédito',
+            'ACCOUNT' => 'Conta',
+            'CASH' => 'Dinheiro',
+            default => 'Indefinido',
+        };
+    }
+
+    public static function getStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'PAID' => 'Pago',
+            'SCHEDULED' => 'Agendado',
+            'DEBIT' => 'Débito automático',
+            'PENDING' => 'Pendente',
+            default => 'Desconhecido'
+        };
     }
 }

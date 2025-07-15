@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Helpers\TranslateString;
 use App\Models\TransactionItem;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
@@ -26,8 +27,8 @@ class TransactionItemObserver
             ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount, 2, ',', '.') .
                 "<br><b>Produto:<b/> " .  $transaction->description.
                 "<br><b>Vencimento:<b/> " .  Carbon::parse($transactionItem->due_date)->format('d/m/Y') .
-                "<br><b>Método:<b/> " . $this->getMethod($transactionItem) .
-                "<br><b>Status:<b/> " . $this->getStatusLabel($transactionItem->status))
+                "<br><b>Método:<b/> " . TranslateString::getMethod($transactionItem) .
+                "<br><b>Status:<b/> " . TranslateString::getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-plus-circle')
             ->iconColor('success')
             ->sendToDatabase($recepient);
@@ -46,12 +47,12 @@ class TransactionItemObserver
         $transaction = $transactionItem->transaction;
 
         Notification::make()
-            ->title('Transação atualizada ('.$this->getStatusLabel($transactionItem->status).')')
+            ->title('Transação atualizada ('.TranslateString::getStatusLabel($transactionItem->status).')')
             ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount, 2, ',', '.') .
                 "<br><b>Produto:<b/> " .  $transaction->description .
                 "<br><b>Vencimento:<b/> " .  Carbon::parse($transactionItem->duw_date)->format('d/m/Y') .
-                "<br><b>Método:<b/> " . $this->getMethod($transactionItem) .
-                "<br><b>Status:<b/> " . $this->getStatusLabel($transactionItem->status))
+                "<br><b>Método:<b/> " . TranslateString::getMethod($transactionItem) .
+                "<br><b>Status:<b/> " . TranslateString::getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-pencil-square')
             ->iconColor('warning')
             ->sendToDatabase($recepient);
@@ -95,33 +96,5 @@ class TransactionItemObserver
     public function forceDeleted(TransactionItem $transactionItem): void
     {
         //
-    }
-
-
-    /**
-     * Retorna o nome do método de pagamento.
-     */
-    protected function getMethod(TransactionItem $item): string
-    {
-        return match ($item->transaction->method) {
-            'CARD' => 'Cartão de crédito',
-            'ACCOUNT' => 'Conta',
-            'CASH' => 'Dinheiro',
-            default => 'Indefinido',
-        };
-    }
-
-    /**
-     * Retorna o rótulo do status da parcela.
-     */
-    protected function getStatusLabel(string $status): string
-    {
-        return match ($status) {
-            'PAID' => 'Pago',
-            'SCHEDULED' => 'Agendado',
-            'DEBIT' => 'Débito automático',
-            'PENDING' => 'Pendente',
-            default => 'Desconhecido'
-        };
     }
 }
