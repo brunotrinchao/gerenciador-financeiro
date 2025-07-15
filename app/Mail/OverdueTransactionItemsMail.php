@@ -29,7 +29,7 @@ class OverdueTransactionItemsMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Overdue Transaction Items Mail',
+            subject: 'Transações em atraso',
         );
     }
 
@@ -39,7 +39,7 @@ class OverdueTransactionItemsMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.overdue-transactions',
         );
     }
 
@@ -51,11 +51,5 @@ class OverdueTransactionItemsMail extends Mailable
     public function attachments(): array
     {
         return [];
-    }
-
-    public function build()
-    {
-        return $this->subject('Transações em atraso')
-            ->view('emails.overdue-transactions');
     }
 }
