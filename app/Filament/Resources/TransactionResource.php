@@ -230,7 +230,7 @@ class TransactionResource extends Resource
                         'method'              => $record->method,
                         'card_id'             => $record->card_id,
                         'account_id'          => $record->account_id,
-                        'amount'              => number_format($record->amount, 2, ',', '.'), // para o currencyMask
+                        'amount'              => number_format($record->amount / 100, 2, ',', ''), // para o currencyMask
                         'date'                => $record->date,
                         'description'         => $record->description,
                         'is_recurring'        => $record->is_recurring,
@@ -238,7 +238,10 @@ class TransactionResource extends Resource
                         'recurrence_type'     => $record->recurrence_type,
                         'user_id'             => $record->user_id,
                     ],
-                    action: fn (array $data, $record) => $record->update($data)
+                    action: function (array $data, $record) {
+                        $data['amount'] = (float) str_replace(['.', ','], ['', '.'], $data['amount']);
+                        return $record->update($data);
+                    }
                 )
             ])
             ->bulkActions([
