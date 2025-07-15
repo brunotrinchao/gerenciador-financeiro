@@ -41,10 +41,10 @@ class NotifyOverdueTransactionItems extends Command
             $transaction = $item->transaction;
 
             $html = "Valor: R$ " . number_format($item->amount, 2, ',', '.') .
-                "\nProduto: " . $transaction->description .
-                "\nVencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
-                "\nMétodo: " . TranslateString::getMethod($item) .
-                "\nStatus: " . TranslateString::getStatusLabel($item->status);
+                "<br>Produto: " . $transaction->description .
+                "<br>Vencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
+                "<br>Método: " . TranslateString::getMethod($item) .
+                "<br>Status: " . TranslateString::getStatusLabel($item->status);
             $htmlEmail[] = $html;
             Notification::make()
                 ->title('Transação em atraso')
