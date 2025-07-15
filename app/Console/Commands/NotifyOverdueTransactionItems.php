@@ -2,12 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\OverdueTransactionItemsMail;
 use App\Models\TransactionItem;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class NotifyOverdueTransactionItems extends Command
 {
@@ -49,6 +51,9 @@ class NotifyOverdueTransactionItems extends Command
         }
 
         $this->info("Foram notificadas {$items->count()} transações em atraso.");
+
+        // Envia email com todas as transações vencidas
+        Mail::to($recepient->email)->send(new OverdueTransactionItemsMail($items));
     }
 
     private function getMethod(TransactionItem $item): string
