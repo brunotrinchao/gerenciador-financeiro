@@ -13,7 +13,7 @@ class OverdueTransactionItemsMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $items;
+    public array $items;
 
     /**
      * Create a new message instance.

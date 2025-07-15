@@ -36,16 +36,19 @@ class NotifyOverdueTransactionItems extends Command
             return;
         }
 
+        $htmlEmail = [];
         foreach ($items as $item) {
             $transaction = $item->transaction;
 
+            $html = "Valor: R$ " . number_format($item->amount, 2, ',', '.') .
+                "\nProduto: " . $transaction->description .
+                "\nVencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
+                "\nMétodo: " . TranslateString::getMethod($item) .
+                "\nStatus: " . TranslateString::getStatusLabel($item->status);
+            $htmlEmail[] = $html;
             Notification::make()
                 ->title('Transação em atraso')
-                ->body("Valor: R$ " . number_format($item->amount, 2, ',', '.') .
-                    "\nProduto: " . $transaction->description .
-                    "\nVencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
-                    "\nMétodo: " . TranslateString::getMethod($item) .
-                    "\nStatus: " . TranslateString::getStatusLabel($item->status))
+                ->body()
                 ->icon('heroicon-o-exclamation-circle')
                 ->iconColor('danger')
                 ->sendToDatabase($recepient);
@@ -54,7 +57,7 @@ class NotifyOverdueTransactionItems extends Command
         $this->info("Foram notificadas {$items->count()} transações em atraso.");
 
         // Envia email com todas as transações vencidas
-        Mail::to($recepient->email)->send(new OverdueTransactionItemsMail($items));
+        Mail::to($recepient->email)->send(new OverdueTransactionItemsMail($htmlEmail));
     }
 
 }
