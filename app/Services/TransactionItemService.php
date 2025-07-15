@@ -55,6 +55,7 @@ class TransactionItemService
     {
         return $this->items()
             ->with(['transaction', 'card', 'account.bank'])
+            ->where('status', '=', 'PENDING')
             ->orderBy('due_date')
             ->limit(10);
     }
