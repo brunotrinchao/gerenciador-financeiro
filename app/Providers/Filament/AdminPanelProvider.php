@@ -8,6 +8,7 @@ use App\Filament\Widgets\CountWidget;
 use App\Filament\Widgets\PerCardChartWidget;
 use App\Filament\Widgets\PerCategoryChartWidget;
 use App\Filament\Widgets\UpcomingTransactionsWidget;
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -42,8 +43,10 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->passwordReset()
             ->brandName('Gerenciador financeiro')
+            ->defaultThemeMode(ThemeMode::Dark)
+            ->font('Exo')
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Sky,
                 'danger' => Color::Red,
                 'gray' => Color::Zinc,
                 'info' => Color::Blue,

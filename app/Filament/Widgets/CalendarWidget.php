@@ -11,12 +11,14 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Saade\FilamentFullCalendar\Actions\ViewAction;
+use Saade\FilamentFullCalendar\Widgets\Concerns\InteractsWithEvents;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use Illuminate\Database\Eloquent\Model;
 use Saade\FilamentFullCalendar\Actions;
 
 class CalendarWidget extends FullCalendarWidget
 {
+    use InteractsWithEvents;
 
     public Model | string | null $model = TransactionItem::class;
 
@@ -117,7 +119,7 @@ class CalendarWidget extends FullCalendarWidget
                     ->modalHeading(fn (TransactionItem $record) => $record->transaction->description ?? '-')
                     ->icon('heroicon-m-pencil')
                     ->slideOver(true)
-                ->form([
+                    ->form([
                     Grid::make()
                         ->schema([
                             TextInput::make('amount')
@@ -149,11 +151,17 @@ class CalendarWidget extends FullCalendarWidget
                                 ])
                                 ->reactive()
                         ])
-                ]),
+                ])
+                    ->after(function () {
+                        $this->refreshRecords();
+                    }),
                 DeleteAction::make()
                     ->modalHeading(fn (TransactionItem $record) => $record->transaction->description ?? '-')
                     ->icon('heroicon-m-trash')
                     ->slideOver(true)
+                    ->after(function () {
+                        $this->refreshRecords();
+                    })
             ]);
     }
 
@@ -171,7 +179,7 @@ class CalendarWidget extends FullCalendarWidget
     {
         return match ($status){
             'PAID' => 'green',
-            'SCHEDULED' => 'blue',
+            'SCHEDULED' => 'warning',
             'DEBIT' => 'blue',
             default => 'gray',
         };
