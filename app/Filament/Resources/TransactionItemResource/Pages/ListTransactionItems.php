@@ -38,6 +38,9 @@ class ListTransactionItems extends ListRecords
 
     protected function getHeaderWidgets(): array
     {
+        if ($this->isMobile()) {
+            return [];
+        }
         return [
             CountWidget::class
         ];
@@ -49,7 +52,11 @@ class ListTransactionItems extends ListRecords
         return false;
     }
 
-
+    protected function isMobile(): bool
+    {
+        $agent = request()->header('User-Agent') ?? '';
+        return preg_match('/Mobile|Android|Silk\/|Kindle|BlackBerry|Opera Mini|Opera Mobi/i', $agent);
+    }
 
     public function getTabs(): array
     {
