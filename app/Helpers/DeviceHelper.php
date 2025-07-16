@@ -14,7 +14,7 @@ class DeviceHelper
         return preg_match('/Mobile|Android|Silk\/|Kindle|BlackBerry|Opera Mini|Opera Mobi/i', $agent) === 1;
     }
 
-    public static function getTableColumns (array $columns): array
+    public static function getTableColumns (array $columns): array|Split
     {
         if(self::isMobile()){
             $columns = Split::make([
