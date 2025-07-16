@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OverdueTransactionItemsMail extends Mailable
+class DueTodayTransactionItemsMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -29,7 +29,7 @@ class OverdueTransactionItemsMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Transações em atraso',
+            subject: 'Transações que vencem hoje.',
         );
     }
 
@@ -39,7 +39,7 @@ class OverdueTransactionItemsMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.due-today-transactions',
+            view: 'view.name',
         );
     }
 

@@ -3,40 +3,43 @@
 namespace App\Console\Commands;
 
 use App\Helpers\TranslateString;
-use App\Mail\OverdueTransactionItemsMail;
+use App\Mail\DueTodayTransactionItemsMail;
 use App\Models\TransactionItem;
-use App\Models\User;
-use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 
-class NotifyOverdueTransactionItems extends Command
+class NotifyDueTodayTransactionItems extends Command
 {
-    protected $signature = 'transactions:notify-overdue';
-    protected $description = 'Notifica o usuário sobre transações em atraso com status PENDING';
+    protected $signature = 'transactions:notify-due-today';
+    protected $description = 'Notifica o usuário sobre transações que vencem hoje com status PENDING';
 
-    public function handle(): void
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
     {
         $items = TransactionItem::with('transaction')
             ->where('status', 'PENDING')
-            ->whereDate('due_date', '<', now())
+            ->whereDate('due_date', now()->toDateString())
             ->get();
 
         if ($items->isEmpty()) {
-            $this->info('Nenhuma transação em atraso encontrada.');
+            $this->info('Nenhuma transação com vencimento hoje.');
             return;
         }
 
-        $recepient = Auth::user() ?? \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
+        $recipient = \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
 
-        if (!$recepient) {
+        if (!$recipient) {
             $this->error('Usuário destinatário não encontrado.');
             return;
         }
 
         $htmlEmail = [];
+
         foreach ($items as $item) {
             $transaction = $item->transaction;
 
@@ -45,18 +48,20 @@ class NotifyOverdueTransactionItems extends Command
                 "<br>Vencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
                 "<br>Método: " . TranslateString::getMethod($item) .
                 "<br>Status: " . TranslateString::getStatusLabel($item->status);
+
             $htmlEmail[] = $html;
+
             Notification::make()
-                ->title('Transação em atraso')
+                ->title('Transação vence hoje')
                 ->body($html)
-                ->icon('heroicon-o-exclamation-circle')
-                ->iconColor('danger')
-                ->sendToDatabase($recepient);
+                ->icon('heroicon-o-clock')
+                ->iconColor('warning')
+                ->sendToDatabase($recipient);
         }
 
-        $this->info("Foram notificadas {$items->count()} transações em atraso.");
+        Mail::to($recipient->email)->send(new DueTodayTransactionItemsMail($htmlEmail));
 
-        // Envia email com todas as transações vencidas
-        Mail::to($recepient->email)->send(new OverdueTransactionItemsMail($htmlEmail));
+        $this->info("Foram notificadas {$items->count()} transações com vencimento hoje.");
+
     }
 }

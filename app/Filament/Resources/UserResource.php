@@ -145,6 +145,15 @@ class UserResource extends Resource
                     modalHeading: 'Novo usuário',
                     label: 'Criar',
                     action: function (array $data) {
+                        if (User::where('email', $data['email'])->exists()) {
+                            Notification::make()
+                                ->title('Erro ao criar usuário')
+                                ->body('O e-mail informado já está em uso.')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
                         $data['password'] = bcrypt($data['password']);
                         unset($data['password_confirmation']);
 
