@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enum\RolesEnum;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -16,23 +17,16 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminRole = Role::firstOrCreate(['type' => RolesEnum::ADMIN->name]);
-//        $userRole = Role::firstOrCreate(['type' => RolesEnum::USER->name]);
-
         // Criando usuário Admin
-        User::create([
+        $admin = User::firstOrCreate([
             'name' => 'Admin',
             'email' => env('EMAIL_USER_ADMIN'),
-            'password' => Hash::make(env('PASSWORD_USER_ADMIN')),
-            'role_id' => $adminRole->id,
+            'password' => bcrypt(env('PASSWORD_USER_ADMIN')),
         ]);
 
-        // Criando usuário comum
-//        User::create([
-//            'name' => 'User Example',
-//            'email' => 'user@user.com',
-//            'password' => Hash::make('admin'),
-//            'role_id' => $userRole->id,
-//        ]);
+
+        $adminRole = Role::where('name', 'ADMIN')->first();
+
+        $admin->assignRole($adminRole);
     }
 }

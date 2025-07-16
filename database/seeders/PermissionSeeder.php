@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enum\RolesEnum;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -35,7 +36,7 @@ class PermissionSeeder extends Seeder
         $allPermissions = Permission::all();
 
         // ADMIN: todas as permissões
-        $adminRole = Role::firstOrCreate(['name' => 'ADMIN']);
+        $adminRole = Role::firstOrCreate(['name' => RolesEnum::ADMIN->name]);
         $adminRole->syncPermissions($allPermissions);
 
         // USER: permissões básicas
@@ -50,7 +51,7 @@ class PermissionSeeder extends Seeder
             'access dashboard',
         ])->get();
 
-        $userRole = Role::firstOrCreate(['name' => 'USER']);
+        $userRole = Role::firstOrCreate(['name' => RolesEnum::USER->name]);
         $userRole->syncPermissions($userPermissions);
 
         // GUEST: somente visualização
@@ -61,15 +62,8 @@ class PermissionSeeder extends Seeder
             'access dashboard',
         ])->get();
 
-        $guestRole = Role::firstOrCreate(['name' => 'GUEST']);
+        $guestRole = Role::firstOrCreate(['name' => RolesEnum::GUEST->name]);
         $guestRole->syncPermissions($guestPermissions);
-
-        // Cria usuário admin
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@admin.com'],
-            ['name' => 'Admin', 'password' => bcrypt('admin')]
-        );
-        $admin->assignRole($adminRole);
     }
 
 }

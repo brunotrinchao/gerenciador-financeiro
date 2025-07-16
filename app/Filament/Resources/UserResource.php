@@ -7,6 +7,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Helpers\Filament\ActionHelper;
 use App\Helpers\TranslateString;
+use App\Models\Role;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
@@ -80,9 +81,12 @@ class UserResource extends Resource
                             ->label('E-mail'),
                         Select::make('roles')
                             ->label('Perfil')
-                            ->relationship('roles', 'name', fn ($query) => $query->where('name', '!=', RolesEnum::ADMIN->value))
-                            ->preload()
-                            ->multiple(false)
+                            ->options(
+                                collect(RolesEnum::cases())
+                                    ->filter(fn ($role) => $role !== RolesEnum::ADMIN)
+                                    ->mapWithKeys(fn ($role) => [$role->name => $role->value])
+                                    ->toArray()
+                            )
                             ->required(),
                         FileUpload::make('avatar_url')
                             ->label('Avatar')
@@ -130,10 +134,12 @@ class UserResource extends Resource
                             ->same('password'),
                         Select::make('roles')
                             ->label('Perfil')
-                            ->relationship('roles', 'name', fn ($query) => $query->where('name', '!=', RolesEnum::ADMIN->name))
-                            ->preload()
-                            ->getOptionLabelUsing(fn ($value): ?string => RolesEnum::getLabel($value))
-                            ->multiple(false)
+                            ->options(
+                                collect(RolesEnum::cases())
+                                    ->filter(fn ($role) => $role !== RolesEnum::ADMIN)
+                                    ->mapWithKeys(fn ($role) => [$role->name => $role->value])
+                                    ->toArray()
+                            )
                             ->required()
                     ],
                     modalHeading: 'Novo usuário',
@@ -142,11 +148,16 @@ class UserResource extends Resource
                         $data['password'] = bcrypt($data['password']);
                         unset($data['password_confirmation']);
 
-                        \App\Models\User::create($data);
-
+                        $user = \App\Models\User::create($data);
+                        if (isset($data['roles'])) {
+                            $role = \Spatie\Permission\Models\Role::where('name', $data['roles'])->first();
+                            if ($role) {
+                                $user->assignRole($role);
+                            }
+                        }
                         Notification::make()
                             ->title('Usuário criado')
-                            ->body('A nooa usuário foi cadastrado com sucesso.')
+                            ->body('O novo usuário foi cadastrado com sucesso.')
                             ->success()
                             ->send();
                     }),
