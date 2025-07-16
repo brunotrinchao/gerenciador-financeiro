@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TransactionItemResource\Pages;
 use App\Filament\Resources\TransactionItemResource;
 use App\Filament\Widgets\CountWidget;
 use App\Filament\Widgets\TransactionItemResourceStats;
+use App\Helpers\DeviceHelper;
 use Filament\Actions;
 use Filament\Actions\CreateAction;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
@@ -38,7 +39,7 @@ class ListTransactionItems extends ListRecords
 
     protected function getHeaderWidgets(): array
     {
-        if ($this->isMobile()) {
+        if (DeviceHelper::isMobile()) {
             return [];
         }
         return [
@@ -50,12 +51,6 @@ class ListTransactionItems extends ListRecords
     public static function canCreate(): bool
     {
         return false;
-    }
-
-    protected function isMobile(): bool
-    {
-        $agent = request()->header('User-Agent') ?? '';
-        return preg_match('/Mobile|Android|Silk\/|Kindle|BlackBerry|Opera Mini|Opera Mobi/i', $agent);
     }
 
     public function getTabs(): array

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\AccountResource\Pages;
 use App\Filament\Resources\AccountResource\RelationManagers;
+use App\Helpers\DeviceHelper;
 use App\Helpers\Filament\ActionHelper;
 use App\Models\Account;
 use Filament\Forms;
@@ -15,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -53,15 +55,15 @@ class AccountResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
+            ->columns(DeviceHelper::getTableColumns([
                 TextColumn::make('bank.name')
                     ->label('Banco'),
                 TextColumn::make('type')
                     ->label('Tipo'),
                 TextColumn::make('balance')
                     ->label('Saldo')
-                    ->currency('BRL'),
-            ])
+                    ->currency('BRL')
+            ]))
             ->filters([
                 //
             ])
