@@ -6,6 +6,7 @@ use App\Filament\Resources\AccountResource\Pages;
 use App\Filament\Resources\AccountResource\RelationManagers;
 use App\Helpers\DeviceHelper;
 use App\Helpers\Filament\ActionHelper;
+use App\Helpers\TranslateString;
 use App\Models\Account;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
@@ -56,13 +57,14 @@ class AccountResource extends Resource
     {
         return $table
             ->columns(DeviceHelper::getTableColumns([
-                TextColumn::make('bank.name')
-                    ->label('Banco'),
-                TextColumn::make('type')
-                    ->label('Tipo'),
-                TextColumn::make('balance')
-                    ->label('Saldo')
-                    ->currency('BRL')
+                    TextColumn::make('bank.name')
+                        ->label('Banco'),
+                    TextColumn::make('type')
+                        ->label('Tipo')
+                        ->formatStateUsing(fn ($state) => TranslateString::getAccountType((int) $state)),
+                    TextColumn::make('balance')
+                        ->label('Saldo')
+                        ->currency('BRL')
             ]))
             ->filters([
                 //

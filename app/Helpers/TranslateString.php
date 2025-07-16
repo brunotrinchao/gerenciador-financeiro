@@ -53,4 +53,12 @@ class TranslateString
             default => 'Desconhecido'
         };
     }
+
+    public static function getAccountType(int $type): string
+    {
+        return match ($type) {
+            1 => 'Conta corrente',
+            default => 'Conta poupança',
+        };
+    }
 }
