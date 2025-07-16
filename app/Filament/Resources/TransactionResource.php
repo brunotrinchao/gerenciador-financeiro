@@ -325,6 +325,7 @@ class TransactionResource extends Resource
                         TextInput::make('recurrence_interval')
                             ->label('Nº Parcelas')
                             ->hidden(fn ($get) => !$get('is_recurring'))
+                            ->minValue(fn ($get) => $get('is_recurring') ? 2 : null)
                             ->numeric(),
                         Select::make('recurrence_type')
                             ->label('Frequência')

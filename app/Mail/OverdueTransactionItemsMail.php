@@ -39,7 +39,7 @@ class OverdueTransactionItemsMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.due-today-transactions',
+            view: 'emails.overdue-transactions',
         );
     }
 
