@@ -14,14 +14,14 @@ class DeviceHelper
         return preg_match('/Mobile|Android|Silk\/|Kindle|BlackBerry|Opera Mini|Opera Mobi/i', $agent) === 1;
     }
 
-    public static function getTableColumns (array $columns): array|Split
+    public static function getTableColumns (array $columns): array
     {
         if(self::isMobile()){
-            $columns = Split::make([
+            $columns = [Split::make([
                 Stack::make([
                     $columns
                 ])
-            ]);
+            ])];
         }
 
         return $columns;
