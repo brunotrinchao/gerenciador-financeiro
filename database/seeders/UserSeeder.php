@@ -17,22 +17,22 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $adminRole = Role::firstOrCreate(['type' => RolesEnum::ADMIN->name]);
-        $userRole = Role::firstOrCreate(['type' => RolesEnum::USER->name]);
+//        $userRole = Role::firstOrCreate(['type' => RolesEnum::USER->name]);
 
         // Criando usuário Admin
         User::create([
             'name' => 'Admin',
-            'email' => 'admin@admin.com',
-            'password' => Hash::make('admin'),
+            'email' => env('EMAIL_USER_ADMIN'),
+            'password' => Hash::make(env('PASSWORD_USER_ADMIN')),
             'role_id' => $adminRole->id,
         ]);
 
         // Criando usuário comum
-        User::create([
-            'name' => 'User Example',
-            'email' => 'user@user.com',
-            'password' => Hash::make('admin'),
-            'role_id' => $userRole->id,
-        ]);
+//        User::create([
+//            'name' => 'User Example',
+//            'email' => 'user@user.com',
+//            'password' => Hash::make('admin'),
+//            'role_id' => $userRole->id,
+//        ]);
     }
 }

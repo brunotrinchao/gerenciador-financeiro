@@ -25,7 +25,8 @@ class CategorySeed extends Seeder
             ['name' => 'Outras receitas', 'type' => 'income'],
 
             // Despesas
-            ['name' => 'Aluguel', 'type' => 'expense'],
+            ['name' => 'Moradia', 'type' => 'expense'],
+            ['name' => 'Impostos', 'type' => 'expense'],
             ['name' => 'Supermercado', 'type' => 'expense'],
             ['name' => 'Transporte', 'type' => 'expense'],
             ['name' => 'Combustível', 'type' => 'expense'],
@@ -39,7 +40,7 @@ class CategorySeed extends Seeder
             ['name' => 'Viagem', 'type' => 'expense'],
             ['name' => 'Saúde', 'type' => 'expense'],
             ['name' => 'Farmácia', 'type' => 'expense'],
-            ['name' => 'Roupas', 'type' => 'expense'],
+            ['name' => 'Compras pessoais', 'type' => 'expense'],
             ['name' => 'Assinaturas e serviços', 'type' => 'expense'],
             ['name' => 'Doações', 'type' => 'expense'],
             ['name' => 'Outras despesas', 'type' => 'expense'],

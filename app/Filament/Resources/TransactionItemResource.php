@@ -43,7 +43,6 @@ class TransactionItemResource extends Resource
     protected static ?string $pluralModelLabel = 'Contas a pagar/receber';
 
     protected static ?string $modelLabel = 'Conta a pagar/receber';
-
     public static function form(Form $form): Form
     {
         return $form

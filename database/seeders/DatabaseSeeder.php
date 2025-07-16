@@ -15,15 +15,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
 //            RoleSeeder::class,
-//            UserSeeder::class,
+            UserSeeder::class,
             PermissionSeeder::class,
             CategorySeed::class,
             BrandCardSeeder::class,
             BankSeeder::class,
-            AccountSeeder::class,
-            CardSeeder::class,
-            TransactionSeeder::class,
-            TransactionItemSeeder::class
+//            AccountSeeder::class,
+//            CardSeeder::class,
+//            TransactionSeeder::class,
+//            TransactionItemSeeder::class
         ]);
     }
 }

@@ -15,6 +15,8 @@ class PaymentCalendar extends Page
 
     protected static ?string $navigationLabel = 'Calendário';
 
+    protected static ?string $title = 'Calendário de pagamentos';
+
     public function getHeaderWidgets(): array
     {
         return [

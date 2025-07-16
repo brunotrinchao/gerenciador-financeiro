@@ -16,11 +16,11 @@ class BankSeeder extends Seeder
     public function run(): void
     {
         $banks = [
-//            ['name' => 'Banco do Brasil',        'code' => 1],
+            ['name' => 'Banco do Brasil',        'code' => 1],
             ['name' => 'Banco da Amazônia',      'code' => 3],
             ['name' => 'Banco do Nordeste',      'code' => 4],
-//            ['name' => 'Caixa Econômica Federal','code' => 104],
-//            ['name' => 'Bradesco',               'code' => 237],
+            ['name' => 'Caixa Econômica Federal','code' => 104],
+            ['name' => 'Bradesco',               'code' => 237],
             ['name' => 'Santander',              'code' => 33],
             ['name' => 'Itaú Unibanco',          'code' => 341],
             ['name' => 'Banco Safra',            'code' => 422],
