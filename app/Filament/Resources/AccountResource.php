@@ -55,8 +55,14 @@ class AccountResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $columns = [
+            TextColumn::make('bank.name')->label('Banco'),
+            TextColumn::make('type')->label('Tipo')->formatStateUsing(fn($state) => TranslateString::getAccountType((int) $state)),
+            TextColumn::make('balance')->label('Saldo')->currency('BRL'),
+        ];
+
         return $table
-            ->columns(DeviceHelper::getTableColumns([
+            ->columns([
                     TextColumn::make('bank.name')
                         ->label('Banco'),
                     TextColumn::make('type')
@@ -65,7 +71,7 @@ class AccountResource extends Resource
                     TextColumn::make('balance')
                         ->label('Saldo')
                         ->currency('BRL')
-            ]))
+            ])
             ->filters([
                 //
             ])
