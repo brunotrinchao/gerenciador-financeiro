@@ -126,16 +126,6 @@ class AccountResource extends Resource
                     modalHeading: 'Nova conta bancária',
                     label: 'Criar',
                     action: function (array $data, Action $action) {
-                        if (Account::where('name', $data['name'])->exists()) {
-                            Notification::make()
-                                ->title('Conta bancária já existe')
-                                ->body("Já existe uma  conta bancária '{$data['name']}' cadastrada.")
-                                ->danger()
-                                ->send();
-
-                            $action->cancel();
-                            return;
-                        }
 
                         Account::create($data);
 
