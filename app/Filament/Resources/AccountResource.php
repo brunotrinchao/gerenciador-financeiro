@@ -126,7 +126,7 @@ class AccountResource extends Resource
                     modalHeading: 'Nova conta bancária',
                     label: 'Criar',
                     action: function (array $data, Action $action) {
-
+                        $data['user_id'] = auth()->id();
                         Account::create($data);
 
                         Notification::make()
