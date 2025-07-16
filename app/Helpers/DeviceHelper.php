@@ -16,12 +16,12 @@ class DeviceHelper
 
     public static function getTableColumns (array $columns): array
     {
-        if(self::isMobile()){
-            $columns = [Split::make([
-                Stack::make([
-                    $columns
+        if (DeviceHelper::isMobile()) {
+            return [
+                Split::make([
+                    Stack::make($columns)
                 ])
-            ])];
+            ];
         }
 
         return $columns;
