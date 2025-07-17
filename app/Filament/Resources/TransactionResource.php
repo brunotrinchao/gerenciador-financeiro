@@ -30,6 +30,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class TransactionResource extends Resource
 {
@@ -95,34 +96,12 @@ class TransactionResource extends Resource
                     }),
             ])
             ->filters([
-                Filter::make('date')
+                DateRangeFilter::make('date')
                     ->label('Período')
-                    ->form([
-                        DatePicker::make('start_date')
-                            ->label('Data início')
-                            ->default(Carbon::now()->startOfMonth()),
-                        DatePicker::make('end_date')
-                            ->label('Data fim')
-                            ->default(Carbon::now()->endOfMonth()),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query
-                            ->when($data['start_date'], fn ($q) => $q->whereDate('date', '>=', $data['start_date']))
-                            ->when($data['end_date'], fn ($q) => $q->whereDate('date', '<=', $data['end_date']));
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-
-                        if ($data['start_date'] ?? null) {
-                            $indicators[] = 'De ' . Carbon::parse($data['start_date'])->format('d/m/Y');
-                        }
-
-                        if ($data['end_date'] ?? null) {
-                            $indicators[] = 'Até ' . Carbon::parse($data['end_date'])->format('d/m/Y');
-                        }
-
-                        return $indicators;
-                    }),
+                    ->startDate(Carbon::now()->startOfMonth())
+                    ->endDate(Carbon::now()->endOfMonth())
+                    ->withIndicator()
+                    ->useRangeLabels(),
                 Tables\Filters\SelectFilter::make('category_id')
                 ->label('Categoria')
                     ->relationship('category', 'name'),

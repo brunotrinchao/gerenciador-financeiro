@@ -32,6 +32,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\Concerns\CanPoll;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class TransactionItemResource extends Resource
 {
@@ -113,34 +114,12 @@ class TransactionItemResource extends Resource
             ])
             ->striped()
             ->filters([
-                Filter::make('payment_date_range')
+                DateRangeFilter::make('due_date')
                     ->label('Período')
-                    ->form([
-                        DatePicker::make('start_date')
-                            ->label('Data início')
-                            ->default(Carbon::now()->startOfMonth()),
-                        DatePicker::make('end_date')
-                            ->label('Data fim')
-                            ->default(Carbon::now()->endOfMonth()),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query
-                            ->when($data['start_date'], fn ($q) => $q->whereDate('due_date', '>=', $data['start_date']))
-                            ->when($data['end_date'], fn ($q) => $q->whereDate('due_date', '<=', $data['end_date']));
-                    })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-
-                        if ($data['start_date'] ?? null) {
-                            $indicators[] = 'De ' . Carbon::parse($data['start_date'])->format('d/m/Y');
-                        }
-
-                        if ($data['end_date'] ?? null) {
-                            $indicators[] = 'Até ' . Carbon::parse($data['end_date'])->format('d/m/Y');
-                        }
-
-                        return $indicators;
-                })
+                    ->startDate(Carbon::now()->startOfMonth())
+                    ->endDate(Carbon::now()->endOfMonth())
+                    ->withIndicator()
+                    ->useRangeLabels(),
             ])
             ->actions([
                 Action::make('editTransactionItem')

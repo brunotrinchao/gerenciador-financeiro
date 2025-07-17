@@ -14,6 +14,7 @@
         "joaopaulolndev/filament-edit-profile": "^1.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "malzariey/filament-daterangepicker-filter": "^4.0",
         "pxlrbt/filament-environment-indicator": "^2.1",
         "saade/filament-fullcalendar": "^3.0",
         "spatie/laravel-permission": "^6.18",

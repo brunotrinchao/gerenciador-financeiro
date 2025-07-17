@@ -2,22 +2,16 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\CalendarWidget;
 use App\Filament\Widgets\CountChartWidget;
 use App\Filament\Widgets\CountWidget;
 use App\Filament\Widgets\PerCardChartWidget;
 use App\Filament\Widgets\PerCategoryChartWidget;
 use App\Filament\Widgets\UpcomingTransactionsWidget;
-use App\Models\Card;
-use App\Models\Category;
 use App\Models\TransactionItem;
 use App\Notifications\UpcomingTransactionItemNotification;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
@@ -66,28 +60,12 @@ class Dashboard extends BaseDashboard
             ->schema([
                 Section::make()
                     ->schema([
-//                        Select::make('category')
-//                        ->label('Categoria')
-//                            ->options(function () {
-//                                return Category::all()->pluck('name', 'id');
-//                            }),
                         DatePicker::make('startDate')
                             ->label('Data início')
                             ->default(Carbon::now()->startOfMonth()),
                         DatePicker::make('endDate')
                             ->label('Data fim')
-                            ->default(Carbon::now()->endOfMonth()),
-//                        Select::make('status')
-//                            ->label('Status')
-//                            ->searchable()
-//                            ->options([
-//                                '' => 'Todos',
-//                                'PENDING' => 'Pendente',
-//                                'PAID' => 'Pago',
-//                                'SCHEDULED' => 'Agendado/Débito automático',
-//                                'DEBIT' => 'Débito automático',
-//                            ])
-//                            ->default('')
+                            ->default(Carbon::now()->endOfMonth())
                     ])
                     ->columns(4),
             ]);
