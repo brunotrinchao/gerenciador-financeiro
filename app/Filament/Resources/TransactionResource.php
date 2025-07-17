@@ -101,7 +101,8 @@ class TransactionResource extends Resource
                     ->startDate(Carbon::now()->startOfMonth())
                     ->endDate(Carbon::now()->endOfMonth())
                     ->withIndicator()
-                    ->useRangeLabels(),
+                    ->useRangeLabels()
+                    ->autoApply(),
                 Tables\Filters\SelectFilter::make('category_id')
                 ->label('Categoria')
                     ->relationship('category', 'name'),

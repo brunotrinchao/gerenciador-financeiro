@@ -119,7 +119,8 @@ class TransactionItemResource extends Resource
                     ->startDate(Carbon::now()->startOfMonth())
                     ->endDate(Carbon::now()->endOfMonth())
                     ->withIndicator()
-                    ->useRangeLabels(),
+                    ->useRangeLabels()
+                    ->autoApply(),
             ])
             ->actions([
                 Action::make('editTransactionItem')

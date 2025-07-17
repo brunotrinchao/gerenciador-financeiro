@@ -89,11 +89,13 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
             ])
             ->authMiddleware([
                 Authenticate::class,
             ])
             ->plugins([
+                \Hasnayeen\Themes\ThemesPlugin::make(),
                 EnvironmentIndicatorPlugin::make()
                     ->visible(fn () => auth()->user()?->hasRole(RolesEnum::ADMIN->name))
                     ->color(fn () => match (app()->environment()) {
