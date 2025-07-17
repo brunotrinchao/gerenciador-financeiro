@@ -21,6 +21,8 @@ class PermissionResource extends Resource
 {
     protected static ?string $model = Permission::class;
 
+    protected static ?int $navigationSort = 50;
+
     public static function getNavigationGroup(): ?string
     {
         return __('system.labels.settings');
@@ -40,13 +42,12 @@ class PermissionResource extends Resource
     {
         return __('system.labels.permissions');
     }
-    protected static ?int $navigationSort = 50;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             TextInput::make('name')
-                ->label('Chave (ex: view users)')
+                ->label(__('forms.columns.permission_key')) // ex: 'Permission key (e.g. view users)'
                 ->required()
                 ->unique(Permission::class, 'name', ignoreRecord: true)
                 ->maxLength(100),
@@ -58,28 +59,26 @@ class PermissionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Permissão')
+                    ->label(__('forms.columns.permission'))
                     ->formatStateUsing(fn ($state) => TranslateString::formatRolePermission($state)),
-                TextColumn::make('created_at')->label('Criada em')->dateTime('d/m/Y H:i'),
+                TextColumn::make('created_at')
+                    ->label(__('forms.columns.created_at'))
+                    ->dateTime('d/m/Y H:i'),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label(__('forms.actions.edit')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label(__('forms.actions.delete')),
                 ]),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -111,3 +110,4 @@ class PermissionResource extends Resource
         return auth()->user()->can('delete users');
     }
 }
+

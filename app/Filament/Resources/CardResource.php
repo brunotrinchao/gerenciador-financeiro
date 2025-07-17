@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
 class CardResource extends Resource
 {
     protected static ?string $model = Card::class;
+
     public static function getNavigationGroup(): ?string
     {
         return __('system.labels.finance');
@@ -49,7 +50,7 @@ class CardResource extends Resource
 
     public static function form(Form $form): Form
     {
-        $moneyMask = RawJs::make('    function($input){
+        $moneyMask = RawJs::make('function($input){
             let value = $input.replace(/\\D/g, \'\');
             value = (value / 100).toFixed(2);
             value = value.replace(\'.\', \',\');
@@ -57,37 +58,35 @@ class CardResource extends Resource
             return value;
         }');
 
-        return $form
-            ->schema([
-                Select::make('bank_id')
-                    ->label('Banco')
-                    ->prefixIcon('phosphor-bank')
-                    ->options(Bank::pluck('name', 'id')),
-                TextInput::make('name')
-                    ->label('Nome'),
-                TextInput::make('number')
-                    ->prefixIcon('heroicon-m-credit-card')
-                    ->label('Número')
-                    ->mask(RawJs::make(<<<'JS'
-                        $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
-                    JS)),
-                Select::make('brand_id')
-                    ->label('Bandeira')
-                    ->searchable()
-                    ->relationship('brand', 'name')
-                    ->preload(),
-                TextInput::make('due_date')
-                    ->label('Vencimento')
-                    ->numeric()
-                    ->minValue(1)
-                    ->maxValue(31),
-                TextInput::make('limit')
-                    ->label('Limite')
-                    ->prefix('R$')
-//                    ->formatStateUsing($decimalStateFormating)
-                    ->mask($moneyMask)
-                    ->default(0),
-            ]);
+        return $form->schema([
+            Select::make('bank_id')
+                ->label(__('forms.columns.bank'))
+                ->prefixIcon('phosphor-bank')
+                ->options(Bank::pluck('name', 'id')),
+            TextInput::make('name')
+                ->label(__('forms.columns.name')),
+            TextInput::make('number')
+                ->prefixIcon('heroicon-m-credit-card')
+                ->label(__('forms.columns.number'))
+                ->mask(RawJs::make(<<<'JS'
+                    $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
+                JS)),
+            Select::make('brand_id')
+                ->label(__('forms.columns.brand'))
+                ->searchable()
+                ->relationship('brand', 'name')
+                ->preload(),
+            TextInput::make('due_date')
+                ->label(__('forms.columns.due_date'))
+                ->numeric()
+                ->minValue(1)
+                ->maxValue(31),
+            TextInput::make('limit')
+                ->label(__('forms.columns.limit'))
+                ->prefix('R$')
+                ->mask($moneyMask)
+                ->default(0),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -95,79 +94,28 @@ class CardResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('brand.brand')
-                    ->label('Bandeira')
+                    ->label(__('forms.columns.brand'))
                     ->height(30)
                     ->stacked(),
-                TextColumn::make('name')
-                    ->label('Nome'),
-                TextColumn::make('number')
-                    ->label('Número'),
-//                TextColumn::make('brand')
-//                    ->label('Bandeira'),
-                TextColumn::make('bank.name')
-                    ->label('Banco'),
-                TextColumn::make('limit')
-                    ->label('Limite')
-                    ->money('BRL', locale: 'pt_BR'),
-                TextColumn::make('due_date')
-                    ->label('Vencimento')
-                    ->alignCenter(),
-            ])
-            ->filters([
-                //
+                TextColumn::make('name')->label(__('forms.columns.name')),
+                TextColumn::make('number')->label(__('forms.columns.number')),
+                TextColumn::make('bank.name')->label(__('forms.columns.bank')),
+                TextColumn::make('limit')->label(__('forms.columns.limit'))->money('BRL', locale: 'pt_BR'),
+                TextColumn::make('due_date')->label(__('forms.columns.due_date'))->alignCenter(),
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editCard',
-                    form: [
-                        Select::make('bank_id')
-                            ->required()
-                            ->label('Banco')
-                            ->prefixIcon('phosphor-bank')
-                            ->options(Bank::pluck('name', 'id')),
-                        TextInput::make('name')
-                            ->required()
-                            ->label('Nome'),
-                        TextInput::make('number')
-                            ->required()
-                            ->prefixIcon('heroicon-m-credit-card')
-                            ->label('Número')
-                            ->mask(RawJs::make(<<<'JS'
-                        $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
-                    JS)),
-                        Select::make('brand_id')
-                            ->required()
-                            ->label('Bandeira')
-                            ->searchable()
-                            ->relationship('brand', 'name')
-                            ->preload(),
-                        TextInput::make('due_date')
-                            ->required()
-                            ->label('Vencimento')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(31),
-                        TextInput::make('limit')
-                            ->label('Limite')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('    function($input){
-                                    let value = $input.replace(/\\D/g, \'\');
-                                    value = (value / 100).toFixed(2);
-                                    value = value.replace(\'.\', \',\');
-                                    value = value.replace(/\\B(?=(\\d{3})+(?!\\d))/g, \'.\');
-                                    return value;
-                                }'))
-                            ->default(0),
-                    ],
-                    modalHeading: 'Editar cartão',
-                    label: 'Editar',
-                    fillForm: fn ($record) => [
-                        'bank_id'   => $record->bank_id,
-                        'name'      => $record->name,
-                        'number'    => $record->number,
-                        'brand_id'  => $record->brand_id,
-                        'due_date'  => $record->due_date,
-                        'limit'     => number_format($record->limit, 2, ',', '.')
+                    form: self::getFormSchema(),
+                    modalHeading: __('forms.actions.edit_card'),
+                    label: __('forms.actions.edit'),
+                    fillForm: fn($record) => [
+                        'bank_id' => $record->bank_id,
+                        'name' => $record->name,
+                        'number' => $record->number,
+                        'brand_id' => $record->brand_id,
+                        'due_date' => $record->due_date,
+                        'limit' => number_format($record->limit, 2, ',', '.'),
                     ]
                 ),
             ])
@@ -180,59 +128,27 @@ class CardResource extends Resource
             ->recordAction('editCard')
             ->headerActions([
                 ActionHelper::makeSlideOver(
-                    name: 'createAccount',
-                    form: [
-                        Select::make('bank_id')
-                            ->required()
-                            ->label('Banco')
-                            ->prefixIcon('phosphor-bank')
-                            ->options(Bank::pluck('name', 'id')),
-                        TextInput::make('name')
-                            ->required()
-                            ->label('Nome'),
-                        TextInput::make('number')
-                            ->required()
-                            ->prefixIcon('heroicon-m-credit-card')
-                            ->label('Número')
-                            ->mask(RawJs::make(<<<'JS'
-                        $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
-                    JS)),
-                        Select::make('brand_id')
-                            ->required()
-                            ->label('Bandeira')
-                            ->searchable()
-                            ->relationship('brand', 'name')
-                            ->preload(),
-                        TextInput::make('due_date')
-                            ->required()
-                            ->label('Vencimento')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(31),
-                        TextInput::make('limit')
-                            ->label('Limite')
-                            ->prefix('R$')
-                            ->mask(RawJs::make('    function($input){
-                                    let value = $input.replace(/\\D/g, \'\');
-                                    value = (value / 100).toFixed(2);
-                                    value = value.replace(\'.\', \',\');
-                                    value = value.replace(/\\B(?=(\\d{3})+(?!\\d))/g, \'.\');
-                                    return value;
-                                }'))
-                            ->default(0),
-                    ],
-                    modalHeading: 'Nova conta bancária',
-                    label: 'Criar',
+                    name: 'createCard',
+                    form: self::getFormSchema(),
+                    modalHeading: __('forms.actions.new_card'),
+                    label: __('forms.actions.create'),
                     action: function (array $data, Action $action) {
-                        $card = Card::where('name', $data['name'])->where('bank_id', $data['bank_id'])->where('brand_id', $data['brand_id'])
-                            ->with(['bank', 'brand'])->first();
-                        if ($card->count() > 0) {
+                        $card = Card::where('name', $data['name'])
+                            ->where('bank_id', $data['bank_id'])
+                            ->where('brand_id', $data['brand_id'])
+                            ->with(['bank', 'brand'])
+                            ->first();
+
+                        if ($card) {
                             Notification::make()
-                                ->title('Cartão já existe')
-                                ->body("Já existe uma cartão '{$card->name}' do banco {$card->bank->name} e bandeira {$card->brand->name} cadastrado.")
+                                ->title(__('forms.notifications.card_exists'))
+                                ->body(__('forms.notifications.card_exists_msg', [
+                                    'name' => $card->name,
+                                    'bank' => $card->bank->name,
+                                    'brand' => $card->brand->name,
+                                ]))
                                 ->danger()
                                 ->send();
-
                             $action->cancel();
                             return;
                         }
@@ -240,8 +156,8 @@ class CardResource extends Resource
                         Card::create($data);
 
                         Notification::make()
-                            ->title('Cartão criada')
-                            ->body('A nova cartão foi cadastrada com sucesso.')
+                            ->title(__('forms.notifications.card_created'))
+                            ->body(__('forms.notifications.card_created_msg'))
                             ->success()
                             ->send();
                     }
@@ -249,11 +165,53 @@ class CardResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
+    protected static function getFormSchema(): array
     {
         return [
-            //
+            Select::make('bank_id')
+                ->required()
+                ->label(__('forms.columns.bank'))
+                ->prefixIcon('phosphor-bank')
+                ->options(Bank::pluck('name', 'id')),
+            TextInput::make('name')
+                ->required()
+                ->label(__('forms.columns.name')),
+            TextInput::make('number')
+                ->required()
+                ->prefixIcon('heroicon-m-credit-card')
+                ->label(__('forms.columns.number'))
+                ->mask(RawJs::make(<<<'JS'
+                    $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
+                JS)),
+            Select::make('brand_id')
+                ->required()
+                ->label(__('forms.columns.brand'))
+                ->searchable()
+                ->relationship('brand', 'name')
+                ->preload(),
+            TextInput::make('due_date')
+                ->required()
+                ->label(__('forms.columns.due_date'))
+                ->numeric()
+                ->minValue(1)
+                ->maxValue(31),
+            TextInput::make('limit')
+                ->label(__('forms.columns.limit'))
+                ->prefix('R$')
+                ->mask(RawJs::make('function($input){
+                    let value = $input.replace(/\\D/g, \'\');
+                    value = (value / 100).toFixed(2);
+                    value = value.replace(\'.\', \',\');
+                    value = value.replace(/\\B(?=(\\d{3})+(?!\\d))/g, \'.\');
+                    return value;
+                }'))
+                ->default(0),
         ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
     }
 
     public static function getPages(): array
@@ -265,3 +223,4 @@ class CardResource extends Resource
         ];
     }
 }
+

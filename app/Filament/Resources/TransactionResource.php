@@ -34,7 +34,6 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class TransactionResource extends Resource
 {
-
     protected static ?string $model = Transaction::class;
 
     public static function getNavigationGroup(): ?string
@@ -69,163 +68,134 @@ class TransactionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('type')
-                    ->label('Tipo')
+                    ->label(__('system.labels.type'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'INCOME' => 'success',
                         'EXPENSE' => 'danger',
                     })
                     ->sortable()
-                    ->formatStateUsing(fn (string $state) => $state === 'INCOME' ? 'Receita' : 'Despesa'),
+                    ->formatStateUsing(fn (string $state) => __('system.enums.transaction_type.' . $state)),
                 TextColumn::make('description')
-                    ->label('Descrição')
+                    ->label(__('system.labels.description'))
                     ->limit(20),
                 TextColumn::make('category.name')
-                    ->label('Categoria'),
+                    ->label(__('system.labels.category')),
                 TextColumn::make('amount')
-                    ->label('Valor')
+                    ->label(__('system.labels.amount'))
                     ->sortable()
                     ->currency('BRL'),
                 TextColumn::make('date')
-                    ->label('Data')
+                    ->label(__('system.labels.date'))
                     ->date('d/m/Y')
                     ->sortable(),
                 TextColumn::make('recurrence_interval')
-                    ->label('Parcelas')
-                    ->formatStateUsing(function (string $state) {
-                        return $state > 1 ? $state : ' A vista ';
-                    })
+                    ->label(__('system.labels.recurrence_interval'))
+                    ->formatStateUsing(fn (string $state) => $state > 1 ? $state : __('system.texts.at_sight'))
                     ->alignCenter(),
                 TextColumn::make('method')
-                    ->label('Método')
-                    ->getStateUsing(function ($record) {
-                        if ($record->method == 'CARD') {
-                            return 'Cartão de crédito';
-                        }
-
-                        if ($record->method == 'ACCOUNT') {
-                            return 'Débito em conta';
-                        }
-
-                        return 'Dinheiro';
-                    }),
+                    ->label(__('system.labels.method'))
+                    ->getStateUsing(fn ($record) => __('system.enums.method.' . $record->method)),
             ])
             ->filters([
                 DateRangeFilter::make('date')
-                    ->label('Período')
+                    ->label(__('system.labels.period'))
                     ->startDate(Carbon::now()->startOfMonth())
                     ->endDate(Carbon::now()->endOfMonth())
                     ->withIndicator()
                     ->useRangeLabels()
                     ->autoApply(),
                 Tables\Filters\SelectFilter::make('category_id')
-                ->label('Categoria')
+                    ->label(__('system.labels.category'))
                     ->relationship('category', 'name'),
                 Tables\Filters\SelectFilter::make('method')
-                    ->label('Método')
+                    ->label(__('system.labels.method'))
                     ->options([
-                        'CARD' => 'Cartão de crédito',
-                        'ACCOUNT' => 'Conta corrente',
-                        'CASH' => 'Dinheiro',
-                    ])
+                        'CARD' => __('system.enums.method.CARD'),
+                        'ACCOUNT' => __('system.enums.method.ACCOUNT'),
+                        'CASH' => __('system.enums.method.CASH'),
+                    ]),
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editTransaction',
                     form: [
                         Radio::make('type')
-                            ->label('Tipo')
+                            ->label(__('system.labels.type'))
                             ->options([
-                                'INCOME' => 'Receita',
-                                'EXPENSE' => 'Despesa'
+                                'INCOME' => __('system.enums.transaction_type.INCOME'),
+                                'EXPENSE' => __('system.enums.transaction_type.EXPENSE'),
                             ])
                             ->inline()
                             ->required()
                             ->inlineLabel(false),
                         Select::make('category_id')
                             ->required()
-                            ->label('Categoria')
+                            ->label(__('system.labels.category'))
                             ->relationship('category', 'name'),
                         Select::make('method')
-                            ->label('Método')
+                            ->label(__('system.labels.method'))
                             ->options([
-                                'CARD' => 'Cartão de crédito',
-                                'ACCOUNT' => 'Conta corrente',
-                                'CASH' => 'Dinheiro',
+                                'CARD' => __('system.enums.method.CARD'),
+                                'ACCOUNT' => __('system.enums.method.ACCOUNT'),
+                                'CASH' => __('system.enums.method.CASH'),
                             ])
                             ->reactive()
                             ->required(),
                         Select::make('card_id')
-                            ->label('Cartão de crédito')
-                            ->options(function () {
-                                return Card::all()->pluck('name', 'id');
-                            })
-                            ->visible(function ($get) {
-                                return $get('method') == 'CARD';
-                            })
-                            ->required(function ($get) {
-                                return $get('method') == 'CARD';
-                            }),
+                            ->label(__('system.labels.card'))
+                            ->options(fn () => Card::all()->pluck('name', 'id'))
+                            ->visible(fn ($get) => $get('method') === 'CARD')
+                            ->required(fn ($get) => $get('method') === 'CARD'),
                         Select::make('account_id')
-                            ->label('Conta')
-                            ->options(function () {
-                                return Account::with('bank')->get()->mapWithKeys(function ($account) {
-                                    return [$account->id => $account->bank->name ?? 'Sem banco'];
-                                });
-                            })
-                            ->visible(function ($get) {
-                                return $get('method') == 'ACCOUNT';
-                            })
-                            ->required(function ($get) {
-                                return $get('method') == 'ACCOUNT';
-                            }),
+                            ->label(__('system.labels.account'))
+                            ->options(fn () => Account::with('bank')->get()->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
+                            ->visible(fn ($get) => $get('method') === 'ACCOUNT')
+                            ->required(fn ($get) => $get('method') === 'ACCOUNT'),
                         TextInput::make('amount')
                             ->required()
-                            ->label('Valor')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                            ->label(__('system.labels.amount'))
+                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
                             ->prefix('R$'),
                         DatePicker::make('date')
                             ->required()
-                            ->label('Data'),
+                            ->label(__('system.labels.date')),
                         Textarea::make('description')
                             ->required()
-                            ->label('Descrição')
+                            ->label(__('system.labels.description'))
                             ->maxLength(100),
                         Toggle::make('is_recurring')
-                            ->label('Parcelado?')
+                            ->label(__('system.labels.is_recurring'))
                             ->default(false)
                             ->inline(false)
                             ->reactive()
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                // Se o toggle for ativado, altere o estado do campo
-                                $set('recurrence_interval', $state ? 1 : null); // Ajuste conforme necessário
-                            }),
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null)),
                         TextInput::make('recurrence_interval')
                             ->required(fn ($get) => $get('is_recurring'))
-                            ->label('Nº Parcelas')
+                            ->label(__('system.labels.recurrence_interval'))
                             ->hidden(fn ($get) => !$get('is_recurring'))
                             ->numeric()
                             ->minValue(fn ($get) => $get('is_recurring') ? 2 : null),
                         Select::make('recurrence_type')
-                            ->label('Frequência')
+                            ->label(__('system.labels.recurrence_type'))
                             ->options([
-                                'DAILY' => 'Diário',
-                                'WEEKLY' => 'Semanal',
-                                'MONTHLY' => 'Mensal',
-                                'YAERLY' => 'Anual'
+                                'DAILY' => __('system.enums.recurrence_type.DAILY'),
+                                'WEEKLY' => __('system.enums.recurrence_type.WEEKLY'),
+                                'MONTHLY' => __('system.enums.recurrence_type.MONTHLY'),
+                                'YEARLY' => __('system.enums.recurrence_type.YEARLY'),
                             ])
                             ->hidden(fn ($get) => !$get('is_recurring')),
-                        Forms\Components\Hidden::make('user_id')->default(auth()->id())
+                        Forms\Components\Hidden::make('user_id')->default(auth()->id()),
                     ],
-                    modalHeading: 'Editar Transação',
-                    label: 'Editar',
+                    modalHeading: __('system.modal_headings.edit_transaction'),
+                    label: __('system.buttons.edit'),
                     fillForm: fn ($record) => [
                         'type'                => $record->type,
                         'category_id'         => $record->category_id,
                         'method'              => $record->method,
                         'card_id'             => $record->card_id,
                         'account_id'          => $record->account_id,
-                        'amount'              => $record->amount , // para o currencyMask
+                        'amount'              => $record->amount,
                         'date'                => $record->date,
                         'description'         => $record->description,
                         'is_recurring'        => $record->is_recurring,
@@ -237,7 +207,7 @@ class TransactionResource extends Resource
                         $data['amount'] = (float) str_replace(['.', ','], ['', '.'], $data['amount']);
                         return $record->update($data);
                     }
-                )
+                ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -251,90 +221,73 @@ class TransactionResource extends Resource
                     name: 'createTransaction',
                     form: [
                         Radio::make('type')
-                            ->label('Tipo')
+                            ->label(__('system.labels.type'))
                             ->options([
-                                'INCOME' => 'Receita',
-                                'EXPENSE' => 'Despesa'
+                                'INCOME' => __('system.enums.transaction_type.INCOME'),
+                                'EXPENSE' => __('system.enums.transaction_type.EXPENSE'),
                             ])
                             ->inline()
                             ->required()
                             ->inlineLabel(false),
                         Select::make('category_id')
                             ->required()
-                            ->label('Categoria')
+                            ->label(__('system.labels.category'))
                             ->relationship('category', 'name'),
                         Select::make('method')
-                            ->label('Método')
+                            ->label(__('system.labels.method'))
                             ->options([
-                                'CARD' => 'Cartão de crédito',
-                                'ACCOUNT' => 'Conta corrente',
-                                'CASH' => 'Dinheiro',
+                                'CARD' => __('system.enums.method.CARD'),
+                                'ACCOUNT' => __('system.enums.method.ACCOUNT'),
+                                'CASH' => __('system.enums.method.CASH'),
                             ])
                             ->reactive()
                             ->required(),
                         Select::make('card_id')
-                            ->label('Cartão de crédito')
-                            ->options(function () {
-                                return Card::all()->pluck('name', 'id');
-                            })
-                            ->visible(function ($get) {
-                                return $get('method') == 'CARD';
-                            })
-                            ->required(function ($get) {
-                                return $get('method') == 'CARD';
-                            }),
+                            ->label(__('system.labels.card'))
+                            ->options(fn () => Card::all()->pluck('name', 'id'))
+                            ->visible(fn ($get) => $get('method') === 'CARD')
+                            ->required(fn ($get) => $get('method') === 'CARD'),
                         Select::make('account_id')
-                            ->label('Conta')
-                            ->options(function () {
-                                return Account::with('bank')->get()->mapWithKeys(function ($account) {
-                                    return [$account->id => $account->bank->name ?? 'Sem banco'];
-                                });
-                            })
-                            ->visible(function ($get) {
-                                return $get('method') == 'ACCOUNT';
-                            })
-                            ->required(function ($get) {
-                                return $get('method') == 'ACCOUNT';
-                            }),
+                            ->label(__('system.labels.account'))
+                            ->options(fn () => Account::with('bank')->get()->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
+                            ->visible(fn ($get) => $get('method') === 'ACCOUNT')
+                            ->required(fn ($get) => $get('method') === 'ACCOUNT'),
                         TextInput::make('amount')
                             ->required()
-                            ->label('Valor')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                            ->label(__('system.labels.amount'))
+                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
                             ->prefix('R$'),
                         DatePicker::make('date')
                             ->required()
-                            ->label('Data'),
+                            ->label(__('system.labels.date')),
                         Textarea::make('description')
                             ->required()
-                            ->label('Descrição')
+                            ->label(__('system.labels.description'))
                             ->maxLength(100),
                         Toggle::make('is_recurring')
-                            ->label('Parcelado?')
+                            ->label(__('system.labels.is_recurring'))
                             ->default(false)
                             ->inline(false)
                             ->reactive()
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                // Se o toggle for ativado, altere o estado do campo
-                                $set('recurrence_interval', $state ? 1 : null); // Ajuste conforme necessário
-                            }),
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null)),
                         TextInput::make('recurrence_interval')
-                            ->label('Nº Parcelas')
+                            ->label(__('system.labels.recurrence_interval'))
                             ->hidden(fn ($get) => !$get('is_recurring'))
                             ->minValue(fn ($get) => $get('is_recurring') ? 2 : null)
                             ->numeric(),
                         Select::make('recurrence_type')
-                            ->label('Frequência')
+                            ->label(__('system.labels.recurrence_type'))
                             ->options([
-                                'DAILY' => 'Diário',
-                                'WEEKLY' => 'Semanal',
-                                'MONTHLY' => 'Mensal',
-                                'YAERLY' => 'Anual'
+                                'DAILY' => __('system.enums.recurrence_type.DAILY'),
+                                'WEEKLY' => __('system.enums.recurrence_type.WEEKLY'),
+                                'MONTHLY' => __('system.enums.recurrence_type.MONTHLY'),
+                                'YEARLY' => __('system.enums.recurrence_type.YEARLY'),
                             ])
                             ->hidden(fn ($get) => !$get('is_recurring')),
-                        Forms\Components\Hidden::make('user_id')->default(auth()->id())
+                        Forms\Components\Hidden::make('user_id')->default(auth()->id()),
                     ],
-                    modalHeading: 'Nova Transação',
-                    label: 'Criar',
+                    modalHeading: __('system.modal_headings.create_transaction'),
+                    label: __('system.buttons.create'),
                     action: function (array $data, Action $action) {
                         $transaction = Transaction::create($data);
 
@@ -361,8 +314,8 @@ class TransactionResource extends Resource
                         }
 
                         Notification::make()
-                            ->title('Transação criada')
-                            ->body("{$parcelas} parcela(s) foram geradas com sucesso.")
+                            ->title(__('system.notifications.transaction_created_title'))
+                            ->body(trans_choice(__('system.notifications.transaction_created_body'), $parcelas, ['count' => $parcelas]))
                             ->success()
                             ->send();
                     }
@@ -394,5 +347,5 @@ class TransactionResource extends Resource
             'edit' => Pages\EditTransaction::route('/{record}/edit'),
         ];
     }
-
 }
+

@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class BankResource extends Resource
 {
     protected static ?string $model = Bank::class;
+
     public static function getNavigationGroup(): ?string
     {
         return __('system.labels.settings');
@@ -43,51 +44,46 @@ class BankResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                TextInput::make('name')
-                    ->required()
-                    ->label('Nome')
-                    ->maxLength(255),
-                TextInput::make('code')
-                    ->required()
-                    ->label('Código')
-                    ->numeric()
-            ]);
+        return $form->schema([
+            TextInput::make('name')
+                ->required()
+                ->label(__('forms.columns.name'))
+                ->maxLength(255),
+
+            TextInput::make('code')
+                ->required()
+                ->label(__('forms.columns.code'))
+                ->numeric(),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nome'),
-                TextColumn::make('code')
-                    ->label('Código')
-            ])
-            ->filters([
-                //
+                TextColumn::make('name')->label(__('forms.columns.name')),
+                TextColumn::make('code')->label(__('forms.columns.code')),
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editBank',
                     form: [
                         TextInput::make('name')
-                        ->required()
-                        ->label('Nome')
-                        ->maxLength(255),
+                            ->required()
+                            ->label(__('forms.columns.name'))
+                            ->maxLength(255),
                         TextInput::make('code')
                             ->required()
-                            ->label('Código')
-                            ->numeric()
+                            ->label(__('forms.columns.code'))
+                            ->numeric(),
                     ],
-                    modalHeading: 'Editar cartão',
-                    label: 'Editar',
+                    modalHeading: __('forms.actions.edit_bank'),
+                    label: __('forms.actions.edit'),
                     fillForm: fn ($record) => [
-                        'name'      => $record->name,
-                        'code'    => $record->code,
+                        'name' => $record->name,
+                        'code' => $record->code,
                     ]
-                )
+                ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -102,21 +98,22 @@ class BankResource extends Resource
                     form: [
                         TextInput::make('name')
                             ->required()
-                            ->label('Nome')
+                            ->label(__('forms.columns.name'))
                             ->maxLength(255),
                         TextInput::make('code')
                             ->required()
-                            ->label('Código')
-                            ->numeric()
+                            ->label(__('forms.columns.code'))
+                            ->numeric(),
                     ],
-                    modalHeading: 'Novo banco',
-                    label: 'Criar',
+                    modalHeading: __('forms.actions.new_bank'),
+                    label: __('forms.actions.create'),
                     action: function (array $data, Action $action) {
-                        $bank= Bank::where('name', $data['name'])->first();
-                        if ($bank->count() > 0) {
+                        $bank = Bank::where('name', $data['name'])->first();
+
+                        if ($bank) {
                             Notification::make()
-                                ->title('Banco já existe')
-                                ->body("Já existe uma banco '{$bank->name}' cadastrado.")
+                                ->title(__('forms.notifications.bank_exists'))
+                                ->body(__('forms.notifications.bank_exists_body', ['name' => $bank->name]))
                                 ->danger()
                                 ->send();
 
@@ -127,20 +124,18 @@ class BankResource extends Resource
                         Bank::create($data);
 
                         Notification::make()
-                            ->title('Banco criada')
-                            ->body('A nova banco foi cadastrada com sucesso.')
+                            ->title(__('forms.notifications.bank_created'))
+                            ->body(__('forms.notifications.bank_created_body'))
                             ->success()
                             ->send();
                     }
                 ),
-            ]);;
+            ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -152,3 +147,4 @@ class BankResource extends Resource
         ];
     }
 }
+

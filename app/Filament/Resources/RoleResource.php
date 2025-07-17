@@ -54,7 +54,7 @@ class RoleResource extends Resource
         return $form
             ->schema([
                 CheckboxList::make('permissions')
-                    ->label('Permissões')
+                    ->label(__('forms.columns.permissions'))
                     ->relationship('permissions', 'name')
                     ->options(function () {
                         return Permission::all()
@@ -64,7 +64,7 @@ class RoleResource extends Resource
                             })
                             ->toArray();
                     })
-                    ->columns(2)
+                    ->columns(2),
             ]);
     }
 
@@ -73,27 +73,23 @@ class RoleResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Perfil')
-                    ->badge()
+                    ->label(__('forms.columns.access_profile'))
+                    ->badge(),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label(__('forms.actions.edit')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label(__('forms.actions.delete')),
                 ]),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -125,3 +121,4 @@ class RoleResource extends Resource
         return auth()->user()->can('delete users');
     }
 }
+

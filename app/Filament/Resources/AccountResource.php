@@ -24,6 +24,7 @@ use Filament\Tables\Table;
 class AccountResource extends Resource
 {
     protected static ?string $model = Account::class;
+
     public static function getNavigationGroup(): ?string
     {
         return __('system.labels.finance');
@@ -46,47 +47,36 @@ class AccountResource extends Resource
 
     public static function form(Form $form): Form
     {
-
-        return $form
-            ->schema([
-                Select::make('type')
-                    ->required()
-                    ->label('Tipo')
-                    ->options([
-                        1 => 'Conta Corrente',
-                        2 => 'Poupança'
-                    ]),
-                Select::make('bank_id')
-                    ->label('Banco')
-                    ->relationship('bank', 'name'),
-                \Filament\Forms\Components\TextInput::make('balance')
-                    ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
-                    ->prefix('R$')
-
-            ]);
+        return $form->schema([
+            Select::make('type')
+                ->required()
+                ->label(__('forms.forms.type'))
+                ->options([
+                    1 => __('forms.forms.account_checking'), // nova chave de tradução sugerida
+                    2 => __('forms.forms.account_savings'),
+                ]),
+            Select::make('bank_id')
+                ->label(__('forms.forms.bank'))
+                ->relationship('bank', 'name'),
+            TextInput::make('balance')
+                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
+                ->prefix('R$')
+                ->label(__('forms.forms.balance')),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
-        $columns = [
-            TextColumn::make('bank.name')->label('Banco'),
-            TextColumn::make('type')->label('Tipo')->formatStateUsing(fn($state) => TranslateString::getAccountType((int) $state)),
-            TextColumn::make('balance')->label('Saldo')->currency('BRL'),
-        ];
-
         return $table
             ->columns([
-                    TextColumn::make('bank.name')
-                        ->label('Banco'),
-                    TextColumn::make('type')
-                        ->label('Tipo')
-                        ->formatStateUsing(fn ($state) => TranslateString::getAccountType((int) $state)),
-                    TextColumn::make('balance')
-                        ->label('Saldo')
-                        ->currency('BRL')
-            ])
-            ->filters([
-                //
+                TextColumn::make('bank.name')
+                    ->label(__('forms.columns.bank')),
+                TextColumn::make('type')
+                    ->label(__('forms.columns.type'))
+                    ->formatStateUsing(fn ($state) => TranslateString::getAccountType((int) $state)),
+                TextColumn::make('balance')
+                    ->label(__('forms.columns.balance'))
+                    ->currency('BRL'),
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
@@ -94,22 +84,22 @@ class AccountResource extends Resource
                     form: [
                         Select::make('type')
                             ->required()
-                            ->label('Tipo')
+                            ->label(__('forms.forms.type'))
                             ->options([
-                                1 => 'Conta Corrente',
-                                2 => 'Poupança'
+                                1 => __('forms.forms.account_checking'),
+                                2 => __('forms.forms.account_savings'),
                             ]),
                         Select::make('bank_id')
                             ->required()
-                            ->label('Banco')
+                            ->label(__('forms.forms.bank'))
                             ->relationship('bank', 'name'),
-                        \Filament\Forms\Components\TextInput::make('balance')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                        TextInput::make('balance')
+                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
                             ->prefix('R$')
-
+                            ->label(__('forms.forms.balance')),
                     ],
-                    modalHeading: 'Editar conta bancária',
-                    label: 'Editar',
+                    modalHeading: __('forms.forms.edit_bank_account'),
+                    label: __('forms.forms.edit'),
                     fillForm: fn ($record) => [
                         'name'     => $record->name,
                         'bank_id'  => $record->bank_id,
@@ -131,30 +121,30 @@ class AccountResource extends Resource
                     form: [
                         Select::make('type')
                             ->required()
-                            ->label('Tipo')
+                            ->label(__('forms.forms.type'))
                             ->options([
-                                1 => 'Conta Corrente',
-                                2 => 'Poupança'
+                                1 => __('forms.forms.account_checking'),
+                                2 => __('forms.forms.account_savings'),
                             ]),
                         Select::make('bank_id')
                             ->required()
-                            ->label('Banco')
+                            ->label(__('forms.forms.bank'))
                             ->relationship('bank', 'name'),
-                        \Filament\Forms\Components\TextInput::make('balance')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                        TextInput::make('balance')
+                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
                             ->prefix('R$')
-                        ->default('0,0')
-
+                            ->default('0,0')
+                            ->label(__('forms.forms.balance')),
                     ],
-                    modalHeading: 'Nova conta bancária',
-                    label: 'Criar',
+                    modalHeading: __('forms.forms.new_bank_account'),
+                    label: __('forms.forms.create'),
                     action: function (array $data, Action $action) {
                         $data['user_id'] = auth()->id();
                         Account::create($data);
 
                         Notification::make()
-                            ->title('Conta bancária criada')
-                            ->body('A nova conta bancária foi cadastrada com sucesso.')
+                            ->title(__('forms.forms.bank_account_created'))
+                            ->body(__('forms.forms.bank_account_success'))
                             ->success()
                             ->send();
                     }
@@ -164,9 +154,7 @@ class AccountResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -178,3 +166,4 @@ class AccountResource extends Resource
         ];
     }
 }
+

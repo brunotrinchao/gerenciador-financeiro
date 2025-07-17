@@ -24,6 +24,7 @@ use function Livewire\before;
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
+
     public static function getNavigationGroup(): ?string
     {
         return __('system.labels.finance');
@@ -46,12 +47,11 @@ class CategoryResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Nome')
-                    ->required()
-            ]);
+        return $form->schema([
+            Forms\Components\TextInput::make('name')
+                ->label(__('forms.columns.name'))
+                ->required(),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -59,61 +59,59 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                ->label('Nome')
-            ])
-            ->filters([
-                //
+                    ->label(__('forms.columns.name')),
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editCategory',
                     form: [
                         Forms\Components\TextInput::make('name')
-                            ->label('Nome')
-                            ->required()
+                            ->label(__('forms.columns.name'))
+                            ->required(),
                     ],
-                    modalHeading: 'Editar categoria',
-                    label: 'Editar',
-                    fillForm: fn ($record) => [
-                        'name' => $record->name
-                    ]
+                    modalHeading: __('forms.actions.edit_category'),
+                    label: __('forms.actions.edit'),
+                    fillForm: fn($record) => ['name' => $record->name]
                 ),
                 Tables\Actions\DeleteAction::make('delete')
-                ->label('Excluir')
+                    ->label(__('forms.actions.delete'))
                     ->before(function ($record, $action) {
                         $totalTransactions = $record->transactions()->count();
                         if ($totalTransactions > 0) {
                             Notification::make()
                                 ->color('warning')
                                 ->warning()
-                                ->title('Ação permitida')
-                                ->body("A categoria '{$record->name}' possui {$totalTransactions} transações associadas e não pode ser deletada.")
+                                ->title(__('forms.notifications.delete_not_allowed'))
+                                ->body(__('forms.notifications.category_has_transactions', [
+                                    'name' => $record->name,
+                                    'total' => $totalTransactions
+                                ]))
                                 ->send();
+
                             $action->cancel();
                             return false;
                         }
                         return true;
-                    })
+                    }),
             ])
             ->recordUrl(null)
             ->recordAction('editCategory')
-            ->bulkActions([
-            ])
+            ->bulkActions([])
             ->headerActions([
                 ActionHelper::makeSlideOver(
                     name: 'createCategory',
                     form: [
                         Forms\Components\TextInput::make('name')
-                            ->label('Nome')
-                            ->required()
+                            ->label(__('forms.columns.name'))
+                            ->required(),
                     ],
-                    modalHeading: 'Nova categoria',
-                    label: 'Criar',
+                    modalHeading: __('forms.actions.new_category'),
+                    label: __('forms.actions.create'),
                     action: function (array $data, Action $action) {
                         if (Category::where('name', $data['name'])->exists()) {
                             Notification::make()
-                                ->title('Categoria já existe')
-                                ->body("Já existe uma  categoria '{$data['name']}' cadastrada.")
+                                ->title(__('forms.notifications.category_exists'))
+                                ->body(__('forms.notifications.category_exists_msg', ['name' => $data['name']]))
                                 ->danger()
                                 ->send();
 
@@ -124,8 +122,8 @@ class CategoryResource extends Resource
                         Category::create($data);
 
                         Notification::make()
-                            ->title('Categoria criada')
-                            ->body('A nova categoria foi cadastrada com sucesso.')
+                            ->title(__('forms.notifications.category_created'))
+                            ->body(__('forms.notifications.category_created_msg'))
                             ->success()
                             ->send();
                     }
@@ -135,9 +133,7 @@ class CategoryResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -149,3 +145,4 @@ class CategoryResource extends Resource
         ];
     }
 }
+

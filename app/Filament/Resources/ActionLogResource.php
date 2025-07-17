@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class ActionLogResource extends Resource
 {
     protected static ?string $model = ActionLog::class;
+
     public static function getNavigationGroup(): ?string
     {
         return __('system.labels.settings');
@@ -44,65 +45,58 @@ class ActionLogResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                //
-            ]);
+        return $form->schema([]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('user_id')->label('Usuário')->formatStateUsing(function ($state) {
-                    return User::where('id', '=', $state)->first()->name;
-                }),
-                TextColumn::make('action')->label('Ação'),
-                TextColumn::make('model_type')->label('Modelo'),
-                TextColumn::make('model_id')->label('ID do Modelo'),
-                TextColumn::make('created_at')->label('Data')->dateTime(),
-            ])
-            ->filters([
-                //
+                TextColumn::make('user_id')
+                    ->label(__('forms.columns.user'))
+                    ->formatStateUsing(fn($state) => User::find($state)?->name ?? __('forms.misc.unknown')),
+                TextColumn::make('action')->label(__('forms.columns.action')),
+                TextColumn::make('model_type')->label(__('forms.columns.model')),
+                TextColumn::make('model_id')->label(__('forms.columns.model_id')),
+                TextColumn::make('created_at')->label(__('forms.columns.date'))->dateTime(),
             ])
             ->actions([
                 Action::make('viewLog')
-                    ->label('Visualizar')
-                    ->modalHeading('Detalhes do Log')
+                    ->label(__('forms.actions.view'))
+                    ->modalHeading(__('forms.actions.log_details'))
                     ->slideOver()
                     ->modalSubmitAction(false)
                     ->form([
-                        Grid::make()
-                            ->schema([
-                            TextInput::make('user_id')->label('Usuário')
-                                ->disabled(),
-                            TextInput::make('action')->label('Ação')
-                                ->disabled(),
-                            TextInput::make('model_type')->label('Modelo')
-                                ->disabled(),
-                            TextInput::make('model_id')->label('ID do Modelo')
-                                ->disabled(),
-                            TextInput::make('created_at')->label('Data')
-                                ->disabled(),
-                            Textarea::make('old_values')->label('Valores Antigos')
+                        Grid::make()->columns(2)->schema([
+                            TextInput::make('user_id')->label(__('forms.columns.user'))->disabled(),
+                            TextInput::make('action')->label(__('forms.columns.action'))->disabled(),
+                            TextInput::make('model_type')->label(__('forms.columns.model'))->disabled(),
+                            TextInput::make('model_id')->label(__('forms.columns.model_id'))->disabled(),
+                            TextInput::make('created_at')->label(__('forms.columns.date'))->disabled(),
+
+                            Textarea::make('old_values')
+                                ->label(__('forms.columns.old_values'))
                                 ->disabled()
                                 ->columnSpan(2)
                                 ->rows(5),
-                            Textarea::make('new_values')->label('Valores Novos')
+
+                            Textarea::make('new_values')
+                                ->label(__('forms.columns.new_values'))
                                 ->disabled()
                                 ->columnSpan(2)
                                 ->rows(5),
-                            Textarea::make('description')->label('Descrição')
+
+                            Textarea::make('description')
+                                ->label(__('forms.columns.description'))
                                 ->disabled()
                                 ->columnSpan(2)
                                 ->rows(5),
                         ])
-                        ->columns(2)
                     ])
                     ->fillForm(function ($record) {
                         $user = User::find($record->user_id);
                         return [
-                            'user_id' => $user?->name ?? 'Desconhecido',
+                            'user_id' => $user?->name ?? __('forms.misc.unknown'),
                             'action' => $record->action,
                             'model_type' => $record->model_type,
                             'model_id' => $record->model_id,
@@ -119,9 +113,7 @@ class ActionLogResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function canViewAny(): bool
@@ -138,3 +130,4 @@ class ActionLogResource extends Resource
         ];
     }
 }
+

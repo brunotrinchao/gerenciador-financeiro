@@ -28,27 +28,28 @@ use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
 {
-
     protected static ?string $model = User::class;
+
     public static function getNavigationGroup(): ?string
     {
-        return __('system.labels.settings');
+        return __('forms.labels.settings');
     }
 
     public static function getModelLabel(): string
     {
-        return __('system.labels.user');
+        return __('forms.labels.user');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('system.labels.user');
+        return __('forms.labels.users');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return __('system.labels.users');
+        return __('forms.labels.users');
     }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -62,21 +63,20 @@ class UserResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('avatar_url')
-                    ->label('Avatar')
+                    ->label(__('system.labels.avatar'))
                     ->disk('public')
                     ->circular()
                     ->stacked(),
                 TextColumn::make('name')
-                ->label('Nome'),
+                    ->label(__('system.labels.name')),
                 TextColumn::make('email')
-                    ->label('E-mail'),
+                    ->label(__('system.labels.email')),
                 TextColumn::make('roles.name')
-                    ->label('Perfil')
+                    ->label(__('system.labels.role'))
                     ->formatStateUsing(function (Model $record) {
                         $role = $record->roles->first();
                         return $role ? RolesEnum::getLabel($role->name) : '-';
-                    })
-
+                    }),
             ])
             ->filters([
                 //
@@ -87,11 +87,11 @@ class UserResource extends Resource
                     name: 'editUser',
                     form: [
                         TextInput::make('name')
-                            ->label('Nome'),
+                            ->label(__('system.labels.name')),
                         TextInput::make('email')
-                            ->label('E-mail'),
+                            ->label(__('system.labels.email')),
                         Select::make('roles')
-                            ->label('Perfil')
+                            ->label(__('system.labels.role'))
                             ->options(
                                 collect(RolesEnum::cases())
                                     ->filter(fn ($role) => $role !== RolesEnum::ADMIN)
@@ -100,13 +100,13 @@ class UserResource extends Resource
                             )
                             ->required(),
                         FileUpload::make('avatar_url')
-                            ->label('Avatar')
+                            ->label(__('system.labels.avatar'))
                             ->disk('public')
                             ->directory('avatars')
                             ->image()
                             ->imageEditor()
                     ],
-                    modalHeading: 'Editar usuário',
+                    modalHeading: __('forms.modal_headings.edit_user'),
                     fillForm: fn ($record) => [
                         'name' => $record->name,
                         'email' => $record->email,
@@ -125,26 +125,26 @@ class UserResource extends Resource
                 ActionHelper::makeSlideOver(
                     name: 'createUser',
                     form: [
-                        TextInput::make('name')->label('Nome')->required(),
-                        TextInput::make('email')->label('E-mail')->email()->required(),
+                        TextInput::make('name')->label(__('system.labels.name'))->required(),
+                        TextInput::make('email')->label(__('system.labels.email'))->email()->required(),
                         FileUpload::make('avatar_url')
-                            ->label('Avatar')
+                            ->label(__('system.labels.avatar'))
                             ->disk('public')
                             ->directory('avatars')
                             ->image()
                             ->imageEditor(),
                         TextInput::make('password')
-                            ->label('Senha')
+                            ->label(__('system.labels.password'))
                             ->password()
                             ->required()
                             ->minLength(6),
                         TextInput::make('password_confirmation')
-                            ->label('Confirmar Senha')
+                            ->label(__('system.labels.password_confirmation'))
                             ->password()
                             ->required()
                             ->same('password'),
                         Select::make('roles')
-                            ->label('Perfil')
+                            ->label(__('system.labels.role'))
                             ->options(
                                 collect(RolesEnum::cases())
                                     ->filter(fn ($role) => $role !== RolesEnum::ADMIN)
@@ -153,13 +153,13 @@ class UserResource extends Resource
                             )
                             ->required()
                     ],
-                    modalHeading: 'Novo usuário',
-                    label: 'Criar',
+                    modalHeading: __('system.modal_headings.create_user'),
+                    label: __('system.buttons.create'),
                     action: function (array $data) {
                         if (User::where('email', $data['email'])->exists()) {
                             Notification::make()
-                                ->title('Erro ao criar usuário')
-                                ->body('O e-mail informado já está em uso.')
+                                ->title(__('forms.notifications.user_create_error_title'))
+                                ->body(__('forms.notifications.user_create_error_body_email_exists'))
                                 ->danger()
                                 ->send();
                             return;
@@ -176,8 +176,8 @@ class UserResource extends Resource
                             }
                         }
                         Notification::make()
-                            ->title('Usuário criado')
-                            ->body('O novo usuário foi cadastrado com sucesso.')
+                            ->title(__('forms.notifications.user_created_title'))
+                            ->body(__('forms.notifications.user_created_body'))
                             ->success()
                             ->send();
                     }),
@@ -225,3 +225,4 @@ class UserResource extends Resource
         ];
     }
 }
+

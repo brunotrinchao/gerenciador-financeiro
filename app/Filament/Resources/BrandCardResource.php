@@ -48,9 +48,7 @@ class BrandCardResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-            ]);
+        return $form->schema([]); // vazio, pois usa SlideOver
     }
 
     public static function table(Table $table): Table
@@ -58,61 +56,64 @@ class BrandCardResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('brand')
-                    ->label('Bandeira')
+                    ->label(__('forms.columns.brand'))
                     ->height(25),
+
                 TextColumn::make('name')
-                    ->label('Nome'),
+                    ->label(__('forms.columns.name')),
+
                 TextColumn::make('slug')
                     ->label('Slug'),
-            ])
-            ->filters([
-                //
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editBrand',
                     form: [
                         TextInput::make('name')
-                            ->label('Nome')
+                            ->label(__('forms.columns.name'))
                             ->live(onBlur: true)
-                            ->afterStateUpdated(function(string $state, Set $set){
-                                $set('slug', Str::slug($state));
-                            }),
+                            ->afterStateUpdated(fn(string $state, Set $set) => $set('slug', Str::slug($state))),
+
                         TextInput::make('slug')
                             ->label('Slug')
-                            ->disabled(true)
+                            ->disabled()
                             ->visible(false),
+
                         FileUpload::make('brand')
-                            ->label('Bandeira')
+                            ->label(__('forms.columns.brand'))
                             ->disk('public')
                             ->directory('brand_card')
                             ->image()
-                            ->imageEditor()
+                            ->imageEditor(),
                     ],
-                    modalHeading: 'Editar bandeira',
-                    label: 'Editar',
-                    fillForm: fn ($record) => [
+                    modalHeading: __('forms.actions.edit_flag'),
+                    label: __('forms.actions.edit'),
+                    fillForm: fn($record) => [
                         'name'  => $record->name,
                         'slug'  => $record->slug,
                         'brand' => $record->brand,
                     ]
                 ),
+
                 Tables\Actions\DeleteAction::make('delete')
-                    ->label('Excluir')
+                    ->label(__('forms.actions.delete'))
                     ->before(function ($record, $action) {
                         $totalCards = $record->cards()->count();
                         if ($totalCards > 0) {
                             Notification::make()
                                 ->color('warning')
                                 ->warning()
-                                ->title('Ação permitida')
-                                ->body("A bandeira '{$record->name}' possui {$totalCards} cartões associados e não pode ser deletada.")
+                                ->title(__('forms.notifications.delete_blocked_title'))
+                                ->body(__('forms.notifications.delete_blocked_body', [
+                                    'name' => $record->name,
+                                    'count' => $totalCards,
+                                ]))
                                 ->send();
                             $action->cancel();
                             return false;
                         }
                         return true;
-                    })
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -126,29 +127,29 @@ class BrandCardResource extends Resource
                     name: 'createBrand',
                     form: [
                         TextInput::make('name')
-                            ->label('Nome')
+                            ->label(__('forms.columns.name'))
                             ->live(onBlur: true)
-                            ->afterStateUpdated(function(string $state, Set $set){
-                                $set('slug', Str::slug($state));
-                            }),
+                            ->afterStateUpdated(fn(string $state, Set $set) => $set('slug', Str::slug($state))),
+
                         TextInput::make('slug')
                             ->label('Slug')
-                            ->disabled(true)
+                            ->disabled()
                             ->visible(false),
+
                         FileUpload::make('brand')
-                            ->label('Bandeira')
+                            ->label(__('forms.columns.brand'))
                             ->disk('public')
                             ->directory('brand_card')
                             ->image()
-                            ->imageEditor()
+                            ->imageEditor(),
                     ],
-                    modalHeading: 'Nova bandeira',
-                    label: 'Criar',
+                    modalHeading: __('forms.actions.new_flag'),
+                    label: __('forms.actions.create'),
                     action: function (array $data, Action $action) {
                         if (BrandCard::where('name', $data['name'])->exists()) {
                             Notification::make()
-                                ->title('Bandeira já existe')
-                                ->body("Já existe uma bandeira '{$data['name']}' cadastrada.")
+                                ->title(__('forms.notifications.flag_exists'))
+                                ->body(__('forms.notifications.flag_exists_body', ['name' => $data['name']]))
                                 ->danger()
                                 ->send();
 
@@ -159,8 +160,8 @@ class BrandCardResource extends Resource
                         BrandCard::create($data);
 
                         Notification::make()
-                            ->title('Bandeira criada')
-                            ->body('A nova bandeira foi cadastrada com sucesso.')
+                            ->title(__('forms.notifications.flag_created'))
+                            ->body(__('forms.notifications.flag_created_body'))
                             ->success()
                             ->send();
                     }
@@ -170,11 +171,8 @@ class BrandCardResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
-
 
     public static function getPages(): array
     {
@@ -185,3 +183,4 @@ class BrandCardResource extends Resource
         ];
     }
 }
+
