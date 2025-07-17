@@ -32,7 +32,7 @@ class UserResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('forms.labels.settings');
+        return __('system.labels.settings');
     }
 
     public static function getModelLabel(): string
