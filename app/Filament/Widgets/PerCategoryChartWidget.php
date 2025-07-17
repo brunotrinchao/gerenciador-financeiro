@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Flowframe\Trend\Trend;
+use Illuminate\Contracts\Support\Htmlable;
 
 class PerCategoryChartWidget extends ChartWidget
 {
@@ -15,7 +16,10 @@ class PerCategoryChartWidget extends ChartWidget
 
     protected static bool $isLazy = true;
 
-    protected static ?string $heading = 'Por categoria';
+    public function getHeading(): string|Htmlable|null
+    {
+        return __('forms.widgets.per_category');
+    }
 
     protected int | string | array $columnSpan = [
         'default' => 8,
@@ -55,7 +59,7 @@ class PerCategoryChartWidget extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Por categoria',
+                    'label' => __('forms.widgets.per_category'),
                     'data'  => $data,
                     'backgroundColor' => [
                         'rgb(255, 99, 132)',

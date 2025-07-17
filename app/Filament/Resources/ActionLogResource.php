@@ -22,14 +22,25 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class ActionLogResource extends Resource
 {
     protected static ?string $model = ActionLog::class;
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.settings');
+    }
 
-    protected static ?string $navigationGroup = 'Configuração';
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.log');
+    }
 
-//    protected static ?string $navigationIcon = 'heroicon-o-bank';
-    protected static ?string $pluralModelLabel = 'Logs'; // Listagem
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.logs');
+    }
 
-    protected static ?string $modelLabel = 'Log'; // Criação/Edição
-
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.logs');
+    }
 
     public static function form(Form $form): Form
     {

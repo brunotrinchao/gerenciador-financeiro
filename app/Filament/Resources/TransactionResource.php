@@ -34,13 +34,28 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class TransactionResource extends Resource
 {
-    protected static ?string $navigationGroup = 'Financeiro';
 
     protected static ?string $model = Transaction::class;
 
-    protected static ?string $pluralModelLabel = 'Transações'; // Listagem
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.finance');
+    }
 
-    protected static ?string $modelLabel = 'Transação'; // Criação/Edição
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.transaction');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.transactions');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.transactions');
+    }
 
     public static function form(Form $form): Form
     {

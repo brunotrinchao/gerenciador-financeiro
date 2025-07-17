@@ -22,15 +22,27 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class RoleResource extends Resource
 {
-    protected static ?string $navigationLabel = 'Perfil de acesso';
-    protected static ?string $navigationGroup = 'Configuração';
     protected static ?string $model = Role::class;
 
-//    protected static ?string $navigationIcon = 'eos-admin';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.settings');
+    }
 
-    protected static ?string $pluralModelLabel = 'Perfis de acesso'; // Listagem
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.access_profile');
+    }
 
-    protected static ?string $modelLabel = 'Perfil de acesso'; // Criação/Edição
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.access_profiles');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.access_profiles');
+    }
 
     public static function shouldRegisterNavigation(): bool
     {

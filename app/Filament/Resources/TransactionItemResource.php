@@ -41,9 +41,15 @@ class TransactionItemResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $pluralModelLabel = 'Contas a pagar/receber';
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.account_payable_receivable');
+    }
 
-    protected static ?string $modelLabel = 'Conta a pagar/receber';
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.account_payable_receivable');
+    }
     public static function form(Form $form): Form
     {
         return $form

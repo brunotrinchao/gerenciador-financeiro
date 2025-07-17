@@ -24,13 +24,27 @@ use Illuminate\Support\Str;
 
 class BrandCardResource extends Resource
 {
-    protected static ?string $navigationGroup = 'Configuração';
     protected static ?string $model = BrandCard::class;
 
-//    protected static ?string $navigationIcon = 'mdi-card-multiple-outline';
-    protected static ?string $pluralModelLabel = 'Bandeiras'; // Listagem
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.finance');
+    }
 
-    protected static ?string $modelLabel = 'Bandeira'; // Criação/Edição
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.flag');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.flags');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.flags');
+    }
 
     public static function form(Form $form): Form
     {

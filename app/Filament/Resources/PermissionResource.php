@@ -21,11 +21,25 @@ class PermissionResource extends Resource
 {
     protected static ?string $model = Permission::class;
 
-    protected static ?string $navigationGroup = 'Configuração';
-//    protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
-    protected static ?string $navigationLabel = 'Permissões';
-    protected static ?string $pluralModelLabel = 'Permissões';
-    protected static ?string $modelLabel = 'Permissão';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.settings');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.permission');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.permissions');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.permissions');
+    }
     protected static ?int $navigationSort = 50;
 
     public static function form(Form $form): Form

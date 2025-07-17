@@ -11,12 +11,15 @@ class PaymentCalendar extends Page
     protected static string $view = 'filament.pages.payment-calendar';
     protected static ?string $navigationIcon = 'heroicon-s-calendar-days';
 
-    protected static ?string $pluralModelLabel = 'Calendário';
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.payment_calendar');
+    }
 
-    protected static ?string $navigationLabel = 'Calendário';
-
-    protected static ?string $title = 'Calendário de pagamentos';
-
+//    public static function getPluralLabel(): string
+//    {
+//        return __('labels.payment_calendar');
+//    }
     public function getHeaderWidgets(): array
     {
         return [

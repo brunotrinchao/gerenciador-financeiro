@@ -10,6 +10,7 @@ use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
 
 class CountChartWidget extends ChartWidget
@@ -18,7 +19,10 @@ class CountChartWidget extends ChartWidget
 
     protected static bool $isLazy = true;
 
-    protected static ?string $heading = 'Por mês';
+    public function getHeading(): string|Htmlable|null
+    {
+        return __('forms.widgets.per_month');
+    }
 
 //    protected static ?int $sort = 3;
     protected int | string | array $columnSpan = 8;
@@ -70,7 +74,7 @@ class CountChartWidget extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Valor',
+                    'label' => __('forms.widgets.amount'),
                     'data' => $data,
                     'backgroundColor' => $backgroundColors,
                     'borderColor' => $borderColors,

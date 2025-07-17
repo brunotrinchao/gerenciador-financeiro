@@ -78,24 +78,24 @@ class CalendarWidget extends FullCalendarWidget
             Grid::make()
                 ->schema([
                     TextInput::make('amount')
-                        ->label('Valor')
+                        ->label(__('forms.widgets.amount'))
                         ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
                         ->prefix('R$')
                         ->required(),
                     DatePicker::make('due_date')
-                        ->label('Data de vencimento')
+                        ->label(__('forms.widgets.due_date'))
                         ->required(),
                     DatePicker::make('payment_date')
-                        ->label('Data de pagemento')
+                        ->label(__('forms.widgets.payment_date'))
                         ->reactive()
                         ->required(fn ($get) => $get('status') !== 'PENDING'),
                     Select::make('status')
                         ->label('Status')
                         ->options([
-                            'PENDING' => 'Pendente',
-                            'PAID' => 'Pago',
-                            'SCHEDULED' => 'Agendado',
-                            'DEBIT' => 'Débito automático',
+                            'PAID' => __('forms.widgets.paid') ,
+                            'SCHEDULED' => __('forms.widgets.scheduled') ,
+                            'DEBIT' => __('forms.widgets.debit') ,
+                            'PENDING' => __('forms.widgets.pending'),
                         ])
                         ->default('PENDING')
                         ->required(fn ($get) => filled($get('payment_date')))
@@ -123,24 +123,24 @@ class CalendarWidget extends FullCalendarWidget
                     Grid::make()
                         ->schema([
                             TextInput::make('amount')
-                                ->label('Valor')
+                                ->label(__('forms.widgets.amount'))
                                 ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
                                 ->prefix('R$')
                                 ->required(),
                             DatePicker::make('due_date')
-                                ->label('Data de vencimento')
+                                ->label(__('forms.widgets.due_date'))
                                 ->required(),
                             DatePicker::make('payment_date')
-                                ->label('Data de pagemento')
+                                ->label(__('forms.widgets.payment_date'))
                                 ->reactive()
                                 ->required(fn ($get) => $get('status') !== 'PENDING'),
                             Select::make('status')
                                 ->label('Status')
                                 ->options([
-                                    'PENDING' => 'Pendente',
-                                    'PAID' => 'Pago',
-                                    'SCHEDULED' => 'Agendado',
-                                    'DEBIT' => 'Débito automático',
+                                    'PAID' => __('forms.widgets.paid') ,
+                                    'SCHEDULED' => __('forms.widgets.scheduled') ,
+                                    'DEBIT' => __('forms.widgets.debit') ,
+                                    'PENDING' => __('forms.widgets.pending'),
                                 ])
                                 ->default('PENDING')
                                 ->required(fn ($get) => filled($get('payment_date')))

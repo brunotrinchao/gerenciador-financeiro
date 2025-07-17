@@ -28,16 +28,27 @@ use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
 {
-    protected static ?string $navigationGroup = 'Configuração';
 
     protected static ?string $model = User::class;
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.settings');
+    }
 
-//    protected static ?string $navigationIcon = 'bi-people-fill';
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.user');
+    }
 
-    protected static ?string $pluralModelLabel = 'Usuários'; // Listagem
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.user');
+    }
 
-    protected static ?string $modelLabel = 'Usuário'; // Criação/Edição
-
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.users');
+    }
     public static function form(Form $form): Form
     {
         return $form

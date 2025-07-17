@@ -26,14 +26,26 @@ use Illuminate\Support\Carbon;
 
 class CardResource extends Resource
 {
-    protected static ?string $navigationGroup = 'Financeiro';
     protected static ?string $model = Card::class;
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.finance');
+    }
 
-//    protected static ?string $navigationIcon = 'bi-credit-card-fill';
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.credit_card');
+    }
 
-    protected static ?string $pluralModelLabel = 'Cartões de crédito'; // Listagem
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.credits_card');
+    }
 
-    protected static ?string $modelLabel = 'Cartão de crédito'; // Criação/Edição
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.credits_card');
+    }
 
     public static function form(Form $form): Form
     {

@@ -23,13 +23,26 @@ use Filament\Tables\Table;
 
 class AccountResource extends Resource
 {
-    protected static ?string $navigationGroup = 'Financeiro';
     protected static ?string $model = Account::class;
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.finance');
+    }
 
-//    protected static ?string $navigationIcon = 'heroicon-o-bank';
-    protected static ?string $pluralModelLabel = 'Contas bancárias'; // Listagem
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.account_bank');
+    }
 
-    protected static ?string $modelLabel = 'Conta bancária'; // Criação/Edição
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.accounts_banks');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.accounts_banks');
+    }
 
     public static function form(Form $form): Form
     {

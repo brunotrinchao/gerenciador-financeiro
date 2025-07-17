@@ -24,13 +24,25 @@ use function Livewire\before;
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.finance');
+    }
 
-    protected static ?string $navigationGroup = 'Financeiro';
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.category');
+    }
 
-//    protected static ?string $navigationIcon = 'heroicon-o-bank';
-    protected static ?string $pluralModelLabel = 'Categorias'; // Listagem
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.categories');
+    }
 
-    protected static ?string $modelLabel = 'Categoria'; // Criação/Edição
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.categories');
+    }
 
     public static function form(Form $form): Form
     {

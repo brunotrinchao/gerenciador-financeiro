@@ -63,10 +63,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
-                    ->label('Financeiro')
+                    ->label(__('system.labels.finance'))
                     ->icon('heroicon-o-banknotes'),
                 NavigationGroup::make()
-                    ->label('Configuração')
+                    ->label(__('system.labels.settings'))
                     ->icon('heroicon-o-lock-closed')
             ])
             ->topNavigation()

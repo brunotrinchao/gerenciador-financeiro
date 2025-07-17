@@ -20,13 +20,26 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BankResource extends Resource
 {
-    protected static ?string $navigationGroup = 'Configuração';
     protected static ?string $model = Bank::class;
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.settings');
+    }
 
-//    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $pluralModelLabel = 'Bancos'; // Listagem
+    public static function getModelLabel(): string
+    {
+        return __('system.labels.bank');
+    }
 
-    protected static ?string $modelLabel = 'Banco'; // Criação/Edição
+    public static function getNavigationLabel(): string
+    {
+        return __('system.labels.banks');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('system.labels.banks');
+    }
 
     public static function form(Form $form): Form
     {

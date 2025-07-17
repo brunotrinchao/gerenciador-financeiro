@@ -61,10 +61,10 @@ class Dashboard extends BaseDashboard
                 Section::make()
                     ->schema([
                         DatePicker::make('startDate')
-                            ->label('Data início')
+                            ->label(__('forms.forms.start_date'))
                             ->default(Carbon::now()->startOfMonth()),
                         DatePicker::make('endDate')
-                            ->label('Data fim')
+                            ->label(__('forms.forms.end_date'))
                             ->default(Carbon::now()->endOfMonth())
                     ])
                     ->columns(4),

@@ -31,30 +31,30 @@ class UpcomingTransactionsWidget extends BaseWidget
     {
         return [
             Tables\Columns\TextColumn::make('transaction.description')
-                ->label('Descrição')
+                ->label(__('forms.widgets.description'))
                 ->limit(20),
 
             Tables\Columns\TextColumn::make('due_date')
-                ->label('Vencimento')
+                ->label(__('forms.widgets.due_date'))
                 ->date('d/m/Y'),
 
             Tables\Columns\TextColumn::make('amount')
-                ->label('Valor')
+                ->label(__('forms.widgets.amount'))
                 ->money('BRL'),
 
             Tables\Columns\TextColumn::make('toOverdue')
-                ->label('Dias para vencer')
+                ->label(__('forms.widgets.to_overdue'))
                 ->getStateUsing(function ($record) {
                     $dueDate = Carbon::parse($record->due_date);
                     $today = Carbon::now();
                     $diff = intval($today->diffInDays($dueDate));
 
                     if ($diff === 0) {
-                        return 'Vence hoje';
+                        return __('forms.widgets.expires_today');
                     } elseif ($diff > 0) {
-                        return 'Vence em ' . $diff . ' dia' . ($diff > 1 ? 's' : '');
+                        return __('forms.widgets.expires_on') .' ' . $diff . ' '.__('forms.widgets.day')  . ($diff > 1 ? 's' : '');
                     } else {
-                        return 'Venceu há ' . abs($diff) . ' dia' . (abs($diff) > 1 ? 's' : '');
+                        return __('forms.widgets.expires_ago') . ' ' . abs($diff) . ' '.__('forms.widgets.day')  . (abs($diff) > 1 ? 's' : '');
                     }
                 })
                 ->color(function ($record) {
@@ -73,10 +73,10 @@ class UpcomingTransactionsWidget extends BaseWidget
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')->formatStateUsing(function (string $state) {
                         return match ($state) {
-                            'PAID' => 'Pago',
-                            'SCHEDULED' => 'Agendado',
-                            'DEBIT' => 'Débito automático',
-                            'PENDING' => 'Pendente',
+                            'PAID' => __('forms.widgets.paid') ,
+                            'SCHEDULED' => __('forms.widgets.scheduled') ,
+                            'DEBIT' => __('forms.widgets.debit') ,
+                            'PENDING' => __('forms.widgets.pending'),
                         };
                     })
                     ->badge()
@@ -91,6 +91,6 @@ class UpcomingTransactionsWidget extends BaseWidget
 
     protected function getTableHeading(): string
     {
-        return 'Contas a pagar';
+        return __('forms.widgets.accounts_payable');
     }
 }

@@ -53,8 +53,8 @@ class CountWidget extends BaseWidget
         $pendingTotal = $pendingItems->sum('amount');
         $pendingTrend = $this->calculateMonthlyTrend($pendingItems, $startDate, $endDate);
 
-        $stats[] = Stat::make('Pendente', 'R$ ' . number_format($pendingTotal, 2, ',', '.'))
-            ->description('Total de Pendente')
+        $stats[] = Stat::make(__('forms.widgets.pending'), 'R$ ' . number_format($pendingTotal, 2, ',', '.'))
+            ->description(__('forms.widgets.total_pending'))
             ->descriptionIcon('heroicon-o-banknotes')
             ->chart($pendingTrend)
             ->color('gray');
@@ -64,8 +64,8 @@ class CountWidget extends BaseWidget
         $paidTotal = $paidItems->sum('amount');
         $paidTrend = $this->calculateMonthlyTrend($paidItems, $startDate, $endDate);
 
-        $stats[] = Stat::make('Pago', 'R$ ' . number_format($paidTotal, 2, ',', '.'))
-            ->description('Total de Pago')
+        $stats[] = Stat::make(__('forms.widgets.paid'), 'R$ ' . number_format($paidTotal, 2, ',', '.'))
+            ->description(__('forms.widgets.total_paid'))
             ->descriptionIcon('heroicon-o-banknotes')
             ->chart($paidTrend)
             ->color('success');
@@ -77,16 +77,16 @@ class CountWidget extends BaseWidget
         $mergedTotal = $mergedItems->sum('amount');
         $mergedTrend = $this->calculateMonthlyTrend($mergedItems, $startDate, $endDate);
 
-        $stats[] = Stat::make('Agendado/Débito automático', 'R$ ' . number_format($mergedTotal, 2, ',', '.'))
-            ->description('Total de Agendado e Débito automático')
+        $stats[] = Stat::make(__('forms.widgets.schedule_debit'), 'R$ ' . number_format($mergedTotal, 2, ',', '.'))
+            ->description(__('forms.widgets.total_schedule_debit'))
             ->descriptionIcon('heroicon-o-banknotes')
             ->chart($mergedTrend)
             ->color('info');
 
         // Total geral
         $totalGeral = $items->sum('amount');
-        $stats[] = Stat::make('Total Geral', 'R$ ' . number_format($totalGeral, 2, ',', '.'))
-            ->description('Soma de todas as transações no período')
+        $stats[] = Stat::make(__('forms.widgets.grand_total'), 'R$ ' . number_format($totalGeral, 2, ',', '.'))
+            ->description(__('forms.widgets.sum_all_transactions_period'))
             ->color('warning');
 
         return $stats;

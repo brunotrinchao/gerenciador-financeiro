@@ -7,6 +7,7 @@ use App\Services\TransactionItemService;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Illuminate\Contracts\Support\Htmlable;
 
 class PerCardChartWidget extends ChartWidget
 {
@@ -14,7 +15,10 @@ class PerCardChartWidget extends ChartWidget
 
     protected static bool $isLazy = true;
 
-    protected static ?string $heading = 'Por cartão';
+    public function getHeading(): string|Htmlable|null
+    {
+        return __('forms.widgets.per_card');
+    }
 
     protected int | string | array $columnSpan = [
         'default' => 8,
@@ -22,17 +26,6 @@ class PerCardChartWidget extends ChartWidget
     ];
 
     protected static ?string $maxHeight = '400px';
-
-//    protected static ?int $sort = 2;
-
-//    public function getColumns(): int | string | array
-//    {
-//        return [
-//            'sm' => 12,
-//            'md' => 12,
-//            'xl' => 12,
-//        ];
-//    }
 
     protected function getData(): array
     {
@@ -46,7 +39,7 @@ class PerCardChartWidget extends ChartWidget
             })
             ->get();
 
-        $grouped = $query->groupBy(fn ($item) => $item->card?->name ?? 'Outro');
+        $grouped = $query->groupBy(fn ($item) => $item->card?->name ?? __('forms.widgets.others'));
 
         $labels = [];
         $data = [];
@@ -59,7 +52,7 @@ class PerCardChartWidget extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Por cartão',
+                    'label' => __('forms.widgets.per_card'),
                     'data'  => $data,
                     'backgroundColor' => [
                         'rgb(255, 99, 132)',
