@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "ariaieboy/filament-currency": "^1.13",
+        "bezhansalleh/filament-language-switch": "^3.1",
         "blade-ui-kit/blade-zondicons": "^1.6",
         "codeat3/blade-phosphor-icons": "^2.3",
         "filament/filament": "^3.3",
