@@ -18,7 +18,7 @@
                     <button
                         wire:click="setColor('{{ $name }}')"
                         @class([
-                            'w-4 h-4 rounded-full',
+                            'w-6 h-6 rounded-full',
                             'ring p-1 border' => $this->getColor() === $name,
                         ])
                         style="background-color: rgb({{ $color[500] }});">
