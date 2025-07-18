@@ -320,11 +320,11 @@ class TransactionResource extends Resource
                             ->prefix('R$')
                             ->reactive()
                             ->hint(function ($get) {
-                                $amount = str_replace(['.', ','], ['', '.'], $get('amount'));
                                 $installments = (int) $get('recurrence_interval');
+                                $amount = (float) str_replace(['.', ','], ['', '.'], $get('amount'));
 
                                 if ($amount && $installments > 0) {
-                                    $value = floatval($amount) / $installments;
+                                    $value = floor($amount/ $installments) / 100;
                                     return 'Valor por parcela: R$ ' . number_format($value, 2, ',', '.');
                                 }
 
@@ -368,7 +368,7 @@ class TransactionResource extends Resource
                         $parcelas = !empty($data['is_recurring']) ? (int) ($data['recurrence_interval'] ?? 1) : 1;
 
                         $amount = (float) str_replace(['.', ','], ['', '.'], $data['amount']);
-                        $baseValue = floor($amount / $parcelas * 100) / 100; // força 2 casas
+                        $baseValue = floor($amount / $parcelas) / 100; // força 2 casas
                         $remaining = $amount - ($baseValue * $parcelas);
 
                         $date = Carbon::parse($data['date']);
