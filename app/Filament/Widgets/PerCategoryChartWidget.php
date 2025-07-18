@@ -56,16 +56,35 @@ class PerCategoryChartWidget extends ChartWidget
             $data[] = $items->sum('amount');
         }
 
+        $fixedColors = [
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 206, 86)',
+            'rgb(75, 192, 192)',
+            'rgb(153, 102, 255)',
+            'rgb(255, 159, 64)',
+            'rgb(201, 203, 207)',
+            'rgb(0, 128, 128)',
+            'rgb(255, 105, 180)',
+            'rgb(100, 149, 237)',
+            'rgb(255, 215, 0)',
+            'rgb(0, 206, 209)',
+            'rgb(139, 69, 19)',
+            'rgb(255, 69, 0)',
+            'rgb(46, 139, 87)',
+            'rgb(123, 104, 238)',
+            'rgb(72, 209, 204)',
+            'rgb(240, 230, 140)',
+            'rgb(70, 130, 180)',
+            'rgb(199, 21, 133)',
+        ];
+
         return [
             'datasets' => [
                 [
                     'label' => __('forms.widgets.per_category'),
                     'data'  => $data,
-                    'backgroundColor' => [
-                        'rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 205, 86)'
-                    ],
+                    'backgroundColor' => $fixedColors,
                 ]
             ],
             'labels' => $labels
