@@ -382,7 +382,7 @@ class TransactionResource extends Resource
                                 'due_date' => $paymentDate,
                                 'amount' => $currentAmount,
                                 'installment_number' => $parcela,
-                                'status' => 'PENDING',
+                                'status' => in_array($data['method'], ['CARD', 'DEBIT']) ? 'DEBIT' : 'PENDING' ,
                             ]);
                         }
 
