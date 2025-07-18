@@ -76,7 +76,8 @@ class AccountResource extends Resource
                     ->formatStateUsing(fn ($state) => TranslateString::getAccountType((int) $state)),
                 TextColumn::make('balance')
                     ->label(__('forms.columns.balance'))
-                    ->currency('BRL'),
+                    ->currency('BRL')
+                    ->color(fn (string $state) => $state < 0 ? 'danger' : 'success'),
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
