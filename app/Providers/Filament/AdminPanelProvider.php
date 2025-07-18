@@ -43,7 +43,8 @@ class AdminPanelProvider extends PanelProvider
             ->profile(isSimple: false)
             ->login()
             ->passwordReset()
-            ->brandName('Gerenciador financeiro')
+//            ->brandLogo(asset('images/logo.svg'))
+//            ->brandName('Gerenciador financeiro')
             ->defaultThemeMode(ThemeMode::Dark)
             ->font('Exo')
             ->colors([

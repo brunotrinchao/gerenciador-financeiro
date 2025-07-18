@@ -133,7 +133,7 @@ class AccountResource extends Resource
                         TextInput::make('balance')
                             ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
                             ->prefix('R$')
-                            ->default('0,0')
+                            ->default(0)
                             ->label(__('forms.forms.balance')),
                     ],
                     modalHeading: __('forms.forms.new_bank_account'),
@@ -143,8 +143,8 @@ class AccountResource extends Resource
                         Account::create($data);
 
                         Notification::make()
-                            ->title(__('forms.forms.bank_account_created'))
-                            ->body(__('forms.forms.bank_account_success'))
+                            ->title(__('forms.notifications.bank_account_created'))
+                            ->body(__('forms.notifications.bank_account_success'))
                             ->success()
                             ->send();
                     }

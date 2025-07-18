@@ -27,5 +27,9 @@ return [
         'access_profiles' => 'Access Profiles',
         'user' => 'User',
         'users' => 'Users',
-    ]
+    ],
+
+    'texts' => [
+        'at_sight' => 'At sight',
+    ],
 ];

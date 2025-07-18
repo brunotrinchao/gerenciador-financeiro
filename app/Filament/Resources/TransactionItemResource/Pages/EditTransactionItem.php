@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TransactionItemResource\Pages;
 
 use App\Filament\Resources\TransactionItemResource;
+use App\Services\TransactionItemService;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -13,7 +14,8 @@ class EditTransactionItem extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+//            Actions\DeleteAction::make(),
         ];
     }
+
 }

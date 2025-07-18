@@ -14,7 +14,8 @@ class ActionHelper
         string $modalHeading,
         string $label = 'Editar',
         ?callable $fillForm = null,
-        ?callable $action = null
+        ?callable $action = null,
+        ?callable $after = null,
     ): Action {
         $isEdit = $label === 'Editar';
 
@@ -39,6 +40,7 @@ class ActionHelper
                     ->success()
                     ->send();
             })
+            ->after($after)
             ->slideOver(true);
 
         if ($isEdit && $fillForm !== false) {

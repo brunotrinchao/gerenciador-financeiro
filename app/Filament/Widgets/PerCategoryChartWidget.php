@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\TransactionItem;
-use App\Services\TransactionItemService;
+use App\Services\TransactionItemFilterService;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -41,7 +41,7 @@ class PerCategoryChartWidget extends ChartWidget
     {
         $status = $this->filters['status'] ?? null;
 
-        $service =  new TransactionItemService($this->filters);
+        $service =  new TransactionItemFilterService($this->filters);
 
         $query = $service->items()
             ->with('transaction.category')

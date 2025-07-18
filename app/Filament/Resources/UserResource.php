@@ -37,17 +37,17 @@ class UserResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('forms.labels.user');
+        return __('system.labels.user');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('forms.labels.users');
+        return __('system.labels.users');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return __('forms.labels.users');
+        return __('system.labels.users');
     }
 
     public static function form(Form $form): Form

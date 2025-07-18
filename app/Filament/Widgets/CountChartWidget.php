@@ -4,7 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Transaction;
 use App\Models\TransactionItem;
-use App\Services\TransactionItemService;
+use App\Services\TransactionItemFilterService;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -45,7 +45,7 @@ class CountChartWidget extends ChartWidget
         $filter['endDate'] = Carbon::parse($filter['endDate'])->endOfMonth()->toDateString();
         $filter['status'] = $status;
 
-        $service =  new TransactionItemService($filter, $query);
+        $service =  new TransactionItemFilterService($filter, $query);
 
         $items = $service->items()
             ->groupBy(DB::raw("DATE_FORMAT(due_date, '%Y-%m')"))

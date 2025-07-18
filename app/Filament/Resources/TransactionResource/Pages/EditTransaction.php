@@ -11,11 +11,23 @@ class EditTransaction extends EditRecord
 {
     protected static string $resource = TransactionResource::class;
 
+
+    protected static ?string $breadcrumb = 'Parcelas';
+
+    protected static ?string $navigationLabel = 'Parcelas';
+
+    protected static ?string $title = 'Parcelas';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+//            Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [];
     }
 
     #[On('refreshProducts')]

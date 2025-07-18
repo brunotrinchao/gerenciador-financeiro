@@ -2,29 +2,40 @@
 
 namespace App\Filament\Resources\TransactionResource\RelationManagers;
 
+use App\Helpers\Filament\ActionHelper;
 use App\Models\Account;
 use App\Models\Card;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Services\TransactionItemFilterService;
+use App\Services\TransactionItemService;
 use Filament\Actions\CreateAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Support\Colors\Color;
 use Filament\Tables;
-use Filament\Tables\Actions\AttachAction;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
 
 class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
+
+    protected static function getModelLabel(): ?string
+    {
+        return 'OK';
+    }
 
     public function form(Form $form): Form
     {
@@ -99,38 +110,38 @@ class ItemsRelationManager extends RelationManager
             ->recordTitleAttribute('transaction_id')
             ->columns([
                 TextColumn::make('installment_number')
-                ->label('Nº'),
+                ->label('Parcela'),
                 TextColumn::make('amount')
                     ->label('Valor')
                     ->sortable()
                     ->currency('BRL'),
                 TextColumn::make('due_date')
-                    ->label('Data de vencimento')
+                    ->label('Vencimento')
                     ->date('d/m/Y'),
-                TextColumn::make('payment_method')
+                TextColumn::make('transaction.method')
                     ->label('Método')
                     ->formatStateUsing(function (string $state) {
                         return match ($state) {
-                            'ACCOUNT' => 'Conta',
-                            'CARD' => 'Cartão de crédito',
-                            'CASH' => 'Dinheiro',
+                            'CARD' => __('forms.enums.method.card'),
+                            'ACCOUNT' => __('forms.enums.method.account'),
+                            'CASH' => __('forms.enums.method.cash'),
                             default => ''
                         };
                     }),
                 TextColumn::make('source')
                     ->label('Fonte pagamento')
                     ->getStateUsing(function ($record) {
-                        if ($record->card_id && $record->card) {
-                            return $record->card->name;
+                        if ($record->transaction->card_id && $record->transaction->card) {
+                            return $record->transaction->card->name;
                         }
 
-                        if ($record->account_id && $record->account?->bank) {
-                            return $record->account->bank->name;
+                        if ($record->transaction->account_id && $record->transaction->account?->bank) {
+                            return $record->transaction->account->bank->name;
                         }
                         return null;
                     }),
                 TextColumn::make('payment_date')
-                    ->label('Data de pagamento')
+                    ->label('Pagamento')
                     ->date('d/m/Y'),
                 TextColumn::make('status')
                     ->default('Status')
@@ -150,64 +161,173 @@ class ItemsRelationManager extends RelationManager
                         'PENDING' => 'gray',
                     })
             ])
+//            ->striped()
+            ->recordClasses(fn (Model $record) => $record->status == 'PAID' ? 'bg-red-500' : 'bg-red-500')
             ->filters([
                 //
             ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->mutateFormDataUsing(function (array $data, string $model, RelationManager $livewire) {
-                        $transactionId = $livewire->ownerRecord->id;
-
-                        $data['transaction_id'] = $transactionId;
-
-                        $data['installment_number'] = (TransactionItem::where('transaction_id', $transactionId)->max('installment_number') ?? 0) + 1;
-
-                        return $data;
-                    })
-                    ->after(function (array $data, string $model, RelationManager $livewire) {
-                        $transactionId = $livewire->ownerRecord->id;
-
-                        $totalAmount = TransactionItem::where('transaction_id', $transactionId)->sum('amount');
-
-                        $livewire->ownerRecord->update([
-                            'amount' => $totalAmount,
-                            'recurrence_interval' => TransactionItem::where('transaction_id', $transactionId)->count()
-                        ]);
-                        $livewire->dispatch('refreshProducts');
-                    })
-            ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                ->modalHeading(fn ($record) => "Editar parela Nº $record->installment_number")
-                ->after(function (TransactionItem $record, RelationManager $livewire) {
-                    $transactionId = $livewire->ownerRecord->id;
+                ActionHelper::makeSlideOver(
+                    name: 'editTransactionItem',
+                    form: [
+                        TextInput::make('amount')
+                            ->label('Valor')
+                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                            ->prefix('R$ ')
+                            ->required(),
+                        DatePicker::make('due_date')
+                            ->label('Data de vencimento')
+                            ->disabled(function ($get) {
+                                return $get('method') == 'CARD';
+                            })
+                            ->readOnly(function ($get) {
+                                return $get('method') == 'CARD';
+                            }),
+                        DatePicker::make('payment_date')
+                            ->label('Data de pagamento')
+                            ->required(function ($get) {
+                                return $get('status') == 'PAID';
+                            }),
+                        Select::make('method')
+                            ->label('Método')
+                            ->options([
+                                'CARD' => __('forms.enums.method.card'),
+                                'ACCOUNT' => __('forms.enums.method.account'),
+                                'CASH' => __('forms.enums.method.cash'),
+                            ])
+                            ->required(function ($get) {
+                                return $get('status') == 'PAID';
+                            })
+                            ->disabled()
+                            ->reactive(),
+                        Select::make('card_id')
+                            ->label('Cartão de crédito')
+                            ->options(function () {
+                                return Card::all()->pluck('name', 'id');
+                            })
+                            ->visible(function ($get) {
+                                return $get('method') == 'CARD';
+                            })
+                            ->required(function ($get) {
+                                return $get('method') == 'CARD';
+                            }),
+                        Select::make('account_id')
+                            ->label('Conta')
+                            ->options(function () {
+                                return Account::with('bank')->get()->mapWithKeys(function ($account) {
+                                    return [$account->id => $account->bank->name ?? 'Sem banco'];
+                                });
+                            })
+                            ->visible(function ($get) {
+                                return $get('payment_method') == 'ACCOUNT';
+                            })
+                            ->required(function ($get) {
+                                return $get('payment_method') == 'ACCOUNT';
+                            }),
+                        Select::make('status')
+                            ->label('Status')
+                            ->options([
+                                'PENDING' => 'Pendente',
+                                'PAID' => 'Pago',
+                                'SCHEDULED' => 'Agendado',
+                                'DEBIT' => 'Débito automático',
+                            ])
+                            ->default('PENDING')
+                            ->required()
+                            ->reactive(),
+                    ],
+                    modalHeading: __('forms.modal_headings.edit_transaction_item'),
+                    label: __('forms.buttons.edit'),
+                    fillForm: function ($record) {
+                        return [
+                            'amount' => number_format($record->amount, 2, ',', '.'), // para compatibilidade com currencyMask
+                            'due_date' => $record->due_date,
+                            'payment_date' => $record->payment_date,
+                            'method' => $record->transaction->method,
+                            'card_id' => $record->card_id,
+                            'account_id' => $record->account_id,
+                            'status' => $record->status,
+                        ];
+                    },
+                    after: function (array $data, $record) {
 
-                    $totalAmount = TransactionItem::where('transaction_id', $transactionId)->sum('amount');
+                        $transactionItemService = new TransactionItemService();
+                        $transactionItemService->recalcAmountTransactionItem($record);
 
-                    $livewire->ownerRecord->update([
-                        'amount' => $totalAmount
-                    ]);
-                    $livewire->dispatch('refreshProducts');
-                }),
+                        $this->dispatch('refreshProducts');
+
+                        return true;
+                    }
+                ),
                 Tables\Actions\DeleteAction::make()
+                    ->modalHeading('Deletar parcela')
+                    ->modalDescription(fn ($record) => 'Você tem certeza que gostaria de excluir a parcela Nº ' . $record->installment_number)
+                    ->before(function (TransactionItem $record, RelationManager $livewire, DeleteAction $action) {
+                        $transaction = $livewire->ownerRecord;
+
+                        if ($record->status === 'PAID') {
+                            Notification::make()
+                                ->title('Ação não permitida')
+                                ->body('Não é possível excluir uma parcela que já foi paga.')
+                                ->danger()
+                                ->send();
+
+                            $action->halt();
+                        }
+
+                        // Verifica se é a última parcela ainda não paga
+                        $unpaidItems = TransactionItem::where('transaction_id', $transaction->id)
+                            ->where('status', '!=', 'PAID')
+                            ->get();
+
+                        if ($unpaidItems->count() === 1 && $unpaidItems->first()->id === $record->id) {
+                            Notification::make()
+                                ->title('Ação não permitida')
+                                ->body('Não é possível excluir a última parcela não paga da transação.<br/>Edite com o valor R$ 0,0.')
+                                ->danger()
+                                ->send();
+
+                            $action->halt();
+                        }
+                    })
                     ->after(function (TransactionItem $record, RelationManager $livewire) {
                         $transaction = $livewire->ownerRecord;
 
-                        $totalAmount = TransactionItem::where('transaction_id', $transaction->id)->sum('amount');
-                        $installmentCount = TransactionItem::where('transaction_id', $transaction->id)->count();
+                        // Recalcula apenas com as parcelas que não foram pagas
+                        $remainingItems = TransactionItem::where('transaction_id', $transaction->id)
+                            ->get();
+
+                        $installmentCount = $remainingItems->count();
 
                         $transaction->update([
-                            'amount' => $totalAmount,
                             'recurrence_interval' => $installmentCount,
                         ]);
 
-                        $livewire->dispatch('refreshProducts'); // Gatilho para EditTransaction
+                        $transactionItemService = new TransactionItemService();
+                        $transactionItemService->updateAmountAndInstallmentCount($record);
+
+                        $livewire->dispatch('refreshProducts'); // Atualiza formulário
                     }),
             ])
             ->bulkActions([
-//                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-//                ]),
+            ])
+            ->recordUrl(null)
+            ->recordAction('editTransactionItem')
+            ->headerActions([
+                Tables\Actions\Action::make('create_installemnt')
+                    ->label('Parcela')
+                    ->icon('heroicon-o-plus')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->action(function (){
+                        $transactionItemService = new TransactionItemService();
+
+                        /* @var Transaction $transaction */
+                        $transaction = $this->ownerRecord;
+                        $transactionItemService->create($transaction);
+
+                        $this->dispatch('refreshProducts'); // Atualiza formulário
+                    }),
             ]);
     }
 

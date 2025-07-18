@@ -3,7 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\TransactionItem;
-use App\Services\TransactionItemService;
+use App\Services\TransactionItemFilterService;
 use Carbon\Carbon;
 use Filament\Forms\Get;
 use Filament\Tables;
@@ -23,7 +23,7 @@ class UpcomingTransactionsWidget extends BaseWidget
 
     protected function getTableQuery(): Builder|Relation|null
     {
-        $query =  new TransactionItemService($this->filters);
+        $query =  new TransactionItemFilterService($this->filters);
         return $query->upcomingTransaction();
     }
 

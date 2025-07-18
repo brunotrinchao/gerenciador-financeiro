@@ -27,27 +27,24 @@ return [
         'period' => 'Período',
         'start_date' => 'Data início',
         'end_date' => 'Data final',
-        'bank' => 'Banco',
-        'balance' => 'Saldo',
-        'account_checking' => 'Conta Corrente',
-        'account_savings' => 'Poupança',
-        'edit_bank_account' => 'Editar conta bancária',
-        'new_bank_account' => 'Nova conta bancária',
-        'bank_account_created' => 'Conta bancária criada',
-        'bank_account_success' => 'A nova conta bancária foi cadastrada com sucesso.',
-        'date' => 'Data',
+        'avatar' => 'Avatar',
+        'role' => 'Perfil',
+        'roles' => 'Perfis',
+        'user' => 'Usuário',
+        'users' => 'Usuários',
         'recurrence_interval' => 'Parcelas',
         'method' => 'Método',
         'card' => 'Cartão de crédito',
         'is_recurring' => 'Parcelado?',
         'recurrence_type' => 'Frequência',
         'installments' => 'Parcelas',
-        'settings' => 'Configurações',
-        'user' => 'Usuário',
-        'users' => 'Usuários',
-        'avatar' => 'Avatar',
-        'role' => 'Perfil',
-        'roles' => 'Perfis',
+        'bank' => 'Banco',
+        'balance' => 'Saldo',
+        'new_bank_account' => 'Nova conta bancária',
+        'edit_bank_account' => 'Editar conta bancária',
+        'account_checking' => 'Conta Corrente',
+        'account_savings' => 'Poupança',
+        'date' => 'Data',
     ],
 
     'columns' => [
@@ -65,10 +62,6 @@ return [
         'account_savings' => 'Poupança',
         'edit' => 'Editar',
         'create' => 'Criar',
-        'edit_bank_account' => 'Editar conta bancária',
-        'new_bank_account' => 'Nova conta bancária',
-        'bank_account_created' => 'Conta bancária criada',
-        'bank_account_success' => 'A nova conta bancária foi cadastrada com sucesso.',
         'user' => 'Usuário',
         'action' => 'Ação',
         'model' => 'Modelo',
@@ -111,14 +104,14 @@ return [
         'expires_on' => 'Vence em',
         'expires_ago' => 'Venceu em',
         'scheduled' => 'Agendado',
-        'direct_debit' => 'Debito automático',
+        'direct_debit' => 'Débito automático',
         'accounts_payable' => 'Contas a pagar',
         'per_card' => 'Por cartão',
         'per_category' => 'Por categoria',
         'per_month' => 'Por mês',
         'others' => 'Outros',
         'payment_date' => 'Data de pagamento',
-        'day' => 'dia'
+        'day' => 'dia',
     ],
 
     'actions' => [
@@ -139,11 +132,7 @@ return [
         'log' => 'Log',
         'log_history' => 'Histórico de Ações',
         'close' => 'Fechar',
-        'export' => 'Exportar'
-    ],
-
-    'misc' => [
-        'unknown' => 'Desconhecido',
+        'export' => 'Exportar',
     ],
 
     'notifications' => [
@@ -173,6 +162,8 @@ return [
         'user_created_body' => 'O novo usuário foi cadastrado com sucesso.',
         'user_create_error_title' => 'Erro ao criar usuário',
         'user_create_error_body_email_exists' => 'O e-mail informado já está em uso.',
+        'bank_account_created' => 'Conta bancária criada',
+        'bank_account_success' => 'A nova conta bancária foi cadastrada',
     ],
 
     'enums' => [
@@ -190,6 +181,16 @@ return [
             'debit' => 'Débito automático',
             'pending' => 'Pendente',
         ],
+        'transaction_type' => [
+            'INCOME' => 'Receita',
+            'EXPENSE' => 'Despesa',
+        ],
+        'recurrence_type' => [
+            'DAILY' => 'Diário',
+            'WEEKLY' => 'Semanal',
+            'MONTHLY' => 'Mensal',
+            'YEARLY' => 'Anual',
+        ],
     ],
 
     'filters' => [
@@ -199,6 +200,12 @@ return [
     'modal_headings' => [
         'edit_user' => 'Editar usuário',
         'create_user' => 'Novo usuário',
+        'edit_transaction' => 'Editar Transação',
+        'create_transaction' => 'Nova Transação',
+    ],
+
+    'misc' => [
+        'unknown' => 'Desconhecido',
     ],
 
     'buttons' => [

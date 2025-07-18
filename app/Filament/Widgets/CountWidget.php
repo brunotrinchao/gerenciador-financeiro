@@ -4,7 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\TransactionItem;
 use App\Models\User;
-use App\Services\TransactionItemService;
+use App\Services\TransactionItemFilterService;
 use Carbon\Carbon;
 use Filament\Support\Enums\IconPosition;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
@@ -40,7 +40,7 @@ class CountWidget extends BaseWidget
         $startDate = $filters['startDate'] ?? null;
         $endDate = $filters['endDate'] ?? null;
 
-        $service = new TransactionItemService($filters);
+        $service = new TransactionItemFilterService($filters);
         $items = $service->items()
                 ->get();
 

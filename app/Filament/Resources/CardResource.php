@@ -153,6 +153,9 @@ class CardResource extends Resource
                             return;
                         }
 
+                        $data['limit'] = (float) str_replace(',', '.', str_replace('.', '', $data['limit']));
+                        $data['user_id'] = auth()->id();
+
                         Card::create($data);
 
                         Notification::make()
