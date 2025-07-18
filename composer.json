@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "akaunting/money": "^6.0",
         "ariaieboy/filament-currency": "^1.13",
         "bezhansalleh/filament-language-switch": "^3.1",
         "blade-ui-kit/blade-zondicons": "^1.6",
@@ -16,6 +17,7 @@
         "joaopaulolndev/filament-edit-profile": "^1.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "leandrocfe/filament-ptbr-form-fields": "^3.0",
         "malzariey/filament-daterangepicker-filter": "^4.0",
         "pxlrbt/filament-environment-indicator": "^2.1",
         "saade/filament-fullcalendar": "^3.0",
@@ -23,6 +25,7 @@
         "stechstudio/filament-impersonate": "^3.16"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.15",
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",

@@ -99,13 +99,24 @@ class TransactionResource extends Resource
                     ->getStateUsing(fn ($record) => __('forms.enums.method.' . strtolower($record->method))),
             ])
             ->filters([
-                DateRangeFilter::make('date')
+                DateRangeFilter::make('items_due_date')
                     ->label(__('forms.filters.period'))
                     ->startDate(Carbon::now()->startOfMonth())
                     ->endDate(Carbon::now()->endOfMonth())
                     ->withIndicator()
                     ->useRangeLabels()
-                    ->autoApply(),
+                    ->autoApply()
+                    ->modifyQueryUsing(function (Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) {
+                        if (!empty($dateString) && $startDate && $endDate) {
+                            $start = $startDate->copy()->subDays(3);
+
+                            return $query->whereHas('items', function (Builder $q) use ($start, $endDate) {
+                                $q->whereBetween('due_date', [$start, $endDate]);
+                            });
+                        }
+
+                        return $query;
+                    }),
                 Tables\Filters\SelectFilter::make('category_id')
                     ->label(__('system.labels.category'))
                     ->relationship('category', 'name'),
