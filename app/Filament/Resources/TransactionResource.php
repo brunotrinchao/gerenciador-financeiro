@@ -317,7 +317,25 @@ class TransactionResource extends Resource
                             ->required()
                             ->label(__('forms.forms.amount'))
                             ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
-                            ->prefix('R$'),
+                            ->prefix('R$')
+                            ->reactive()
+                            ->hint(function ($get) {
+                                $amount = str_replace(['.', ','], ['', '.'], $get('amount'));
+                                $installments = (int) $get('recurrence_interval');
+
+                                if ($amount && $installments > 0) {
+                                    $value = floatval($amount) / $installments;
+                                    return 'Valor por parcela: R$ ' . number_format($value, 2, ',', '.');
+                                }
+
+                                return null;
+                            }),
+                        Toggle::make('is_recurring')
+                            ->label(__('forms.forms.is_recurring'))
+                            ->default(false)
+                            ->inline(false)
+                            ->reactive()
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null)),
                         DatePicker::make('date')
                             ->required()
                             ->label(__('forms.forms.date')),
@@ -325,17 +343,12 @@ class TransactionResource extends Resource
                             ->required()
                             ->label(__('forms.forms.description'))
                             ->maxLength(100),
-                        Toggle::make('is_recurring')
-                            ->label(__('forms.forms.is_recurring'))
-                            ->default(false)
-                            ->inline(false)
-                            ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null)),
                         TextInput::make('recurrence_interval')
                             ->label(__('forms.forms.recurrence_interval'))
                             ->hidden(fn ($get) => !$get('is_recurring'))
                             ->minValue(fn ($get) => $get('is_recurring') ? 2 : null)
-                            ->numeric(),
+                            ->numeric()
+                            ->reactive(),
                         Select::make('recurrence_type')
                             ->label(__('forms.forms.recurrence_type'))
                             ->options([
