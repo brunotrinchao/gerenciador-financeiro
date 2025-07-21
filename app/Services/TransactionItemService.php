@@ -61,14 +61,14 @@ class TransactionItemService
             return;
         }
 
-        $baseValue = floor($amount / $installmentsCount * 100) / 100; // força 2 casas
-        $remaining = $amount - ($baseValue * $installmentsCount);
+        $baseValue = intdiv($amount, $installmentsCount);
+        $difference = $amount - ($baseValue * $installmentsCount);
 
         foreach ($remainingItems as $i => $item) {
-            $currentAmount = ($i === $installmentsCount - 1) ? $baseValue + $remaining : $baseValue;
+            $amount = $i === $installmentsCount - 1 ? $baseValue + $difference : $baseValue;
 
             $item->update([
-                'amount' => $currentAmount
+                'amount' => $amount
             ]);
         }
     }
