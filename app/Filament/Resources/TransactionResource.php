@@ -202,9 +202,26 @@ class TransactionResource extends Resource
                                 return $record?->items()->where('status', 'PAID')->exists();
                             })
                             ->hint(function ($get, $record) {
-                                return $record?->items()->where('status', 'PAID')->exists()
-                                    ? 'Este campo está bloqueado porque há parcelas já pagas.'
-                                    : null;
+                                $rawAmount = $get('amount');
+                                $installments = (int) $get('recurrence_interval');
+
+                                // Converte o valor monetário para float corretamente
+                                $amount = $rawAmount
+                                    ? (float) str_replace(['.', ','], ['', '.'], $rawAmount)
+                                    : 0;
+
+                                // Se houver parcelas pagas, retorna aviso
+                                if ($record?->items()->where('status', 'PAID')->exists()) {
+                                    return 'Este campo está bloqueado porque há parcelas já pagas.';
+                                }
+
+                                // Calcula e exibe o valor da parcela
+                                if ($amount > 0 && $installments > 0) {
+                                    $valuePerInstallment = round($amount / $installments, 2);
+                                    return 'Valor por parcela: R$ ' . number_format($valuePerInstallment, 2, ',', '.');
+                                }
+
+                                return null;
                             }),
                         DatePicker::make('date')
                             ->required()
