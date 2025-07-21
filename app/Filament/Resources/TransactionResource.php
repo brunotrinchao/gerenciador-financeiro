@@ -344,10 +344,11 @@ class TransactionResource extends Resource
                             ->reactive()
                             ->hint(function ($get) {
                                 $installments = (int) $get('recurrence_interval');
+
                                 $amount = (float) str_replace(['.', ','], ['', '.'], $get('amount'));
 
                                 if ($amount && $installments > 0) {
-                                    $value = floor($amount/ $installments) / 100;
+                                    $value = round($amount / $installments, 2); // preserva 2 casas decimais corretamente
                                     return 'Valor por parcela: R$ ' . number_format($value, 2, ',', '.');
                                 }
 
@@ -391,6 +392,8 @@ class TransactionResource extends Resource
                         $parcelas = !empty($data['is_recurring']) ? (int) ($data['recurrence_interval'] ?? 1) : 1;
 
                         $amount = (float) str_replace(['.', ','], ['', '.'], $data['amount']);
+
+
                         $baseValue = floor($amount / $parcelas) / 100; // força 2 casas
                         $remaining = $amount - ($baseValue * $parcelas);
 
