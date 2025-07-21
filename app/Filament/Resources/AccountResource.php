@@ -75,12 +75,9 @@ class AccountResource extends Resource
                 TextColumn::make('type')
                     ->label(__('forms.columns.type'))
                     ->formatStateUsing(fn ($state) => TranslateString::getAccountType((int) $state)),
-                TextInput::make('balance')
-                    ->mask(MaskHelper::maskMoney())
-                    ->stripCharacters(',')
-                    ->numeric()
-                    ->prefix('R$')
+                TextColumn::make('balance')
                     ->label(__('forms.columns.balance'))
+                    ->currency('BRL')
                     ->color(fn (string $state) => $state < 0 ? 'danger' : 'success'),
             ])
             ->actions([
