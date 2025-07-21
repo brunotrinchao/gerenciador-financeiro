@@ -36,6 +36,17 @@ class TransactionItemService
         $this->updateAmountAndInstallmentCount($transactionItem);
     }
 
+    public function update(Transaction $transaction): void
+    {
+        $items = TransactionItem::where('transaction_id', $transaction->id)
+            ->get();
+
+        $items->each(function (TransactionItem $item) use ($transaction) {
+           $this->updateAmountAndInstallmentCount($item);
+        });
+
+    }
+
     public function recalcAmountTransactionItem(TransactionItem $transactionItem)
     {
         $transaction = $transactionItem->transaction;

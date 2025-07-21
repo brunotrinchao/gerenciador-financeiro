@@ -10,6 +10,7 @@ use App\Models\Account;
 use App\Models\Card;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Services\TransactionItemService;
 use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
@@ -267,8 +268,14 @@ class TransactionResource extends Resource
                         'user_id'             => $record->user_id,
                     ],
                     action: function (array $data, $record) {
-                        $data['amount'] = (float) str_replace(['.', ','], ['', '.'], $data['amount']);
-                        return $record->update($data);
+                        $data['amount'] = preg_replace('/[^0-9,]/', '', $data['amount']);
+
+                        $record->update($data);
+
+                        $service = new TransactionItemService();
+                        $service->update($record);
+
+                        return true;
                     }
                 ),
                 Tables\Actions\DeleteAction::make()
