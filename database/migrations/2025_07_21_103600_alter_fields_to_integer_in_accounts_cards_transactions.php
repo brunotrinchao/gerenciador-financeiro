@@ -26,7 +26,6 @@ return new class extends Migration
             $table->integer('amount')->change();
             $table->enum('method', ['CASH', 'ACCOUNT', 'CARD'])->default(null)->change();
             $table->text('description')->nullable(false)->change();
-            $table->date('date')->nullable(false)->after('description');
             $table->integer('recurrence_interval')->default(1)->change();
         });
 
