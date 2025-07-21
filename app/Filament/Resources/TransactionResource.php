@@ -387,11 +387,14 @@ class TransactionResource extends Resource
                     modalHeading: __('forms.modal_headings.create_transaction'),
                     label: __('forms.buttons.create'),
                     action: function (array $data, Action $action) {
+
+                        $data['amount'] = preg_replace('/[^0-9,]/', '', $data['amount']);
+
                         $transaction = Transaction::create($data);
 
                         $parcelas = !empty($data['is_recurring']) ? (int) ($data['recurrence_interval'] ?? 1) : 1;
 
-                        $amount = (float) str_replace(['.', ','], ['', '.'], $data['amount']);
+                        $amount = (int) str_replace(['.', ','], ['', '.'], $data['amount']);
 
 
                         $baseValue = floor($amount / $parcelas) / 100; // força 2 casas
