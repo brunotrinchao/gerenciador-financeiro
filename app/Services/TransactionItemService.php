@@ -53,7 +53,7 @@ class TransactionItemService
             ->where('status', '!=', 'PAID')
             ->get();
 
-        $amount = $transaction->amount - $transactionItem->amount;
+        $amount = $transaction->amount - $remainingItems->sum('amount');
         $installmentsCount = $remainingItems->count();
 
         if ($installmentsCount === 0) {
