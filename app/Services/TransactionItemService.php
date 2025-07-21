@@ -100,10 +100,16 @@ class TransactionItemService
             return;
         }
 
-        $transaction = $remainingItems->first();
+        $transaction = $remainingItems->first()->transaction;
 
-        $remainingAmount = $transaction->amount - $paidItems->sum('amount');
-        $baseValue = floor($remainingAmount / $installmentsCount * 100) / 100;
+        $remainingAmount = $transaction->amount;
+
+        if($paidItems->sum('amount') > 0){
+            $remainingAmount = $remainingAmount - $paidItems->sum('amount');
+        }
+
+
+        $baseValue = intdiv($remainingAmount, $installmentsCount);
         $difference = $remainingAmount - ($baseValue * $installmentsCount);
 
         $installmentNumber = $paidItems->max('installment_number') ?? 0;
@@ -116,9 +122,12 @@ class TransactionItemService
             ? (int)$transaction->card->due_date
             : null;
 
+
         foreach ($remainingItems->values() as $i => $item) {
             $installmentNumber++;
-            $amount = ($i === $installmentsCount - 1) ? $baseValue + $difference : $baseValue;
+            $amount = $i === $installmentsCount - 1 ? $baseValue + $difference : $baseValue;
+
+
 
             $dueDate = (clone $startDate)->addMonthsNoOverflow($addNextMonth ? $i + 1 : $i);
             if ($cardDueDay) {

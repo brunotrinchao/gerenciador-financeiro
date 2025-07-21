@@ -202,22 +202,18 @@ class TransactionResource extends Resource
                                 return $record?->items()->where('status', 'PAID')->exists();
                             })
                             ->hint(function ($get, $record) {
-                                $rawAmount = $get('amount');
+                                $amount = (int) $get('amount');
+
                                 $installments = (int) $get('recurrence_interval');
 
-                                // Converte o valor monetário para float corretamente
-                                $amount = $rawAmount
-                                    ? (float) str_replace(['.', ','], ['', '.'], $rawAmount)
-                                    : 0;
-
-                                // Se houver parcelas pagas, retorna aviso
                                 if ($record?->items()->where('status', 'PAID')->exists()) {
                                     return 'Este campo está bloqueado porque há parcelas já pagas.';
                                 }
 
-                                // Calcula e exibe o valor da parcela
                                 if ($amount > 0 && $installments > 0) {
-                                    $valuePerInstallment = round($amount / $installments, 2);
+                                    $valuePerInstallment = round(($amount / 100) / $installments, 2);
+
+//                                    dd($amount);
                                     return 'Valor por parcela: R$ ' . number_format($valuePerInstallment, 2, ',', '.');
                                 }
 
@@ -295,7 +291,7 @@ class TransactionResource extends Resource
                     ],
                     action: function (array $data, $record) {
                         if(isset($data['amount']) && !empty($data['amount'])) {
-                            $data['amount'] = preg_replace('/[^0-9,]/', '', $data['amount']);
+                            $data['amount'] = (int) preg_replace('/[^0-9,]/', '', $data['amount']);
                         }
 
                         $record->update($data);
