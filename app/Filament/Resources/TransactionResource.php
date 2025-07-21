@@ -410,13 +410,13 @@ class TransactionResource extends Resource
 
                         $transaction = Transaction::create($data);
 
-                        $parcelas = !empty($data['is_recurring']) ? (int) ($data['recurrence_interval'] ?? 1) : 1;
+                        $installmentsCount = !empty($data['is_recurring']) ? (int) ($data['recurrence_interval'] ?? 1) : 1;
 
                         $amount = (int) str_replace(['.', ','], ['', '.'], $data['amount']);
 
 
-                        $baseValue = floor($amount / $parcelas) / 100; // força 2 casas
-                        $remaining = $amount - ($baseValue * $parcelas);
+                        $baseValue = intdiv($amount, $installmentsCount);
+                        $remaining = $amount - ($baseValue * $installmentsCount);
 
                         $date = Carbon::parse($data['date']);
 
@@ -428,9 +428,8 @@ class TransactionResource extends Resource
                             }
                         }
 
-                        for ($i = 0; $i < $parcelas; $i++) {
-                            $parcela = $i + 1;
-                            $currentAmount = $parcela == $parcelas ? $baseValue + $remaining : $baseValue;
+                        for ($i = 1; $i <= $installmentsCount; $i++) {
+                            $currentAmount = $i === $installmentsCount - 1 ? $baseValue + $remaining : $baseValue;
                             $paymentDate = (clone $date)->addMonths($i);
 
                             if ($cardDueDay) {
@@ -441,7 +440,7 @@ class TransactionResource extends Resource
                                 'transaction_id' => $transaction->id,
                                 'due_date' => $paymentDate,
                                 'amount' => $currentAmount,
-                                'installment_number' => $parcela,
+                                'installment_number' => $installmentsCount,
                                 'status' => in_array($data['method'], ['CARD', 'ACCOUNT']) ? 'DEBIT' : 'PENDING' ,
                             ]);
                         }

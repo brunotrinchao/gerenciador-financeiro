@@ -49,9 +49,7 @@ class TransactionItemService
     {
         $transaction = $transactionItem->transaction;
 
-        $remainingItems = TransactionItem::where('transaction_id', $transaction->id)
-            ->where('status', '!=', 'PAID')
-            ->get();
+        $remainingItems = TransactionItem::where('transaction_id', $transaction->id)->where('status', '!=', 'PAID')->get();
 
         $amount = $transaction->amount - $remainingItems->sum('amount');
         $installmentsCount = $remainingItems->count();
