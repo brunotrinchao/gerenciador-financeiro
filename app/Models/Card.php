@@ -36,4 +36,10 @@ class Card extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public function items()
+    {
+        return $this->hasManyThrough(TransactionItem::class, Transaction::class);
+    }
+
 }

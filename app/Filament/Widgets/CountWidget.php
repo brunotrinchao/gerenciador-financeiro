@@ -33,6 +33,10 @@ class CountWidget extends BaseWidget
     {
         $filters = $this->filters;
 
+        $methods = request()->query('method');
+
+        $filters['method'] = $methods;
+
         if(!$filters){
             $filters = $this->getFilters();
         }

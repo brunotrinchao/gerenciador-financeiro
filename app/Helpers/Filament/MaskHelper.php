@@ -22,5 +22,4 @@ class MaskHelper
         }
     JS);
     }
-
 }

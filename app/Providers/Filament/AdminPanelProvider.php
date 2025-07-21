@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Enum\RolesEnum;
+use App\Filament\Resources\TransactionItemResource;
 use App\Filament\Widgets\CountChartWidget;
 use App\Filament\Widgets\CountWidget;
 use App\Filament\Widgets\PerCardChartWidget;
@@ -15,6 +16,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
 use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -62,6 +64,7 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn (): string => EditProfilePage::getUrl())
                     ->icon('heroicon-m-user-circle')
             ])
+//            ->navigationItems($this->NavehationItem())
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label(__('system.labels.finance'))
@@ -130,5 +133,21 @@ class AdminPanelProvider extends PanelProvider
 //                    'dayMaxEvents' => 3
                 ])
             ]);
+    }
+
+    private function NavehationItem(){
+        return [
+            NavigationItem::make('Contas a Pagar - Cartão')
+                ->label('Contas a Pagar - Cartão de Crédito')
+                ->url('/transaction-items?method[0]=CARD')
+                ->icon('heroicon-o-credit-card')
+                ->group(__('system.labels.account_payable_receivable')),
+
+            NavigationItem::make('Contas a Pagar - Conta/Dinheiro')
+                ->label('Contas a Pagar - Conta / Dinheiro')
+                ->url('/transaction-items?method[0]=ACCOUNT&method[1]=CASH')
+                ->icon('heroicon-o-banknotes')
+                ->group(__('system.labels.account_payable_receivable')),
+        ];
     }
 }

@@ -24,9 +24,11 @@ class TransactionItemFilterService
 
     public function items(): Builder
     {
-        $start = $this->filters['startDate'] ? Carbon::parse($this->filters['startDate']) : Carbon::now()->startOfMonth();
-        $end = $this->filters['endDate'] ? Carbon::parse($this->filters['endDate']) : Carbon::now()->endOfMonth();
+        $start = Carbon::parse($this->filters['startDate'] ?? Carbon::now()->startOfMonth());
+        $end = Carbon::parse($this->filters['endDate'] ?? Carbon::now()->endOfMonth());
+
         $status = $this->filters['status'] ?? null;
+        $methods = $this->filters['method'] ?? null;
 
         return $this->bulder
             ->with([
@@ -42,8 +44,9 @@ class TransactionItemFilterService
             ->when($start, fn ($q) => $q->whereDate('due_date', '>=', $start))
             ->when($end, fn ($q) => $q->whereDate('due_date', '<=', $end))
             ->when($this->filters['category'] ?? null, fn ($q) =>
-            $q->whereHas('transaction', fn ($q) => $q->where('category_id', $this->filters['category']))
-            );
+                $q->whereHas('transaction', fn ($q) => $q->where('category_id', $this->filters['category']))
+            )
+            ->when($methods, fn ($q) => $q->whereIn('method', is_array($methods) ? $methods : [$methods]));
     }
 
     public function all(): Collection

@@ -6,6 +6,9 @@ use App\Filament\Resources\TransactionItemResource;
 use App\Filament\Widgets\CountWidget;
 use App\Filament\Widgets\TransactionItemResourceStats;
 use App\Helpers\DeviceHelper;
+use App\Models\Card;
+use App\Models\TransactionItem;
+use Carbon\Carbon;
 use Filament\Actions;
 use Filament\Actions\CreateAction;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
@@ -16,6 +19,7 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class ListTransactionItems extends ListRecords
 {
@@ -24,6 +28,17 @@ class ListTransactionItems extends ListRecords
     protected static string $resource = TransactionItemResource::class;
 
 
+    public function mount(): void
+    {
+        parent::mount();
+
+        if (request()->has('method')) {
+            $methods = (array) request()->query('method');
+
+            // Aplica o filtro manualmente
+            $this->tableFilters['method'] = $methods;
+        }
+    }
     protected function getHeaderActions(): array
     {
         return [
@@ -33,19 +48,24 @@ class ListTransactionItems extends ListRecords
 
     protected function getTableQuery(): ?\Illuminate\Database\Eloquent\Builder
     {
-        return parent::getTableQuery()
-            ->orderBy('due_date', 'ASC');              // Depois por data
+        $query = parent::getTableQuery();
+
+        $query->whereHas('transaction', function ($q) {
+            $q->whereIn('method', ['CASH', 'ACCOUNT']);
+        });
+
+        return $query;
     }
 
-    protected function getHeaderWidgets(): array
-    {
-        if (DeviceHelper::isMobile()) {
-            return [];
-        }
-        return [
-            CountWidget::class
-        ];
-    }
+//    protected function getHeaderWidgets(): array
+//    {
+//        if (DeviceHelper::isMobile()) {
+//            return [];
+//        }
+//        return [
+//            CountWidget::class
+//        ];
+//    }
 
 
     public static function canCreate(): bool
@@ -74,4 +94,10 @@ class ListTransactionItems extends ListRecords
                 }),
         ];
     }
+
+    protected function isCardMethod(array $methods): bool
+    {
+        return in_array('CARD', $methods ?? []);
+    }
+
 }

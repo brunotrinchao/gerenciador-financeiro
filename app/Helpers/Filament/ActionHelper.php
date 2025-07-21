@@ -15,6 +15,7 @@ class ActionHelper
         string $label = 'Editar',
         ?callable $fillForm = null,
         ?callable $action = null,
+        ?callable $before= null,
         ?callable $after = null,
     ): Action {
         $isEdit = $label === 'Editar';
@@ -42,6 +43,7 @@ class ActionHelper
                     ->success()
                     ->send();
             })
+            ->before($before)
             ->after($after)
             ->slideOver(true);
 

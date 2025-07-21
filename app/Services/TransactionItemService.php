@@ -30,13 +30,13 @@ class TransactionItemService
             'due_date' => $dueDate,
             'amount' => 0,
             'installment_number' => $installmentsCount + 1,
-            'status' => 'PENDING',
+            'status' => $transaction->method == 'CARD' ? 'DEBIT' : 'PENDING',
         ]);
 
         $this->updateAmountAndInstallmentCount($transactionItem);
     }
 
-    public function update(Transaction $transaction): void
+    public function update(Transaction $transaction, bool $addMonth = true): void
     {
         $items = TransactionItem::where('transaction_id', $transaction->id)
             ->get();
@@ -75,48 +75,47 @@ class TransactionItemService
         }
     }
 
-    public function updateAmountAndInstallmentCount(TransactionItem $transactionItem): void
+    public function updateAmountAndInstallmentCount(TransactionItem $transactionItem, bool $addNextMonth = true): void
     {
         $transaction = $transactionItem->transaction;
 
-        $paidItems = TransactionItem::where('transaction_id', $transaction->id)
-            ->where('status', '=', 'PAID')
-            ->get();
-        $remainingItems = TransactionItem::where('transaction_id', $transaction->id)
-            ->where('status', '!=', 'PAID')
-            ->get();
+        $items = TransactionItem::where('transaction_id', $transaction->id)->get();
 
-        $amount = $transaction->amount - $paidItems->sum('amount');
+        $grouped = $items->groupBy(fn ($item) => $item->status === 'PAID' ? 'paid' : 'remaining');
+
+        $paidItems = $grouped->get('paid', collect());
+        $remainingItems = $grouped->get('remaining', collect());
+
         $installmentsCount = $remainingItems->count();
-
         if ($installmentsCount === 0) {
             return;
         }
 
-        $baseValue = floor($amount / $installmentsCount * 100) / 100; // força 2 casas
-        $remaining = $amount - ($baseValue * $installmentsCount);
+        $remainingAmount = $transaction->amount - $paidItems->sum('amount');
+        $baseValue = floor($remainingAmount / $installmentsCount * 100) / 100;
+        $difference = $remainingAmount - ($baseValue * $installmentsCount);
 
         $installmentNumber = $paidItems->max('installment_number') ?? 0;
 
-        $lastPaidDueDate = $paidItems->max('due_date');
-        $startDate = $lastPaidDueDate ? Carbon::parse($lastPaidDueDate) : Carbon::parse($transaction->date);
+        $startDate = $paidItems->max('due_date')
+            ? Carbon::parse($paidItems->max('due_date'))
+            : Carbon::parse($transaction->date);
 
-        $cardDueDay = null;
-        if ($transaction->method === 'CARD' && $transaction->card_id) {
-            $cardDueDay = $transaction->card->due_date; // Ex: 23
-        }
-        foreach ($remainingItems as $i => $item) {
+        $cardDueDay = $transaction->method === 'CARD' && $transaction->card?->due_date
+            ? (int) $transaction->card->due_date
+            : null;
+
+        foreach ($remainingItems->values() as $i => $item) {
             $installmentNumber++;
-            $currentAmount = ($i === $installmentsCount - 1) ? $baseValue + $remaining : $baseValue;
+            $amount = ($i === $installmentsCount - 1) ? $baseValue + $difference : $baseValue;
 
-            $dueDate = (clone $startDate)->addMonthsNoOverflow($i + 1);
-
+            $dueDate = (clone $startDate)->addMonthsNoOverflow($addNextMonth ? $i + 1 : $i);
             if ($cardDueDay) {
-                $dueDate->day = min((int) $cardDueDay, $dueDate->daysInMonth);
+                $dueDate->day = min($cardDueDay, $dueDate->daysInMonth);
             }
 
             $item->update([
-                'amount' => $currentAmount,
+                'amount' => $amount,
                 'installment_number' => $installmentNumber,
                 'due_date' => $dueDate,
             ]);

@@ -200,30 +200,7 @@ class ItemsRelationManager extends RelationManager
                             })
                             ->disabled()
                             ->reactive(),
-                        Select::make('card_id')
-                            ->label('Cartão de crédito')
-                            ->options(function () {
-                                return Card::all()->pluck('name', 'id');
-                            })
-                            ->visible(function ($get) {
-                                return $get('method') == 'CARD';
-                            })
-                            ->required(function ($get) {
-                                return $get('method') == 'CARD';
-                            }),
-                        Select::make('account_id')
-                            ->label('Conta')
-                            ->options(function () {
-                                return Account::with('bank')->get()->mapWithKeys(function ($account) {
-                                    return [$account->id => $account->bank->name ?? 'Sem banco'];
-                                });
-                            })
-                            ->visible(function ($get) {
-                                return $get('payment_method') == 'ACCOUNT';
-                            })
-                            ->required(function ($get) {
-                                return $get('payment_method') == 'ACCOUNT';
-                            }),
+
                         Select::make('status')
                             ->label('Status')
                             ->options([
@@ -233,6 +210,9 @@ class ItemsRelationManager extends RelationManager
                                 'DEBIT' => 'Débito automático',
                             ])
                             ->default('PENDING')
+                            ->disabled(function ($get) {
+                                return in_array($get('method'),['ACCOUNT', 'CARD']);
+                            })
                             ->required()
                             ->reactive(),
                     ],
@@ -244,13 +224,10 @@ class ItemsRelationManager extends RelationManager
                             'due_date' => $record->due_date,
                             'payment_date' => $record->payment_date,
                             'method' => $record->transaction->method,
-                            'card_id' => $record->card_id,
-                            'account_id' => $record->account_id,
-                            'status' => $record->status,
+                            'status' => $record->transaction->method == 'CARD' ? 'DEBIT' : $record->status
                         ];
                     },
                     after: function (array $data, $record) {
-
                         $transactionItemService = new TransactionItemService();
                         $transactionItemService->recalcAmountTransactionItem($record);
 
@@ -319,7 +296,7 @@ class ItemsRelationManager extends RelationManager
                     ->icon('heroicon-o-plus')
                     ->color('primary')
                     ->requiresConfirmation()
-                    ->action(function (){
+                    ->action(function () {
                         $transactionItemService = new TransactionItemService();
 
                         /* @var Transaction $transaction */

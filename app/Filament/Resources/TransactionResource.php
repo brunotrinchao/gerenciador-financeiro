@@ -88,6 +88,15 @@ class TransactionResource extends Resource
                     ->label(__('forms.columns.amount'))
                     ->sortable()
                     ->currency('BRL'),
+                TextColumn::make('paid_amount')
+                    ->label('Pago')
+                    ->getStateUsing(function ($record) {
+                        return $record->items()
+                            ->where('status', 'PAID')
+                            ->sum('amount');
+                    })
+                    ->money('BRL')
+                    ->sortable(),
                 TextColumn::make('date')
                     ->label(__('forms.columns.date'))
                     ->date('d/m/Y')
@@ -273,7 +282,7 @@ class TransactionResource extends Resource
                         $record->update($data);
 
                         $service = new TransactionItemService();
-                        $service->update($record);
+                        $service->update($record, false);
 
                         return true;
                     }

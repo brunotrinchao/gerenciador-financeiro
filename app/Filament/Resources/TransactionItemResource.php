@@ -37,7 +37,12 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 class TransactionItemResource extends Resource
 {
     protected static ?string $model = TransactionItem::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('system.labels.account_payable_receivable');
+    }
+//    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function getModelLabel(): string
     {
@@ -128,6 +133,9 @@ class TransactionItemResource extends Resource
                             ->required(),
                         DatePicker::make('due_date')
                             ->label(__('forms.columns.due_date'))
+                            ->disabled(function ($get, $record) {
+                                return $record?->where('status', 'PAID')->exists();
+                            })
                             ->required(),
                         DatePicker::make('payment_date')
                             ->label(__('forms.columns.payment_date'))

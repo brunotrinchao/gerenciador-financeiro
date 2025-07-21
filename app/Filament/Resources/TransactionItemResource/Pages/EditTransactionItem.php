@@ -18,4 +18,9 @@ class EditTransactionItem extends EditRecord
         ];
     }
 
+    protected function getActions(): array
+    {
+        return []; // remove ações como salvar, deletar, etc
+    }
+
 }

@@ -4,7 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CardResource\Pages;
 use App\Filament\Resources\CardResource\RelationManagers;
+use App\Filament\Resources\TransactionResource\RelationManagers\ItemsRelationManager;
 use App\Helpers\Filament\ActionHelper;
+use App\Helpers\Filament\MaskHelper;
 use App\Models\Bank;
 use App\Models\Card;
 use Filament\Forms;
@@ -30,7 +32,7 @@ class CardResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('system.labels.finance');
+        return  __('system.labels.account_payable_receivable');
     }
 
     public static function getModelLabel(): string
@@ -62,30 +64,36 @@ class CardResource extends Resource
             Select::make('bank_id')
                 ->label(__('forms.columns.bank'))
                 ->prefixIcon('phosphor-bank')
-                ->options(Bank::pluck('name', 'id')),
+                ->options(Bank::pluck('name', 'id'))
+                ->disabled(),
             TextInput::make('name')
-                ->label(__('forms.columns.name')),
+                ->label(__('forms.columns.name'))
+                ->disabled(),
             TextInput::make('number')
                 ->prefixIcon('heroicon-m-credit-card')
                 ->label(__('forms.columns.number'))
                 ->mask(RawJs::make(<<<'JS'
                     $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
-                JS)),
+                JS))
+                ->disabled(),
             Select::make('brand_id')
                 ->label(__('forms.columns.brand'))
                 ->searchable()
                 ->relationship('brand', 'name')
-                ->preload(),
+                ->preload()
+                ->disabled(),
             TextInput::make('due_date')
                 ->label(__('forms.columns.due_date'))
                 ->numeric()
                 ->minValue(1)
-                ->maxValue(31),
+                ->maxValue(31)
+                ->disabled(),
             TextInput::make('limit')
                 ->label(__('forms.columns.limit'))
                 ->prefix('R$')
                 ->mask($moneyMask)
-                ->default(0),
+                ->default(0)
+                ->disabled(),
         ]);
     }
 
@@ -100,7 +108,7 @@ class CardResource extends Resource
                 TextColumn::make('name')->label(__('forms.columns.name')),
                 TextColumn::make('number')->label(__('forms.columns.number')),
                 TextColumn::make('bank.name')->label(__('forms.columns.bank')),
-                TextColumn::make('limit')->label(__('forms.columns.limit'))->money('BRL', locale: 'pt_BR'),
+                TextColumn::make('limit')->label(__('forms.columns.limit'))->currency('BRL'),
                 TextColumn::make('due_date')->label(__('forms.columns.due_date'))->alignCenter(),
             ])
             ->actions([
@@ -115,7 +123,7 @@ class CardResource extends Resource
                         'number' => $record->number,
                         'brand_id' => $record->brand_id,
                         'due_date' => $record->due_date,
-                        'limit' => number_format($record->limit, 2, ',', '.'),
+                        'limit' => $record->limit,
                     ]
                 ),
             ])
@@ -124,7 +132,7 @@ class CardResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->recordUrl(null)
+//            ->recordUrl(null)
             ->recordAction('editCard')
             ->headerActions([
                 ActionHelper::makeSlideOver(
@@ -201,20 +209,18 @@ class CardResource extends Resource
             TextInput::make('limit')
                 ->label(__('forms.columns.limit'))
                 ->prefix('R$')
-                ->mask(RawJs::make('function($input){
-                    let value = $input.replace(/\\D/g, \'\');
-                    value = (value / 100).toFixed(2);
-                    value = value.replace(\'.\', \',\');
-                    value = value.replace(/\\B(?=(\\d{3})+(?!\\d))/g, \'.\');
-                    return value;
-                }'))
+                ->mask(MaskHelper::maskMoney())
+                ->stripCharacters(',')
+                ->numeric()
                 ->default(0),
         ];
     }
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RelationManagers\CardTransactionRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
