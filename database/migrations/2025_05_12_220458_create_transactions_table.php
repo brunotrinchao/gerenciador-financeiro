@@ -18,12 +18,12 @@ return new class extends Migration
             $table->foreignId('card_id')->nullable()->constrained();
             $table->foreignId('category_id')->constrained();
             $table->enum('type', ['INCOME', 'EXPENSE']);
-            $table->decimal('amount', 15, 2);
-            $table->enum('method', ['CASH', 'ACCOUNT', 'CARD'])->nullable()->default(null);
+            $table->integer('amount', );
+            $table->enum('method', ['CASH', 'ACCOUNT', 'CARD'])->default(null);
             $table->date('date');
-            $table->text('description')->nullable();
+            $table->text('description');
             $table->boolean('is_recurring')->default(false);
-            $table->integer('recurrence_interval')->nullable();
+            $table->integer('recurrence_interval')->default(1);
             $table->timestamps();
         });
     }

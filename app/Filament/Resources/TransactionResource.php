@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
 use App\Helpers\Filament\ActionHelper;
+use App\Helpers\Filament\MaskHelper;
 use App\Models\Account;
 use App\Models\Card;
 use App\Models\Transaction;
@@ -183,7 +184,9 @@ class TransactionResource extends Resource
                         TextInput::make('amount')
                             ->required()
                             ->label(__('forms.forms.amount'))
-                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
+                            ->mask(MaskHelper::maskMoney())
+                            ->stripCharacters(',')
+                            ->numeric()
                             ->prefix('R$')
                             ->disabled(function ($get, $record) {
                                 return $record?->items()->where('status', 'PAID')->exists();
@@ -316,7 +319,9 @@ class TransactionResource extends Resource
                         TextInput::make('amount')
                             ->required()
                             ->label(__('forms.forms.amount'))
-                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
+                            ->mask(MaskHelper::maskMoney())
+                            ->stripCharacters(',')
+                            ->numeric()
                             ->prefix('R$')
                             ->reactive()
                             ->hint(function ($get) {

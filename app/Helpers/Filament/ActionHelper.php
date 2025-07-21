@@ -26,10 +26,12 @@ class ActionHelper
             ->label($label)
             ->icon($isEdit ? 'heroicon-m-pencil' : 'heroicon-m-plus')
             ->action($action ?? function (array $data, $record) {
+
                 foreach ($data as $key => $value) {
-                    if (in_array($key, ['limit', 'amount'])) {
-                        $limite = str_replace(['.', ','], ['', '.'], $data[$key]); // transforma "0,00" em 0.00
-                        $data[$key] = (float)$limite === 0.0 ? 0 : $limite;
+                    if (in_array($key, ['limit', 'amount', 'balance'])) {
+                        $newValue = preg_replace('/[^0-9,]/', '', $value);
+//                        $newValue = str_replace(',', '.', $newValue);
+                        $data[$key] = (float)$newValue === 0.0 ? 0 : $newValue;
                     }
                 }
 

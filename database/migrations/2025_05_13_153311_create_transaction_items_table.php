@@ -18,7 +18,7 @@ return new class extends Migration
 
             $table->unsignedInteger('installment_number')->default(1);
             $table->date('due_date')->comment('Data de vencimento');
-            $table->decimal('amount', 15, 2);
+            $table->integer('amount');
             $table->date('payment_date')->nullable()->comment('Data de pagamento');
             $table->enum('status', ['PAID', 'SCHEDULED', 'DEBIT', 'PENDING'])->default('PENDING');
 

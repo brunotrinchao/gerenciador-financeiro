@@ -6,6 +6,7 @@ use App\Filament\Resources\AccountResource\Pages;
 use App\Filament\Resources\AccountResource\RelationManagers;
 use App\Helpers\DeviceHelper;
 use App\Helpers\Filament\ActionHelper;
+use App\Helpers\Filament\MaskHelper;
 use App\Helpers\TranslateString;
 use App\Models\Account;
 use Filament\Forms;
@@ -95,7 +96,9 @@ class AccountResource extends Resource
                             ->label(__('forms.forms.bank'))
                             ->relationship('bank', 'name'),
                         TextInput::make('balance')
-                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
+                            ->mask(MaskHelper::maskMoney())
+                            ->stripCharacters(',')
+                            ->numeric()
                             ->prefix('R$')
                             ->label(__('forms.forms.balance')),
                     ],
@@ -132,7 +135,9 @@ class AccountResource extends Resource
                             ->label(__('forms.forms.bank'))
                             ->relationship('bank', 'name'),
                         TextInput::make('balance')
-                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
+                            ->mask(MaskHelper::maskMoney())
+                            ->stripCharacters(',')
+                            ->numeric()
                             ->prefix('R$')
                             ->default(0)
                             ->label(__('forms.forms.balance')),
@@ -141,6 +146,8 @@ class AccountResource extends Resource
                     label: __('forms.forms.create'),
                     action: function (array $data, Action $action) {
                         $data['user_id'] = auth()->id();
+                        $data['balance'] = (float) str_replace(['.', ','], ['', '.'], $data['balance']);
+
                         Account::create($data);
 
                         Notification::make()
@@ -166,5 +173,6 @@ class AccountResource extends Resource
             'edit' => Pages\EditAccount::route('/{record}/edit'),
         ];
     }
+
 }
 

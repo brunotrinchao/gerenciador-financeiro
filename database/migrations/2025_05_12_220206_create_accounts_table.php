@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained();
             $table->foreignId('bank_id')->constrained();
             $table->integer('type')->default(1)->comment('1 = Conta Corrente, 2 = Poupança');
-            $table->decimal('balance', 15, 2)->default(0);
+            $table->integer('balance')->default(0);
             $table->char('balance_currency', 3)->default('BRL');
             $table->timestamps();
 

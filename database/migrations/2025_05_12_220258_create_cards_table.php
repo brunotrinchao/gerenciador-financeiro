@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('number')->nullable();
             $table->string('brand');
-            $table->decimal('limit', 15, 2)->default(0);
+            $table->integer('limit')->default(0);
             $table->timestamps();
         });
     }
