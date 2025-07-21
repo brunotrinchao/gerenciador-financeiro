@@ -277,7 +277,9 @@ class TransactionResource extends Resource
                         'user_id'             => $record->user_id,
                     ],
                     action: function (array $data, $record) {
-                        $data['amount'] = preg_replace('/[^0-9,]/', '', $data['amount']);
+                        if(isset($data['amount']) && !empty($data['amount'])) {
+                            $data['amount'] = preg_replace('/[^0-9,]/', '', $data['amount']);
+                        }
 
                         $record->update($data);
 
