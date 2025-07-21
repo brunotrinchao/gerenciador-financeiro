@@ -199,7 +199,7 @@ class TransactionResource extends Resource
                             ->numeric()
                             ->prefix('R$')
                             ->disabled(function ($get, $record) {
-                                return $record?->items()->where('status', 'PAID')->exists();
+//                                return $record?->items()->where('status', 'PAID')->exists();
                             })
                             ->hint(function ($get, $record) {
                                 $amount = (int) $get('amount');
