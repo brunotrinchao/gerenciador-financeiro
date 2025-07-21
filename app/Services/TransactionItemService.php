@@ -51,7 +51,6 @@ class TransactionItemService
 
         $remainingItems = TransactionItem::where('transaction_id', $transaction->id)
             ->where('status', '!=', 'PAID')
-            ->whereKeyNot($transactionItem->id)
             ->get();
 
         $amount = $transaction->amount - $transactionItem->amount;
