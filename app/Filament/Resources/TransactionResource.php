@@ -94,7 +94,12 @@ class TransactionResource extends Resource
                         $amount = $record->items()
                             ->where('status', 'PAID')
                             ->sum('amount');
-                        return  (int) preg_replace('/[^0-9,]/', '', $amount);
+
+                        $value = (int) preg_replace('/[^0-9,]/', '', $amount);
+
+                        $valuePerInstallment = round(($value / 100), 2);
+
+                        return  $valuePerInstallment;
                     })
                     ->money('BRL')
                     ->sortable(),
@@ -214,7 +219,6 @@ class TransactionResource extends Resource
                                 if ($amount > 0 && $installments > 0) {
                                     $valuePerInstallment = round(($amount / 100) / $installments, 2);
 
-//                                    dd($amount);
                                     return 'Valor por parcela: R$ ' . number_format($valuePerInstallment, 2, ',', '.');
                                 }
 
