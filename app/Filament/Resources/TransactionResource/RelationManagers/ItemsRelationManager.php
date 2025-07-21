@@ -224,7 +224,7 @@ class ItemsRelationManager extends RelationManager
                     label: __('forms.buttons.edit'),
                     fillForm: function ($record) {
                         return [
-                            'amount' => number_format($record->amount, 2, ',', '.'), // para compatibilidade com currencyMask
+                            'amount' => (int) $record->amount,
                             'due_date' => $record->due_date,
                             'payment_date' => $record->payment_date,
                             'method' => $record->transaction->method,
