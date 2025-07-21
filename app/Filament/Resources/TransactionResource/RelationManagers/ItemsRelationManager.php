@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TransactionResource\RelationManagers;
 
 use App\Helpers\Filament\ActionHelper;
+use App\Helpers\Filament\MaskHelper;
 use App\Models\Account;
 use App\Models\Card;
 use App\Models\Transaction;
@@ -42,9 +43,11 @@ class ItemsRelationManager extends RelationManager
         return $form
             ->schema([
                 TextInput::make('amount')
-                    ->label('Valor')
-                    ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
+                    ->mask(MaskHelper::maskMoney())
+                    ->stripCharacters(',')
+                    ->numeric()
                     ->prefix('R$')
+                    ->label('Valor')
                     ->required(),
                 DatePicker::make('due_date')
                     ->label('Data de vencimento')
@@ -172,8 +175,9 @@ class ItemsRelationManager extends RelationManager
                     form: [
                         TextInput::make('amount')
                             ->label('Valor')
-                            ->currencyMask(thousandSeparator: '.',decimalSeparator: ',', precision: 2)
-                            ->prefix('R$ ')
+                            ->mask(MaskHelper::maskMoney())
+                            ->stripCharacters(',')
+                            ->numeric()
                             ->required(),
                         DatePicker::make('due_date')
                             ->label('Data de vencimento')
