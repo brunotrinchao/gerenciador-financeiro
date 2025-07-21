@@ -91,9 +91,10 @@ class TransactionResource extends Resource
                 TextColumn::make('paid_amount')
                     ->label('Pago')
                     ->getStateUsing(function ($record) {
-                        return $record->items()
+                        $amount = $record->items()
                             ->where('status', 'PAID')
                             ->sum('amount');
+                        return  (int) preg_replace('/[^0-9,]/', '', $amount);
                     })
                     ->money('BRL')
                     ->sortable(),
