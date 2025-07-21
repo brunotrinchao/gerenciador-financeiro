@@ -41,9 +41,7 @@ class TransactionItemService
         $items = TransactionItem::where('transaction_id', $transaction->id)
             ->get();
 
-        $items->each(function (TransactionItem $item) use ($transaction) {
-           $this->updateAmountAndInstallmentCount($item);
-        });
+        $this->updateProcess($items, false);
 
     }
 
@@ -75,13 +73,24 @@ class TransactionItemService
         }
     }
 
-    public function updateAmountAndInstallmentCount(TransactionItem $transactionItem, bool $addNextMonth = true): void
+    public function updateAmountAndInstallmentCount(TransactionItem $transactionItem): void
     {
         $transaction = $transactionItem->transaction;
 
         $items = TransactionItem::where('transaction_id', $transaction->id)->get();
 
-        $grouped = $items->groupBy(fn ($item) => $item->status === 'PAID' ? 'paid' : 'remaining');
+        $this->updateProcess($items);
+    }
+
+    /**
+     * @param $items
+     * @param mixed $transaction
+     * @param bool $addNextMonth
+     * @return void
+     */
+    public function updateProcess(\Illuminate\Database\Eloquent\Collection $items, bool $addNextMonth =  true): void
+    {
+        $grouped = $items->groupBy(fn($item) => $item->status === 'PAID' ? 'paid' : 'remaining');
 
         $paidItems = $grouped->get('paid', collect());
         $remainingItems = $grouped->get('remaining', collect());
@@ -90,6 +99,8 @@ class TransactionItemService
         if ($installmentsCount === 0) {
             return;
         }
+
+        $transaction = $remainingItems->first();
 
         $remainingAmount = $transaction->amount - $paidItems->sum('amount');
         $baseValue = floor($remainingAmount / $installmentsCount * 100) / 100;
@@ -102,7 +113,7 @@ class TransactionItemService
             : Carbon::parse($transaction->date);
 
         $cardDueDay = $transaction->method === 'CARD' && $transaction->card?->due_date
-            ? (int) $transaction->card->due_date
+            ? (int)$transaction->card->due_date
             : null;
 
         foreach ($remainingItems->values() as $i => $item) {
