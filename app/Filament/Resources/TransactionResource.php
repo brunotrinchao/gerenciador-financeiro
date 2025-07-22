@@ -165,13 +165,13 @@ class TransactionResource extends Resource
                     ->label(__('system.labels.category'))
                     ->relationship('category', 'name'),
                 Tables\Filters\SelectFilter::make('method')
-                    ->label(__('system.labels.method'))
+                    ->label(__('forms.forms.method'))
                     ->options([
                         'CARD' => __('forms.enums.method.card'),
                         'ACCOUNT' => __('forms.enums.method.account'),
                         'CASH' => __('forms.enums.method.cash'),
                     ]),
-            ])
+            ], layout: FiltersLayout::AboveContent)
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editTransaction',
