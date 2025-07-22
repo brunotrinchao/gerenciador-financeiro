@@ -38,11 +38,10 @@ class PerCardChartWidget extends ChartWidget
             })
             ->get();
 
-        $grouped = $query->groupBy(fn ($item) => $item->card?->name ?? __('forms.widgets.others'));
+        $grouped = $query->groupBy(fn ($item) => $item->transaction->card?->name ?? __('forms.widgets.others'));
 
         $labels = [];
         $data = [];
-
         foreach ($grouped as $categoryName => $items) {
             $labels[] = $categoryName;
             $data[] = $items->sum('amount');

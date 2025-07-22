@@ -220,6 +220,18 @@ class CardTransactionRelationManager extends RelationManager
             ->filters([
                 Filter::make('due_month_year')
                     ->label('Mês e Ano')
+                    ->indicateUsing(function (array $data): ?string {
+                        if (! $data['month'] && ! $data['year']) {
+                            return null;
+                        }
+                        $mesAno = 'Fatura de ' .
+                            ucfirst(mb_strtolower(Carbon::create($data['year'], $data['month'], 1)
+                                ->locale('pt_BR')
+                                ->isoFormat('MMMM'))) .
+                            ' de ' . $data['year'];
+                        return $mesAno;
+
+                    })
                     ->form([
                         Select::make('year')
                             ->label('Ano')
@@ -249,7 +261,6 @@ class CardTransactionRelationManager extends RelationManager
                             ])
                             ->default((int) date('m')),
                     ])
-                    ->columns(2)
                     ->query(function (Builder $query, array $data): Builder {
                         $year = $data['year'] ?? date('Y');
                         $month = $data['month'] ?? date('m');
