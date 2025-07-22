@@ -38,7 +38,7 @@ class PerCardChartWidget extends ChartWidget
             })
             ->get();
 
-        $grouped = $query->groupBy(fn ($item) => $item->transaction->card?->name ?? __('forms.widgets.others'));
+        $grouped = $query->groupBy(fn ($item) => $item->transaction->card?->name . ' ('.$item->transaction->card->bank->name.')'?? __('forms.widgets.others'));
 
         $labels = [];
         $data = [];
