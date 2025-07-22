@@ -43,7 +43,7 @@ class CountChartWidget extends ChartWidget
         $filters = $service->getFilters();
 
         $service->setFilters('startDate', Carbon::parse($filters['startDate'])->startOfYear()->toDateString());
-        $service->setFilters('endDate', Carbon::parse($filters['endDate'])->startOfYear()->toDateString());
+        $service->setFilters('endDate', Carbon::parse($filters['endDate'])->endOfYear()->toDateString());
 
         $service->setBulder($query);
 
@@ -52,6 +52,7 @@ class CountChartWidget extends ChartWidget
             ->groupBy(DB::raw("DATE_FORMAT(due_date, '%Y-%m')"))
             ->orderBy('month')
             ->get();
+
 
         $labels = [];
         $data = [];
