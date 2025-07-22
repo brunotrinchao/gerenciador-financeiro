@@ -259,7 +259,7 @@ class CardTransactionRelationManager extends RelationManager
                         });
                         return $query;
                     }),
-                ], layout: FiltersLayout::AboveContent)
+                ])
             ->recordUrl(
                 fn ($record) => TransactionResource::getUrl('edit', ['record' => $record])
             );
