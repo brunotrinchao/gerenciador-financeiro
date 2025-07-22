@@ -83,11 +83,13 @@ class TransactionResource extends Resource
                     ->label(__('forms.columns.description'))
                     ->limit(20),
                 TextColumn::make('category.name')
-                    ->label(__('forms.columns.category')),
+                    ->label(__('forms.columns.category'))
+                    ->toggleable(),
                 TextColumn::make('amount')
                     ->label(__('forms.columns.amount'))
                     ->sortable()
-                    ->currency('BRL'),
+                    ->currency('BRL')
+                    ->toggleable(),
                 TextColumn::make('paid_amount')
                     ->label('Pago')
                     ->getStateUsing(function ($record) {
@@ -102,18 +104,41 @@ class TransactionResource extends Resource
                         return  $valuePerInstallment;
                     })
                     ->money('BRL')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
+                TextColumn::make('installment_value')
+                    ->label('Valor da Parcela')
+                    ->getStateUsing(function ($record) {
+                        if ($record->recurrence_interval > 0) {
+                            return round($record->amount / $record->recurrence_interval) / 100;
+                        }
+                        return null;
+                    })
+                    ->money('BRL')
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('date')
                     ->label(__('forms.columns.date'))
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('recurrence_interval')
                     ->label(__('forms.forms.recurrence_interval'))
                     ->formatStateUsing(fn (string $state) => $state > 1 ? $state : __('forms.texts.at_sight'))
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->toggleable(),
+                TextColumn::make('recurrence_interval_paid')
+                    ->label('Parcelas pagas')
+                    ->getStateUsing(function ($record) {
+                        return $record->items()
+                            ->where('status', 'PAID')->count();
+                    })
+                    ->alignCenter()
+                    ->toggleable(),
                 TextColumn::make('method')
                     ->label(__('forms.columns.method'))
-                    ->getStateUsing(fn ($record) => __('forms.enums.method.' . strtolower($record->method))),
+                    ->getStateUsing(fn ($record) => __('forms.enums.method.' . strtolower($record->method)))
+                    ->toggleable(),
             ])
             ->filters([
                 DateRangeFilter::make('items_due_date')
