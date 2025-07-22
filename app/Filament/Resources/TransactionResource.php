@@ -124,7 +124,9 @@ class TransactionResource extends Resource
                     ->toggleable(),
                 TextColumn::make('recurrence_interval')
                     ->label(__('forms.forms.recurrence_interval'))
-                    ->formatStateUsing(fn (string $state) => $state > 1 ? $state : __('system.texts.at_sight'))
+                    ->getStateUsing(function ($record) {
+                        return $record->recurrence_interval > 1 ? $record->recurrence_interval :  __('system.texts.at_sight');
+                    })
                     ->alignCenter()
                     ->toggleable(),
                 TextColumn::make('recurrence_interval_paid')
