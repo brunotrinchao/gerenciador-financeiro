@@ -66,6 +66,8 @@ class CalendarWidget extends FullCalendarWidget
                     'title' => $item->transaction->description ?? '-',
                     'start' => $item->due_date,
                     'end' => $item->due_date,
+                    'due_date' => $item->due_date,
+                    'amount' => $item->amount,
                     'shouldOpenUrlInNewTab' => true
                 ]
             )
@@ -113,12 +115,12 @@ class CalendarWidget extends FullCalendarWidget
     {
         return ViewAction::make()
             ->modalHeading(fn (TransactionItem $record) => $record->transaction->description ?? '-')
-            ->slideOver(true)
+            ->modal(true)
             ->modalFooterActions(fn (ViewAction $viewAction) =>[
                 EditAction::make()
                     ->modalHeading(fn (TransactionItem $record) => $record->transaction->description ?? '-')
                     ->icon('heroicon-m-pencil')
-                    ->slideOver(true)
+                    ->modal(true)
                     ->form([
                     Grid::make()
                         ->schema([
@@ -158,7 +160,7 @@ class CalendarWidget extends FullCalendarWidget
                 DeleteAction::make()
                     ->modalHeading(fn (TransactionItem $record) => $record->transaction->description ?? '-')
                     ->icon('heroicon-m-trash')
-                    ->slideOver(true)
+                    ->modal(true)
                     ->after(function () {
                         $this->refreshRecords();
                     })
@@ -169,8 +171,14 @@ class CalendarWidget extends FullCalendarWidget
     {
         return <<<JS
         function({ event, timeText, isStart, isEnd, isMirror, isPast, isFuture, isToday, el, view }){
+    const amountFormatted = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+            minimumFractionDigits: 2
+        }).format(event.extendedProps.amount / 100);
             el.setAttribute("x-tooltip", "tooltip");
-            el.setAttribute("x-data", "{ tooltip: '"+event.title+"' }");
+            el.setAttribute("x-data", "{ " +
+             "tooltip: '"+event.title+" : "+amountFormatted+"' }");
         }
     JS;
     }
