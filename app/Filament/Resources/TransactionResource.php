@@ -125,15 +125,9 @@ class TransactionResource extends Resource
                 TextColumn::make('recurrence_interval')
                     ->label(__('forms.forms.recurrence_interval'))
                     ->getStateUsing(function ($record) {
-                        return $record->recurrence_interval > 1 ? $record->recurrence_interval :  __('system.texts.at_sight');
-                    })
-                    ->alignCenter()
-                    ->toggleable(),
-                TextColumn::make('recurrence_interval_paid')
-                    ->label('Parcelas pagas')
-                    ->getStateUsing(function ($record) {
-                        return $record->recurrence_interval > 1 ? $record->items()
-                            ->where('status', 'PAID')->count() : null;
+                        $recurrenceinterval = $record->items()
+                            ->where('status', 'PAID')->count();
+                        return $record->recurrence_interval > 1 ? $recurrenceinterval . '/' . $record->recurrence_interval :  __('system.texts.at_sight');
                     })
                     ->alignCenter()
                     ->toggleable(),
