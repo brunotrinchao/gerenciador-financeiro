@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Helpers\Filament\MaskHelper;
 use App\Models\TransactionItem;
 use App\Models\User;
 use App\Services\TransactionItemFilterService;
@@ -51,13 +52,12 @@ class CountWidget extends BaseWidget
         $groupedByStatus = $items->groupBy('status');
 
         $stats = [];
-
         // Pendente
         $pendingItems = $groupedByStatus['PENDING'] ?? collect();
         $pendingTotal = $pendingItems->sum('amount');
         $pendingTrend = $this->calculateMonthlyTrend($pendingItems, $startDate, $endDate);
 
-        $stats[] = Stat::make(__('forms.widgets.pending'), 'R$ ' . number_format($pendingTotal, 2, ',', '.'))
+        $stats[] = Stat::make(__('forms.widgets.pending'), MaskHelper::covertIntToReal($pendingTotal))
             ->description(__('forms.widgets.total_pending'))
             ->descriptionIcon('heroicon-o-banknotes')
             ->chart($pendingTrend)
@@ -68,7 +68,7 @@ class CountWidget extends BaseWidget
         $paidTotal = $paidItems->sum('amount');
         $paidTrend = $this->calculateMonthlyTrend($paidItems, $startDate, $endDate);
 
-        $stats[] = Stat::make(__('forms.widgets.paid'), 'R$ ' . number_format($paidTotal, 2, ',', '.'))
+        $stats[] = Stat::make(__('forms.widgets.paid'), MaskHelper::covertIntToReal($paidTotal))
             ->description(__('forms.widgets.total_paid'))
             ->descriptionIcon('heroicon-o-banknotes')
             ->chart($paidTrend)
@@ -81,7 +81,7 @@ class CountWidget extends BaseWidget
         $mergedTotal = $mergedItems->sum('amount');
         $mergedTrend = $this->calculateMonthlyTrend($mergedItems, $startDate, $endDate);
 
-        $stats[] = Stat::make(__('forms.widgets.schedule_debit'), 'R$ ' . number_format($mergedTotal, 2, ',', '.'))
+        $stats[] = Stat::make(__('forms.widgets.schedule_debit'), MaskHelper::covertIntToReal($mergedTotal))
             ->description(__('forms.widgets.total_schedule_debit'))
             ->descriptionIcon('heroicon-o-banknotes')
             ->chart($mergedTrend)
@@ -89,7 +89,7 @@ class CountWidget extends BaseWidget
 
         // Total geral
         $totalGeral = $items->sum('amount');
-        $stats[] = Stat::make(__('forms.widgets.grand_total'), 'R$ ' . number_format($totalGeral, 2, ',', '.'))
+        $stats[] = Stat::make(__('forms.widgets.grand_total'), MaskHelper::covertIntToReal($totalGeral))
             ->description(__('forms.widgets.sum_all_transactions_period'))
             ->color('warning');
 

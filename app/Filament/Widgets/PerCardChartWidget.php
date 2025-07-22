@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\TransactionItem;
 use App\Services\TransactionItemFilterService;
 use Carbon\Carbon;
+use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Contracts\Support\Htmlable;
@@ -88,5 +89,45 @@ class PerCardChartWidget extends ChartWidget
     protected function getType(): string
     {
         return 'doughnut';
+    }
+
+    protected function getOptions(): RawJs
+    {
+        return RawJs::make(<<<'JS'
+    {
+        scales: {
+            y: {
+                grid: { display: false },
+                ticks: { display: false }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { display: false }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        let value = context.parsed.y ?? context.parsed.x ?? context.parsed;
+                        if (value !== null && value !== undefined) {
+                            label += new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }).format(value / 100);
+                        }
+                        return label;
+                    }
+                }
+            }
+        }
+    }
+    JS);
     }
 }

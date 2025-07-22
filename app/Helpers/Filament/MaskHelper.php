@@ -22,4 +22,8 @@ class MaskHelper
         }
     JS);
     }
+
+    public static function covertIntToReal(int $value, bool $prefix = true): string{
+        return 'R$ ' . number_format($value / 100, 2, ',', '.');
+    }
 }

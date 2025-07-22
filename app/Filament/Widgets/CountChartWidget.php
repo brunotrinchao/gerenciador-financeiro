@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Services\TransactionItemFilterService;
 use Carbon\Carbon;
+use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Flowframe\Trend\Trend;
@@ -61,7 +62,7 @@ class CountChartWidget extends ChartWidget
         foreach ($items as $item) {
             $month = $item->month;
             $labels[] = Carbon::createFromFormat('Y-m', $month)->translatedFormat('F');
-            $data[] = $item->total;
+            $data[] = $item->total / 100;
 
             // Define cor especial para o mês atual
             $borderColors[] = $month === $currentMonth ? '#60a5fa' : '#cbd5e1';
@@ -89,4 +90,57 @@ class CountChartWidget extends ChartWidget
     {
         return 'bar';
     }
+
+//    protected static ?array $options = [
+//        'plugins' => [
+//            'scales' => {
+//                'y' => {
+//                    'ticks' => {
+//                        'callback' => function($value, $index, $ticks) {
+//                            return '$' . $value.toLocaleString();
+//                        }
+//                    }
+//                }
+//            }
+//        ],
+//    ];
+
+    protected function getOptions(): RawJs
+    {
+        return RawJs::make(<<<JS
+        {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                                minimumFractionDigits: 2,
+                            }).format(value);
+                        }
+                    }
+                }
+            },
+            plugins: {
+               tooltip: {
+                   callbacks: {
+                       label: function(context) {
+                           let label = context.dataset.label || '';
+                           if (label) {
+                               label += ': ';
+                           }
+                           if (context.parsed.y !== null) {
+                               label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, }).format(context.parsed.y);
+                           }
+                           return label;
+                       }
+                   }
+               }
+           }
+        }
+    JS);
+    }
+
 }
