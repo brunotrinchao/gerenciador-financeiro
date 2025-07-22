@@ -16,6 +16,13 @@ class InstallmentEvolutionChart extends ChartWidget
 
     protected static ?string $maxHeight = '300px';
 
+    protected function getViewData(): array
+    {
+        return [
+            'data' => $this->getData(),
+        ];
+    }
+
     protected function getData(): array
     {
         $now = now();
@@ -32,7 +39,7 @@ class InstallmentEvolutionChart extends ChartWidget
                 return $month . '|' . $cardId;
             });
 
-        $months = collect(range(0, 5))->map(fn ($i) => $start->copy()->addMonths($i)->format('Y-m'));
+        $months = collect(range(0, 11))->map(fn ($i) => $start->copy()->addMonths($i)->format('Y-m'));
         $labels = $months->map(fn ($m) => \Carbon\Carbon::parse($m)->locale('pt_BR')->isoFormat('MMM/YY'))->toArray();
 
         $cardSums = []; // [card_id => [valores por mês]]
@@ -44,7 +51,7 @@ class InstallmentEvolutionChart extends ChartWidget
             $transaction = $group->first()->transaction;
 
             if (!isset($cardSums[$cardId])) {
-                $cardSums[$cardId] = array_fill(0, 6, 0);
+                $cardSums[$cardId] = array_fill(0, 12, 0);
                 $cardNames[$cardId] = $transaction->card->name ?? 'Cartão ' . $cardId;
             }
 
