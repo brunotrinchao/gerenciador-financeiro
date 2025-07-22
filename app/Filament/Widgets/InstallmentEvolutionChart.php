@@ -98,7 +98,7 @@ class InstallmentEvolutionChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'line';
+        return 'bar';
     }
 
     protected function getOptions(): RawJs
