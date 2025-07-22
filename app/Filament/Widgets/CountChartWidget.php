@@ -61,7 +61,7 @@ class CountChartWidget extends ChartWidget
         foreach ($items as $item) {
             $month = $item->month;
             $labels[] = Carbon::createFromFormat('Y-m', $month)->translatedFormat('F');
-            $data[] = number_format($item->total / 100, 2, ',', '.');
+            $data[] = $item->total;
 
             // Define cor especial para o mês atual
             $borderColors[] = $month === $currentMonth ? '#60a5fa' : '#cbd5e1';
