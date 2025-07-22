@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CardResource\Pages;
 
 use App\Filament\Resources\CardResource;
+use App\Filament\Widgets\InstallmentEvolutionChart;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -13,6 +14,14 @@ class ListCards extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+        ];
+    }
+
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            InstallmentEvolutionChart::class,
         ];
     }
 }

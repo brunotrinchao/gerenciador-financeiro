@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CardResource\Pages;
 use App\Filament\Resources\CardResource\RelationManagers;
 use App\Filament\Resources\TransactionResource\RelationManagers\ItemsRelationManager;
+use App\Filament\Widgets\InstallmentEvolutionChart;
 use App\Helpers\Filament\ActionHelper;
 use App\Helpers\Filament\MaskHelper;
 use App\Models\Bank;
@@ -222,6 +223,7 @@ class CardResource extends Resource
             RelationManagers\CardTransactionRelationManager::class,
         ];
     }
+
 
     public static function getPages(): array
     {
