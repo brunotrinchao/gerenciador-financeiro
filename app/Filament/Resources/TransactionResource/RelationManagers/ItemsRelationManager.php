@@ -214,9 +214,9 @@ class ItemsRelationManager extends RelationManager
                                 'DEBIT' => 'Débito automático',
                             ])
                             ->default('PENDING')
-                            ->disabled(function ($get) {
-                                return in_array($get('method'),['ACCOUNT', 'CARD']);
-                            })
+//                            ->disabled(function ($get) {
+//                                return in_array($get('method'),['ACCOUNT', 'CARD']);
+//                            })
                             ->required()
                             ->reactive(),
                     ],

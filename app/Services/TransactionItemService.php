@@ -49,26 +49,30 @@ class TransactionItemService
     {
         $transaction = $transactionItem->transaction;
 
-        $remainingItems = TransactionItem::where('transaction_id', $transaction->id)
-            ->where('status', '!=', 'PAID')
-            ->get();
+        $items = TransactionItem::where('transaction_id', $transaction->id)->get();
 
-        $amount = $transaction->amount - $remainingItems->sum('amount');
+        // Agrupa os itens pagos e restantes manualmente
+        $paidItems = $items->filter(fn($item) => $item->status === 'PAID');
+        $remainingItems = $items->filter(fn($item) => $item->status !== 'PAID');
+
+        $remainingAmount = $transaction->amount - $paidItems->sum('amount');
         $installmentsCount = $remainingItems->count();
 
         if ($installmentsCount === 0) {
             return;
         }
 
-        $baseValue = intdiv($amount, $installmentsCount);
-        $difference = $amount - ($baseValue * $installmentsCount);
+        $baseValue = intdiv($remainingAmount, $installmentsCount);
+        $difference = $remainingAmount - ($baseValue * $installmentsCount);
 
-        foreach ($remainingItems as $i => $item) {
+        $i = 0;
+        foreach ($remainingItems as $item) {
             $amount = $i === $installmentsCount - 1 ? $baseValue + $difference : $baseValue;
 
             $item->update([
                 'amount' => $amount
             ]);
+            $i++;
         }
     }
 
