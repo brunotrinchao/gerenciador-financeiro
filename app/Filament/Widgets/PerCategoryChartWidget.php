@@ -103,33 +103,30 @@ class PerCategoryChartWidget extends ChartWidget
         return RawJs::make(<<<'JS'
     {
         scales: {
-            y: {
-                grid: { display: false },
-                ticks: { display: false }
-            },
-            x: {
-                grid: { display: false },
-                ticks: { display: false }
-            }
+            y: { grid: { display: false }, ticks: { display: false } },
+            x: { grid: { display: false }, ticks: { display: false } }
         },
         plugins: {
             tooltip: {
                 callbacks: {
                     label: function(context) {
                         let label = context.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
                         let value = context.parsed.y ?? context.parsed.x ?? context.parsed;
-                        if (value !== null && value !== undefined) {
-                            label += new Intl.NumberFormat('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }).format(value / 100);
+                        if (value === null || value === undefined) {
+                            return label;
                         }
-                        return label;
+                        const valueFormatted = new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }).format(value);
+
+                        const data = context.dataset.data;
+                        const total = data.reduce((acc, val) => acc + val, 0);
+                        const percent = ((value / total) * 100).toFixed(2);
+
+                        return `${label}: ${valueFormatted} (${percent}%)`;
                     }
                 }
             }
@@ -137,5 +134,6 @@ class PerCategoryChartWidget extends ChartWidget
     }
     JS);
     }
+
 
 }
