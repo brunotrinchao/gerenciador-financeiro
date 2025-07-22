@@ -62,16 +62,14 @@ class Dashboard extends BaseDashboard
                 Section::make()
                     ->schema([
                         DateRangePicker::make('periodFilter')
-                        ->label('Período')
+                            ->label('Período')
+                            ->useRangeLabels()
                             ->startDate(Carbon::now()->startOfMonth())
                             ->endDate(Carbon::now()->endOfMonth())
-                            ->icon('heroicons-backspace'),
-//                        DatePicker::make('startDate')
-//                            ->label(__('forms.forms.start_date'))
-//                            ->default(Carbon::now()->startOfMonth()),
-//                        DatePicker::make('endDate')
-//                            ->label(__('forms.forms.end_date'))
-//                            ->default(Carbon::now()->endOfMonth())
+                            ->showDropdowns()
+                            ->minYear(2020)
+                            ->maxYear(Carbon::now()->addYear(15)->year)
+                            ->icon('heroicons-backspace')
                     ])
                     ->columns(4),
             ]);
