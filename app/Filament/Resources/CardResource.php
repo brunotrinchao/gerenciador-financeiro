@@ -229,6 +229,7 @@ class CardResource extends Resource
             'index' => Pages\ListCards::route('/'),
             'create' => Pages\CreateCard::route('/create'),
             'edit' => Pages\EditCard::route('/{record}/edit'),
+            'import-transactions' => Pages\ImportCardTransactions::route('/{record}/import-transactions'),
         ];
     }
 }

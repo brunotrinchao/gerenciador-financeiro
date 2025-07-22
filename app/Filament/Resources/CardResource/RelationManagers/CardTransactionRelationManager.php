@@ -11,6 +11,7 @@ use App\Models\Card;
 use App\Services\TransactionItemService;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
@@ -18,12 +19,14 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 
 class CardTransactionRelationManager extends RelationManager
 {
@@ -262,6 +265,12 @@ class CardTransactionRelationManager extends RelationManager
                 ])
             ->recordUrl(
                 fn ($record) => TransactionResource::getUrl('edit', ['record' => $record])
-            );
+            )
+            ->headerActions([
+                Action::make('import')
+                    ->label('Importar Transações')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->url(fn ($livewire) => route('filament.admin.resources.cards.import-transactions', ['record' => $livewire->getOwnerRecord()->id])),
+            ]);
     }
 }
