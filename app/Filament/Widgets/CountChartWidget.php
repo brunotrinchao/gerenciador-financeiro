@@ -18,6 +18,8 @@ class CountChartWidget extends ChartWidget
 {
     use InteractsWithPageFilters;
 
+    public array $tableColumnSearches = [];
+
     protected static bool $isLazy = true;
 
     public function getHeading(): string|Htmlable|null
@@ -34,19 +36,17 @@ class CountChartWidget extends ChartWidget
 
     protected function getData(): array
     {
-
-        $status = $this->filters['status'] ?? null;
-
         $query = TransactionItem::query();
         $query->selectRaw("DATE_FORMAT(due_date, '%Y-%m') as month, SUM(amount) as total");
 
-        $filter = $this->filters;
+        $service =  new TransactionItemFilterService($this->filters);
+        $filters = $service->getFilters();
 
-        $filter['startDate'] = Carbon::parse($filter['startDate'])->startOfYear()->toDateString();
-        $filter['endDate'] = Carbon::parse($filter['endDate'])->endOfMonth()->toDateString();
-        $filter['status'] = $status;
+        $service->setFilters('startDate', Carbon::parse($filters['startDate'])->startOfYear()->toDateString());
+        $service->setFilters('endDate', Carbon::parse($filters['endDate'])->startOfYear()->toDateString());
 
-        $service =  new TransactionItemFilterService($filter, $query);
+        $service->setBulder($query);
+
 
         $items = $service->items()
             ->groupBy(DB::raw("DATE_FORMAT(due_date, '%Y-%m')"))

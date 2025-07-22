@@ -14,6 +14,7 @@ use Illuminate\Contracts\Support\Htmlable;
 class PerCategoryChartWidget extends ChartWidget
 {
     use InteractsWithPageFilters;
+    public array $tableColumnSearches = [];
 
     protected static bool $isLazy = true;
 

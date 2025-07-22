@@ -21,6 +21,8 @@ class CountWidget extends BaseWidget
 
     use InteractsWithPageTable;
 
+    public array $tableColumnSearches = [];
+
     protected static bool $isLazy = true;
     protected static ?int $sort = 1;
 
@@ -42,12 +44,13 @@ class CountWidget extends BaseWidget
             $filters = $this->getFilters();
         }
 
-        $startDate = $filters['startDate'] ?? null;
-        $endDate = $filters['endDate'] ?? null;
-
         $service = new TransactionItemFilterService($filters);
         $items = $service->items()
                 ->get();
+
+        $filters = $service->getFilters();
+        $startDate = $filters['startDate'] ?? null;
+        $endDate = $filters['endDate'] ?? null;
 
         $groupedByStatus = $items->groupBy('status');
 
@@ -89,8 +92,12 @@ class CountWidget extends BaseWidget
 
         // Total geral
         $totalGeral = $items->sum('amount');
+        $totalTrend = $this->calculateMonthlyTrend($items, $startDate, $endDate);
+//        dd($totalTrend);
         $stats[] = Stat::make(__('forms.widgets.grand_total'), MaskHelper::covertIntToReal($totalGeral))
             ->description(__('forms.widgets.sum_all_transactions_period'))
+            ->descriptionIcon('heroicon-o-banknotes')
+            ->chart($totalTrend)
             ->color('warning');
 
         return $stats;

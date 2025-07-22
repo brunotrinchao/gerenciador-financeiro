@@ -15,6 +15,7 @@ class TransactionItemFilterService
     public function __construct(array $filters, ?Builder $builder = null)
     {
         $this->filters = $filters;
+        $this->resolveDateFilter();
         $this->bulder = TransactionItem::query();
 
         if($builder){
@@ -62,5 +63,41 @@ class TransactionItemFilterService
             ->orderBy('due_date')
             ->limit(10);
     }
+
+    public function setBulder(Builder $builder): void
+    {
+        $this->bulder = $builder;
+    }
+
+    protected function resolveDateFilter(): void
+    {
+        if (empty($this->filters['periodFilter'])) {
+            throw new \InvalidArgumentException('Filtro de período não informado.');
+        }
+
+        $dates = explode(' - ', $this->filters['periodFilter']);
+
+        if (count($dates) !== 2) {
+            throw new \InvalidArgumentException('Filtro de período inválido. Use o formato "dd/mm/yyyy - dd/mm/yyyy".');
+        }
+
+        try {
+            $this->filters['startDate'] = Carbon::createFromFormat('d/m/Y', trim($dates[0]))->startOfDay();
+            $this->filters['endDate'] = Carbon::createFromFormat('d/m/Y', trim($dates[1]))->endOfDay();
+        } catch (\Exception $e) {
+            throw new \InvalidArgumentException('Data inválida no filtro de período.');
+        }
+    }
+
+    public function getFilters(): array
+    {
+        return $this->filters;
+    }
+
+    public function setFilters(string $index, mixed $value): void
+    {
+        $this->filters[$index] = $value;
+    }
+
 }
 

@@ -16,6 +16,7 @@ use Filament\Forms\Form;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Illuminate\Support\Facades\Auth;
+use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class Dashboard extends BaseDashboard
 {
@@ -60,12 +61,17 @@ class Dashboard extends BaseDashboard
             ->schema([
                 Section::make()
                     ->schema([
-                        DatePicker::make('startDate')
-                            ->label(__('forms.forms.start_date'))
-                            ->default(Carbon::now()->startOfMonth()),
-                        DatePicker::make('endDate')
-                            ->label(__('forms.forms.end_date'))
-                            ->default(Carbon::now()->endOfMonth())
+                        DateRangePicker::make('periodFilter')
+                        ->label('Período')
+                            ->startDate(Carbon::now()->startOfMonth())
+                            ->endDate(Carbon::now()->endOfMonth())
+                            ->icon('heroicons-backspace'),
+//                        DatePicker::make('startDate')
+//                            ->label(__('forms.forms.start_date'))
+//                            ->default(Carbon::now()->startOfMonth()),
+//                        DatePicker::make('endDate')
+//                            ->label(__('forms.forms.end_date'))
+//                            ->default(Carbon::now()->endOfMonth())
                     ])
                     ->columns(4),
             ]);

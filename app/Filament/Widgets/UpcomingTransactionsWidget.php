@@ -17,6 +17,8 @@ class UpcomingTransactionsWidget extends BaseWidget
 {
     use InteractsWithPageFilters;
 
+    public array $tableColumnSearches = [];
+
     protected static bool $isLazy = true;
 //    protected static ?int $sort = 1;
     protected int | string | array $columnSpan = 8;

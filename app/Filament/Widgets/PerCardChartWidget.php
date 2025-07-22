@@ -30,8 +30,6 @@ class PerCardChartWidget extends ChartWidget
 
     protected function getData(): array
     {
-        $status = $this->filters['status'] ?? null;
-
         $service =  new TransactionItemFilterService($this->filters);
 
         $query = $service->items()
