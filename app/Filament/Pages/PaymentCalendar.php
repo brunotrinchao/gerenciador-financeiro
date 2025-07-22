@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Widgets\CalendarWidget;
 use Filament\Pages\Page;
+use Illuminate\Contracts\Support\Htmlable;
 
 class PaymentCalendar extends Page
 {
@@ -12,6 +13,11 @@ class PaymentCalendar extends Page
     protected static ?string $navigationIcon = 'heroicon-s-calendar-days';
 
     public static function getNavigationLabel(): string
+    {
+        return __('system.labels.payment_calendar');
+    }
+
+    public function getTitle(): string|Htmlable
     {
         return __('system.labels.payment_calendar');
     }
