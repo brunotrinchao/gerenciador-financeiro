@@ -113,7 +113,7 @@ class PerCardChartWidget extends ChartWidget
                             currency: 'BRL',
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
-                        }).format(value);
+                        }).format(value / 100);
 
                         const data = context.dataset.data;
                         const total = data.reduce((acc, val) => acc + val, 0);
