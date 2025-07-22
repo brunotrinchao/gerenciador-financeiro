@@ -30,6 +30,11 @@ class EditCard extends EditRecord
         ];
     }
 
+    protected function getFormActions(): array
+    {
+        return [];
+    }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         return $data; // mantém os dados inalterados
@@ -47,8 +52,8 @@ class EditCard extends EditRecord
         return true;
     }
 
-    public function getContentTabPosition(): ?ContentTabPosition
+    public function getContentTabLabel(): ?string
     {
-        return ContentTabPosition::After;
+        return 'Dados do cartão';
     }
 }
