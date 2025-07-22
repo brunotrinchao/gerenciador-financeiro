@@ -40,7 +40,7 @@ class UpcomingTransactionsWidget extends BaseWidget
 
             Tables\Columns\TextColumn::make('amount')
                 ->label(__('forms.widgets.amount'))
-                ->money('BRL'),
+                ->currency('BRL'),
 
             Tables\Columns\TextColumn::make('toOverdue')
                 ->label(__('forms.widgets.to_overdue'))

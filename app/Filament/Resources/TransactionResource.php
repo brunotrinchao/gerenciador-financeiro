@@ -467,8 +467,8 @@ class TransactionResource extends Resource
                         }
 
                         Notification::make()
-                            ->title(__('system.notifications.transaction_created_title'))
-                            ->body(trans_choice(__('system.notifications.transaction_created_body'), $parcelas, ['count' => $parcelas]))
+                            ->title(__('forms.notifications.transaction_created_title'))
+                            ->body(trans_choice(__('forms.notifications.transaction_created_body'), $installmentsCount, ['count' => $installmentsCount]))
                             ->success()
                             ->send();
                     }
