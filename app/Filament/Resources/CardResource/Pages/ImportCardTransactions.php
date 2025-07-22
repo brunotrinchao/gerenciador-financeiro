@@ -129,7 +129,7 @@ class ImportCardTransactions extends Page implements HasForms
 
             $cardDueDay = (int) $this->selectedCard->due_date;
 
-            for ($i = 1; $i <= $installmentsCount; $i++) {
+            for ($i = 0; $i < $installmentsCount; $i++) {
                 $currentAmount = $i === $installmentsCount - 1 ? $baseValue + $remaining : $baseValue;
                 $paymentDate = (clone $date)->addMonths($i);
 
