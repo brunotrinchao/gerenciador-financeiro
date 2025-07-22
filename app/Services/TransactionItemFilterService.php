@@ -60,8 +60,7 @@ class TransactionItemFilterService
         return $this->items()
             ->with(['transaction', 'card', 'account.bank'])
             ->where('status', '<>', 'PAID')
-            ->orderBy('due_date')
-            ->limit(10);
+            ->orderBy('due_date');
     }
 
     public function setBulder(Builder $builder): void
