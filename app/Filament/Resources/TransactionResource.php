@@ -171,7 +171,7 @@ class TransactionResource extends Resource
                         'ACCOUNT' => __('forms.enums.method.account'),
                         'CASH' => __('forms.enums.method.cash'),
                     ]),
-            ], layout: FiltersLayout::AboveContent)
+            ], layout: FiltersLayout::Modal)
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editTransaction',
