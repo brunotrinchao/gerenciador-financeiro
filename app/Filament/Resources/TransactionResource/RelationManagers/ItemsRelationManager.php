@@ -170,6 +170,23 @@ class ItemsRelationManager extends RelationManager
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('paid_fast')
+                    ->label('Marcar como pago')
+                    ->icon('heroicon-m-currency-dollar')
+                    ->requiresConfirmation()
+                    ->color('success')
+                    ->action(function ($record) {
+                        $record->update([
+                            'payment_date' => $record->due_date,
+                            'status' => 'PAID',
+                        ]);
+
+                        Notification::make()
+                            ->title('Parcela marcada como paga!')
+                            ->success()
+                            ->send();
+                    })
+                    ->visible(fn ($record) => $record->status !== 'PAID'),
                 ActionHelper::makeSlideOver(
                     name: 'editTransactionItem',
                     form: [
@@ -226,7 +243,7 @@ class ItemsRelationManager extends RelationManager
                         return [
                             'amount' => (int) $record->amount,
                             'due_date' => $record->due_date,
-                            'payment_date' => $record->payment_date,
+                            'payment_date' =>  $record->payment_date ?? $record->due_date,
                             'method' => $record->transaction->method,
                             'status' => $record->transaction->method == 'CARD' ? 'DEBIT' : $record->status
                         ];
