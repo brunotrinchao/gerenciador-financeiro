@@ -12,6 +12,8 @@ class ListTransactions extends ListRecords
 {
     protected static string $resource = TransactionResource::class;
 
+    protected static ?string $navigationSearch = 'description';
+
     protected function getHeaderActions(): array
     {
         return [

@@ -27,6 +27,7 @@ class TransactionItemObserver
             ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount, 2, ',', '.') .
                 "<br><b>Produto:<b/> " .  $transaction->description.
                 "<br><b>Vencimento:<b/> " .  Carbon::parse($transactionItem->due_date)->format('d/m/Y') .
+                "<br><b>Parcelas:<b/> " . $transactionItem->installment_number .
                 "<br><b>Método:<b/> " . TranslateString::getMethod($transactionItem) .
                 "<br><b>Status:<b/> " . TranslateString::getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-plus-circle')
@@ -50,7 +51,8 @@ class TransactionItemObserver
             ->title('Transação atualizada ('.TranslateString::getStatusLabel($transactionItem->status).')')
             ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount, 2, ',', '.') .
                 "<br><b>Produto:<b/> " .  $transaction->description .
-                "<br><b>Vencimento:<b/> " .  Carbon::parse($transactionItem->duw_date)->format('d/m/Y') .
+                "<br><b>Vencimento:<b/> " .  Carbon::parse($transactionItem->due_date)->format('d/m/Y') .
+                "<br><b>Parcelas:<b/> " . $transactionItem->installment_number .
                 "<br><b>Método:<b/> " . TranslateString::getMethod($transactionItem) .
                 "<br><b>Status:<b/> " . TranslateString::getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-pencil-square')

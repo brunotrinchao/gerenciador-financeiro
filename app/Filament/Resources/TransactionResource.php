@@ -82,7 +82,8 @@ class TransactionResource extends Resource
                     ->formatStateUsing(fn (string $state) => __('forms.enums.transaction_type.' . $state)),
                 TextColumn::make('description')
                     ->label(__('forms.columns.description'))
-                    ->limit(20),
+                    ->limit(20)
+                    ->searchable(),
                 TextColumn::make('category.name')
                     ->label(__('forms.columns.category'))
                     ->toggleable(),
