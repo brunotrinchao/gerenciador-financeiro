@@ -52,7 +52,7 @@ class InstallmentEvolutionChart extends ChartWidget
 
             if (!isset($cardSums[$cardId])) {
                 $cardSums[$cardId] = array_fill(0, 12, 0);
-                $cardNames[$cardId] = $transaction->card->name ?? 'Cartão ' . $cardId;
+                $cardNames[$cardId] = $transaction->card->name . ' ('.$transaction->card->bank->name.')' ?? 'Cartão ' . $cardId;
             }
 
             $index = $months->search($month);
@@ -85,14 +85,16 @@ class InstallmentEvolutionChart extends ChartWidget
         ];
 
         $datasets = [];
+        $index = 0;
         foreach ($cardSums as $cardId => $values) {
             $datasets[] = [
                 'label' => $cardNames[$cardId],
                 'data' => $values,
-                'backgroundColor' => $fixedColors,
-                'borderColor' => $fixedColors,
+                'backgroundColor' => $fixedColors[$index],
+                'borderColor' => $fixedColors[$index],
                 'tension' => 0.6
             ];
+            $index++;
         }
 
         return [
@@ -105,7 +107,7 @@ class InstallmentEvolutionChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'bar';
+        return 'line';
     }
 
     protected function getOptions(): RawJs
