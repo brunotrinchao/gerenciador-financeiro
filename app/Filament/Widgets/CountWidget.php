@@ -46,6 +46,7 @@ class CountWidget extends BaseWidget
 
         $service = new TransactionItemFilterService($filters);
         $items = $service->items()
+            ->whereHas('transaction', fn ($q) => $q->where('type', 'EXPENSE'))
                 ->get();
 
         $filters = $service->getFilters();

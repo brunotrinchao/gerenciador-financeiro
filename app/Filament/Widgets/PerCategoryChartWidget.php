@@ -46,6 +46,7 @@ class PerCategoryChartWidget extends ChartWidget
         $service =  new TransactionItemFilterService($this->filters);
 
         $query = $service->items()
+            ->whereHas('transaction', fn ($q) => $q->where('type', 'EXPENSE'))
             ->with('transaction.category')
             ->get();
 

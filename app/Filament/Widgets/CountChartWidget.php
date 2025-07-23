@@ -49,6 +49,7 @@ class CountChartWidget extends ChartWidget
 
 
         $items = $service->items()
+            ->whereHas('transaction', fn ($q) => $q->where('type', 'EXPENSE'))
             ->groupBy(DB::raw("DATE_FORMAT(due_date, '%Y-%m')"))
             ->orderBy('month')
             ->get();

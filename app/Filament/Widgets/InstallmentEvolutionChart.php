@@ -30,7 +30,7 @@ class InstallmentEvolutionChart extends ChartWidget
         $end = $now->copy()->endOfYear();
 
         $items = \App\Models\TransactionItem::with('transaction.card')
-            ->whereHas('transaction', fn ($q) => $q->whereNotNull('card_id'))
+            ->whereHas('transaction', fn ($q) => $q->whereNotNull('card_id') && $q->where('type', 'EXPENSE'))
             ->whereBetween('due_date', [$start, $end])
             ->get()
             ->groupBy(function ($item) {

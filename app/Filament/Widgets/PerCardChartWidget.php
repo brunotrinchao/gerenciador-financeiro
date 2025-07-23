@@ -35,6 +35,7 @@ class PerCardChartWidget extends ChartWidget
         $query = $service->items()
             ->whereHas('transaction', function ($query) {
                 $query->whereNotNull('card_id');
+                $query->where('type', 'EXPENSE');
             })
             ->get();
 
