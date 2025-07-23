@@ -59,7 +59,7 @@ class TransactionItemFilterService
     {
         return $this->items()
             ->with(['transaction', 'card', 'account.bank'])
-            ->whereHas('transaction', fn ($q) => $q->where('type', 'EXPENSE'))
+            ->whereHas('transaction', fn ($q) => $q->where('type', 'EXPENSE') && $q->where('method', '!=', 'CARD'))
             ->where('status', '<>', 'PAID')
             ->orderBy('due_date');
     }
