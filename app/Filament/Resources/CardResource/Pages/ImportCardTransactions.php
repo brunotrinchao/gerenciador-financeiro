@@ -143,7 +143,7 @@ class ImportCardTransactions extends Page implements HasForms
                     'due_date' => $paymentDate,
                     'payment_date' => $i < $data['paid_installments'] ? $paymentDate : null,
                     'amount' =>  (float) $currentAmount,
-                    'installment_number' => $installmentsCount,
+                    'installment_number' => $i + 1,
                     'status' => $i < $data['paid_installments'] ? 'PAID' : 'DEBIT',
                 ]);
             }
