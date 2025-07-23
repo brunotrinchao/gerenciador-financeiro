@@ -10,18 +10,21 @@ use App\Models\Account;
 use App\Models\ActionLog;
 use App\Models\Card;
 use App\Models\TransactionItem;
+use App\Services\TransactionItemService;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard\Concerns\HasFilters;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Filament\Resources\Resource;
 use Filament\Support\Colors\Color;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -31,6 +34,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\CanPoll;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
@@ -195,7 +199,32 @@ class TransactionItemResource extends Resource
                     ->color(Color::Blue)
                     ->icon('zondicon-download')
             ])
-            ->bulkActions([]);
+            ->bulkActions([
+                Tables\Actions\BulkAction::make('paid_fast')
+                    ->label('Marcar como pago')
+                    ->icon('heroicon-m-currency-dollar')
+                    ->requiresConfirmation()
+                    ->color('success')
+                    ->action(function ($records) {
+                        foreach ($records as $record) {
+                            if ($record->status !== 'PAID') {
+                                $record->update([
+                                    'payment_date' => $record->due_date,
+                                    'status' => 'PAID',
+                                ]);
+                            }
+                        }
+
+                        Notification::make()
+                            ->title('Parcelas marcadas como pagas!')
+                            ->success()
+                            ->send();
+                    })
+                    ->deselectRecordsAfterCompletion()
+            ])
+            ->checkIfRecordIsSelectableUsing(
+                fn (Model $record): bool => $record->status !== 'PAID',
+            );
     }
 
     public static function getRelations(): array
