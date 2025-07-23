@@ -466,7 +466,7 @@ class TransactionResource extends Resource
                             }
                         }
 
-                        for ($i = 0; $i <= $installmentsCount; $i++) {
+                        for ($i = 0; $i < $installmentsCount; $i++) {
                             $currentAmount = $i === $installmentsCount - 1 ? $baseValue + $remaining : $baseValue;
                             $paymentDate = (clone $date)->addMonths($i);
 
