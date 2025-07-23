@@ -239,7 +239,8 @@ class ItemsRelationManager extends RelationManager
 
                         return true;
                     }
-                ),
+                )
+                ->visible(fn ($record) => $record->status !== 'PAID'),
                 Tables\Actions\DeleteAction::make()
                     ->modalHeading('Deletar parcela')
                     ->modalDescription(fn ($record) => 'Você tem certeza que gostaria de excluir a parcela Nº ' . $record->installment_number)
@@ -288,7 +289,8 @@ class ItemsRelationManager extends RelationManager
                         $transactionItemService->updateAmountAndInstallmentCount($record);
 
                         $livewire->dispatch('refreshProducts'); // Atualiza formulário
-                    }),
+                    })
+                    ->visible(fn ($record) => $record->status !== 'PAID'),
             ])
             ->bulkActions([
             ])
