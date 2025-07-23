@@ -49,7 +49,7 @@ class CountChartWidget extends ChartWidget
         $service->setFilters('startDate', Carbon::parse($filters['startDate'])->startOfYear()->toDateString());
         $service->setFilters('endDate', Carbon::parse($filters['endDate'])->endOfYear()->toDateString());
 
-        $service->setBulder($query);
+        $service->setBuilder($query);
 
 
         $items = $service->items()

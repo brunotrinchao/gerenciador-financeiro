@@ -9,17 +9,17 @@ use Illuminate\Support\Collection;
 
 class TransactionItemFilterService
 {
-    protected Builder $bulder;
+    protected Builder $builder;
     protected array $filters;
 
     public function __construct(array $filters, ?Builder $builder = null)
     {
         $this->filters = $filters;
         $this->resolveDateFilter();
-        $this->bulder = TransactionItem::query();
+        $this->builder = TransactionItem::query();
 
         if($builder){
-            $this->bulder = $builder;
+            $this->builder = $builder;
         }
     }
 
@@ -31,7 +31,7 @@ class TransactionItemFilterService
         $status = $this->filters['status'] ?? null;
         $methods = $this->filters['method'] ?? null;
 
-        return $this->bulder
+        return $this->builder
             ->with([
                 'transaction',
                 'card'
@@ -58,15 +58,18 @@ class TransactionItemFilterService
     public function upcomingTransaction(): Builder
     {
         return $this->items()
-            ->with(['transaction', 'card', 'account.bank'])
-            ->whereHas('transaction', fn ($q) => $q->where('type', 'EXPENSE') && $q->where('method', '!=', 'CARD'))
+            ->with(['transaction'])
+            ->whereHas('transaction', function ($q) {
+                return $q->where('type', 'EXPENSE')
+                    ->where('method', '!=', 'CARD');
+            })
             ->where('status', '<>', 'PAID')
             ->orderBy('due_date');
     }
 
-    public function setBulder(Builder $builder): void
+    public function setBuilder(Builder $builder): void
     {
-        $this->bulder = $builder;
+        $this->builder = $builder;
     }
 
     protected function resolveDateFilter(): void
