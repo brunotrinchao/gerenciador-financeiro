@@ -167,6 +167,22 @@ class TransactionResource extends Resource
                         'ACCOUNT' => __('forms.enums.method.account'),
                         'CASH' => __('forms.enums.method.cash'),
                     ]),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label(__('forms.forms.status'))
+                    ->options([
+                        'PENDING' => __('forms.enums.status.pending'),
+                        'PAID' => __('forms.enums.status.paid'),
+                        'SCHEDULED' => __('forms.enums.status.scheduled'),
+                        'DEBIT' => __('forms.enums.status.debit'),
+                    ])
+                ->modifyQueryUsing(function (Builder $query, array $data) {
+                    if ($data['value']) {
+                        $query->whereHas('items', function (Builder $q) use ($data) {
+                            $q->where('status', $data['value']);
+                        });
+                    }
+                })
+
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
