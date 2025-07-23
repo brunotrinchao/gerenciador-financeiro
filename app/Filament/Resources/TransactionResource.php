@@ -473,11 +473,13 @@ class TransactionResource extends Resource
                             if ($cardDueDay) {
                                 $paymentDate->day = min($cardDueDay, $paymentDate->daysInMonth);
                             }
-                            $status = $data['paid_interval'] > 0 && $i + 1 <= $data['paid_interval'] ? 'PAID' : (in_array($data['method'], ['CARD', 'ACCOUNT']) ? 'DEBIT' : 'PENDING');
+                            $paidInterval = $data['paid_interval'] ?? 0;
+                            $paidIntervalItem = $paidInterval > 0 && $i + 1 <= $paidInterval;
+                            $status = $paidIntervalItem ? 'PAID' : (in_array($data['method'], ['CARD', 'ACCOUNT']) ? 'DEBIT' : 'PENDING');
                             TransactionItem::create([
                                 'transaction_id' => $transaction->id,
                                 'due_date' => $paymentDate,
-                                'payment_date' => $data['paid_interval'] > 0 && $i + 1 <= $data['paid_interval'] ? $paymentDate : null,
+                                'payment_date' => $paidIntervalItem ? $paymentDate : null,
                                 'amount' => $currentAmount,
                                 'installment_number' => $i + 1,
                                 'status' =>  $status,
