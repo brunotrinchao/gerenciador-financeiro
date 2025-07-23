@@ -16,14 +16,16 @@ class PerCardChartWidget extends ChartWidget
 
     protected static bool $isLazy = true;
 
+    protected static ?int $sort = 3;
+
     public function getHeading(): string|Htmlable|null
     {
         return __('forms.widgets.per_card');
     }
 
     protected int | string | array $columnSpan = [
-        'default' => 8,
-        'md' => 4
+        'default' => 12,
+        'lg' => 4
     ];
 
     protected static ?string $maxHeight = '400px';

@@ -18,10 +18,22 @@ class UpcomingTransactionsWidget extends BaseWidget
     use InteractsWithPageFilters;
 
     public array $tableColumnSearches = [];
+    protected static ?int $sort = 2;
+
+    protected static ?string $maxHeight = '400px';
 
     protected static bool $isLazy = true;
 //    protected static ?int $sort = 1;
-    protected int | string | array $columnSpan = 8;
+    protected int | string | array $columnSpan = [
+        'default' => 12,
+        'lg' => 8,
+    ];
+
+//    protected function getColumns(): int
+//    {
+//        return 8;
+//    }
+
 
     protected function getTableQuery(): Builder|Relation|null
     {

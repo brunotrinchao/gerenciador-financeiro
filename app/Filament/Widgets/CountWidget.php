@@ -27,9 +27,15 @@ class CountWidget extends BaseWidget
     protected static ?int $sort = 1;
 
     protected int | string | array $columnSpan = [
-        'default' => 8,
-        'md' => 'full'
+        'default' => 12
     ];
+
+
+//    protected function getColumns(): int
+//    {
+//        $count = count($this->getCachedStats());
+//        return 6;
+//    }
 
 
     protected function getStats(): array
@@ -46,14 +52,17 @@ class CountWidget extends BaseWidget
 
         $service = new TransactionItemFilterService($filters);
         $items = $service->items()
-            ->whereHas('transaction', fn ($q) => $q->where('type', 'EXPENSE'))
-                ->get();
+                ->get()
+                ->groupBy(fn ($item) => $item->transaction->type);
+
+        $expenses = $items->get('EXPENSE', collect());
+        $incomes = $items->get('INCOME', collect());
 
         $filters = $service->getFilters();
         $startDate = $filters['startDate'] ?? null;
         $endDate = $filters['endDate'] ?? null;
 
-        $groupedByStatus = $items->groupBy('status');
+        $groupedByStatus = $expenses->groupBy('status');
 
         $stats = [];
         // Pendente
@@ -92,14 +101,37 @@ class CountWidget extends BaseWidget
             ->color('info');
 
         // Total geral
-        $totalGeral = $items->sum('amount');
-        $totalTrend = $this->calculateMonthlyTrend($items, $startDate, $endDate);
+        $totalGeral = $expenses->sum('amount');
+        $totalTrend = $this->calculateMonthlyTrend($expenses, $startDate, $endDate);
 //        dd($totalTrend);
         $stats[] = Stat::make(__('forms.widgets.grand_total'), MaskHelper::covertIntToReal($totalGeral))
             ->description(__('forms.widgets.sum_all_transactions_period'))
             ->descriptionIcon('heroicon-o-banknotes')
             ->chart($totalTrend)
-            ->color('warning');
+            ->color('danger');
+
+        // Receita
+        $income = $incomes->sum('amount');
+        $incomeTrend = $this->calculateMonthlyTrend($incomes, $startDate, $endDate);
+//        dd($totalTrend);
+        $stats[] = Stat::make(__('forms.widgets.all_income'), MaskHelper::covertIntToReal($income))
+            ->description(__('forms.widgets.sum_all_income_period'))
+            ->descriptionIcon('heroicon-o-banknotes')
+            ->chart($incomeTrend)
+            ->color('purple');
+
+
+        $calc = $income - $totalGeral;
+        $expenseTrend = $this->calculateMonthlyTrend($expenses, $startDate, $endDate);
+        $incomeTrend = $this->calculateMonthlyTrend($incomes, $startDate, $endDate);
+
+        $calcTrend = collect($incomeTrend)->zip($expenseTrend)->map(fn($pair) => $pair[0] - $pair[1])->values()->toArray();
+
+        $stats[] = Stat::make(__('forms.widgets.balane_income_expense'), MaskHelper::covertIntToReal($calc))
+            ->description(__('forms.widgets.balance_all_income_expense_period'))
+            ->descriptionIcon('heroicon-o-banknotes')
+            ->chart($calcTrend)
+            ->color($calc >= 0 ? 'success' : 'danger');
 
         return $stats;
     }
@@ -139,4 +171,5 @@ class CountWidget extends BaseWidget
             'endDate' => $this->tableFilters['endDate'] ?? null,
         ];
     }
+
 }

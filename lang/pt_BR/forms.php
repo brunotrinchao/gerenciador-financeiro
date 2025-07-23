@@ -93,9 +93,11 @@ return [
         'paid' => 'Pago',
         'total_paid' => 'Total de Pago',
         'schedule_debit' => 'Agendado/Débito automático',
-        'total_schedule_debit' => 'Total de Agendado e Débito automático',
-        'grand_total' => 'Total geral',
-        'sum_all_transactions_period' => 'Soma de todas as transações no período',
+        'total_schedule_debit' => 'Total de Agendado/Débito automático',
+        'grand_total' => 'Total despesas',
+        'sum_all_transactions_period' => 'Soma das despesas no período',
+        'sum_all_income_period' => 'Soma das receitas no período',
+        'balance_all_income_expense_period' => 'Saldo no período',
         'description' => 'Descrição',
         'due_date' => 'Vencimento',
         'amount' => 'Valor',
@@ -114,6 +116,9 @@ return [
         'day' => 'dia',
         'expense' => 'Despesas',
         'income' => 'Receitas',
+        'debit' => 'Débito automático',
+        'all_income' => 'Total receitas',
+        'balane_income_expense' => 'Receita x Despesas'
     ],
 
     'actions' => [

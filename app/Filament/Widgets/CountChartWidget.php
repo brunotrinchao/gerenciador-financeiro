@@ -20,6 +20,8 @@ class CountChartWidget extends ChartWidget
 
     public array $tableColumnSearches = [];
 
+    protected static ?int $sort = 4;
+
     protected static bool $isLazy = true;
 
     public function getHeading(): string|Htmlable|null
@@ -27,8 +29,10 @@ class CountChartWidget extends ChartWidget
         return __('forms.widgets.per_month');
     }
 
-//    protected static ?int $sort = 3;
-    protected int | string | array $columnSpan = 8;
+    protected int | string | array $columnSpan = [
+        'default' => 12,
+        'lg' => 8,
+    ];
 
     protected static ?string $maxHeight = '400px';
 
