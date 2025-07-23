@@ -58,8 +58,15 @@
 
     @foreach ($items as $item)
         @php
-            [$valor, $produto, $vencimento, $metodo, $status] = explode(' | ', $item);
+            $parts = explode(' | ', $item);
+
+            $valor = $parts[0] ?? 'Valor não informado';
+            $produto = $parts[1] ?? 'Produto não informado';
+            $vencimento = $parts[2] ?? 'Data não informada';
+            $metodo = $parts[3] ?? 'Método não informado';
+            $status = $parts[4] ?? 'Status não informado';
         @endphp
+
         <div class="item">
             <div><span class="label">Valor:</span> <span class="value">{{ $valor }}</span></div>
             <div><span class="label">Produto:</span> <span class="value">{{ $produto }}</span></div>
