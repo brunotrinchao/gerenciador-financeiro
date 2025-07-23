@@ -13,6 +13,21 @@
         <p class="mb-6 text-sm text-gray-500">Nenhum cartão selecionado.</p>
     @endif
 
+    <p><i>Modelo:</i></p>
+    <table>
+        <tr class="bg-gray-100">
+            <th class="border border-gray-300 p-2">Nome da Movimentação</th>
+            <th class="border border-gray-300 p-2">Parcelas Totais</th>
+            <th class="border border-gray-300 p-2">Parcelas Pagas</th>
+            <th class="border border-gray-300 p-2">Parcelas a Pagar</th>
+            <th class="border border-gray-300 p-2">Valor Total</th>
+            <th class="border border-gray-300 p-2">Valor da Parcela</th>
+            <th class="border border-gray-300 p-2">Mês</th>
+            <th class="border border-gray-300 p-2">Ano</th>
+        </tr>
+    </table>
+
+
         <form wire:submit.prevent="parseCsv">
             {{ $this->form }}
 
@@ -48,9 +63,9 @@
                             <td class="border border-gray-300 p-2">{{ $transaction['description'] }}</td>
                             <td class="border border-gray-300 p-2 text-center">{{ $transaction['total_installments'] }}</td>
                             <td class="border border-gray-300 p-2 text-center">{{ $transaction['paid_installments'] }}</td>
-                            <td class="border border-gray-300 p-2 text-center">{{ $transaction['pending_installments'] }}</td>
+                            <td class="border border-gray-300 p-2 text-center">{{ $transaction['pending_installments'] ?? '' }}</td>
                             <td class="border border-gray-300 p-2 text-right">R$ {{ number_format($transaction['total_amount'], 2, ',', '.') }}</td>
-                            <td class="border border-gray-300 p-2 text-right">R$ {{ number_format($transaction['installment_amount'], 2, ',', '.') }}</td>
+                            <td class="border border-gray-300 p-2 text-right">R$ {{ number_format($transaction['installment_amount'] ?? 0, 2, ',', '.') }}</td>
                             <td class="border border-gray-300 p-2 text-center">{{ $transaction['month'] }}</td>
                             <td class="border border-gray-300 p-2 text-center">{{ $transaction['year'] }}</td>
                         </tr>

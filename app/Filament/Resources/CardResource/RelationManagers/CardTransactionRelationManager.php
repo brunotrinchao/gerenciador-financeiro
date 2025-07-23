@@ -281,7 +281,7 @@ class CardTransactionRelationManager extends RelationManager
                 Action::make('import')
                     ->label('Importar Transações')
                     ->icon('heroicon-o-arrow-up-tray')
-                    ->url(fn ($livewire) => route('filament.admin.resources.cards.import-transactions', ['record' => $livewire->getOwnerRecord()->id])),
+                    ->url(fn ($livewire) => route('filament.admin.resources.cards.import-transactions', ['record' => $livewire->getOwnerRecord()])),
             ]);
     }
 }

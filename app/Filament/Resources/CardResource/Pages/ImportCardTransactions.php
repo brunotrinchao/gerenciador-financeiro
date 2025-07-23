@@ -25,6 +25,9 @@ class ImportCardTransactions extends Page implements HasForms
     protected static string $view = 'filament.resources.card-resource.pages.import-card-transactions';
 
     protected static string $resource = CardResource::class;
+    protected static ?string $breadcrumb = 'Importar trasaçoes do cartão (CSV)';
+    protected static ?string $navigationLabel = 'Importar trasações do cartão (CSV)';
+    protected static ?string $title = 'Transação';
 
     public ?array $transactions = [];
 
@@ -39,10 +42,12 @@ class ImportCardTransactions extends Page implements HasForms
 
     public ?Category $category = null;
 
-    public function mount(int $record): void
+    public function mount(Card $record): void
     {
-        $this->recordId = $record;
-        $this->selectedCard = Card::findOrFail($this->recordId);
+        $this->recordId = $record->id;
+        if($this->recordId){
+            $this->selectedCard = Card::findOrFail($this->recordId);
+        }
         $this->form->fill();
     }
 
@@ -108,7 +113,7 @@ class ImportCardTransactions extends Page implements HasForms
                 'category_id' => $this->category->id,
                 'method' => 'CARD',
                 'card_id' => $this->selectedCard->id,
-                'amount' => preg_replace('/[^0-9,]/', '', $data['total_amount']),
+                'amount' => (int) round(str_replace(',', '.', $data['total_amount']) * 100),
                 'is_recurring' => true,
                 'date' => Carbon::parse($data['year'] . '-' . $data['month'] . '-' . $this->selectedCard->due_date)->format('Y-m-d'),
                 'recurrence_interval' => $data['total_installments'],
@@ -118,14 +123,10 @@ class ImportCardTransactions extends Page implements HasForms
 
             $installmentsCount = $data['total_installments'];
 
-            $amount = (int) str_replace(['.', ','], ['', '.'], $data['total_amount']);
+            $baseValue = intdiv($transaction->amount, $transaction->recurrence_interval);
+            $remaining = $transaction->amount - ($baseValue * $installmentsCount);
 
-
-            $baseValue = intdiv($amount, $installmentsCount);
-
-            $remaining = $amount - ($baseValue * $installmentsCount);
-
-            $date = Carbon::parse($data['year'] . '-' . $data['month'] . '-' . $this->selectedCard->due_date);
+            $date = Carbon::create($transaction->date);
 
             $cardDueDay = (int) $this->selectedCard->due_date;
 
@@ -141,7 +142,7 @@ class ImportCardTransactions extends Page implements HasForms
                     'transaction_id' => $transaction->id,
                     'due_date' => $paymentDate,
                     'payment_date' => $i < $data['paid_installments'] ? $paymentDate : null,
-                    'amount' => $currentAmount,
+                    'amount' =>  (float) $currentAmount,
                     'installment_number' => $installmentsCount,
                     'status' => $i < $data['paid_installments'] ? 'PAID' : 'DEBIT',
                 ]);
