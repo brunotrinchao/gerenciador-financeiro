@@ -141,10 +141,10 @@ class ImportCardTransactions extends Page implements HasForms
                 TransactionItem::create([
                     'transaction_id' => $transaction->id,
                     'due_date' => $paymentDate,
-                    'payment_date' => $i < $data['paid_installments'] ? $paymentDate : null,
+                    'payment_date' => ($i + 1) < $data['paid_installments'] ? $paymentDate : null,
                     'amount' =>  (float) $currentAmount,
                     'installment_number' => $i + 1,
-                    'status' => $i < $data['paid_installments'] ? 'PAID' : 'DEBIT',
+                    'status' => ($i + 1) < $data['paid_installments'] ? 'PAID' : 'DEBIT',
                 ]);
             }
 
