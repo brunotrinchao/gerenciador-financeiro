@@ -24,6 +24,8 @@ use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -170,23 +172,6 @@ class ItemsRelationManager extends RelationManager
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('paid_fast')
-                    ->label('Marcar como pago')
-                    ->icon('heroicon-m-currency-dollar')
-                    ->requiresConfirmation()
-                    ->color('success')
-                    ->action(function ($record) {
-                        $record->update([
-                            'payment_date' => $record->due_date,
-                            'status' => 'PAID',
-                        ]);
-
-                        Notification::make()
-                            ->title('Parcela marcada como paga!')
-                            ->success()
-                            ->send();
-                    })
-                    ->visible(fn ($record) => $record->status !== 'PAID'),
                 ActionHelper::makeSlideOver(
                     name: 'editTransactionItem',
                     form: [
@@ -258,59 +243,76 @@ class ItemsRelationManager extends RelationManager
                     }
                 )
                 ->visible(fn ($record) => $record->status !== 'PAID'),
-                Tables\Actions\DeleteAction::make()
-                    ->modalHeading('Deletar parcela')
-                    ->modalDescription(fn ($record) => 'Você tem certeza que gostaria de excluir a parcela Nº ' . $record->installment_number)
-                    ->before(function (TransactionItem $record, RelationManager $livewire, DeleteAction $action) {
-                        $transaction = $livewire->ownerRecord;
 
-                        if ($record->status === 'PAID') {
-                            Notification::make()
-                                ->title('Ação não permitida')
-                                ->body('Não é possível excluir uma parcela que já foi paga.')
-                                ->danger()
-                                ->send();
-
-                            $action->halt();
-                        }
-
-                        // Verifica se é a última parcela ainda não paga
-                        $unpaidItems = TransactionItem::where('transaction_id', $transaction->id)
-                            ->where('status', '!=', 'PAID')
-                            ->get();
-
-                        if ($unpaidItems->count() === 1 && $unpaidItems->first()->id === $record->id) {
-                            Notification::make()
-                                ->title('Ação não permitida')
-                                ->body('Não é possível excluir a última parcela não paga da transação.<br/>Edite com o valor R$ 0,0.')
-                                ->danger()
-                                ->send();
-
-                            $action->halt();
-                        }
-                    })
-                    ->after(function (TransactionItem $record, RelationManager $livewire) {
-                        $transaction = $livewire->ownerRecord;
-
-                        // Recalcula apenas com as parcelas que não foram pagas
-                        $remainingItems = TransactionItem::where('transaction_id', $transaction->id)
-                            ->get();
-
-                        $installmentCount = $remainingItems->count();
-
-                        $transaction->update([
-                            'recurrence_interval' => $installmentCount,
-                        ]);
-
-                        $transactionItemService = new TransactionItemService();
-                        $transactionItemService->updateAmountAndInstallmentCount($record);
-
-                        $livewire->dispatch('refreshProducts'); // Atualiza formulário
-                    })
-                    ->visible(fn ($record) => $record->status !== 'PAID'),
             ])
             ->bulkActions([
+                BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('paid_fast')
+                        ->label('Marcar como pago')
+                        ->icon('heroicon-m-currency-dollar')
+                        ->requiresConfirmation()
+                        ->color('success')
+                        ->action(function ($records) {
+                            foreach ($records as $record) {
+                                if ($record->status !== 'PAID') {
+                                    $record->update([
+                                        'payment_date' => $record->due_date,
+                                        'status' => 'PAID',
+                                    ]);
+                                }
+                            }
+
+                            Notification::make()
+                                ->title('Parcelas marcadas como pagas!')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
+                    Tables\Actions\BulkAction::make('delete')
+                        ->label('Excluir parcelas')
+                        ->icon('heroicon-m-trash')
+                        ->requiresConfirmation()
+                        ->color('danger')
+                        ->action(function ($records) {
+                            foreach ($records as $record) {
+                                if ($record->status === 'PAID') {
+                                    continue; // Ignora parcelas já pagas
+                                }
+
+                                $transaction = $record->transaction;
+
+                                // Verifica se é a última parcela não paga
+                                $unpaidItems = TransactionItem::where('transaction_id', $transaction->id)
+                                    ->where('status', '!=', 'PAID')
+                                    ->get();
+
+                                if ($unpaidItems->count() === 1 && $unpaidItems->first()->id === $record->id) {
+                                    continue; // Ignora exclusão da última parcela não paga
+                                }
+
+                                $record->delete();
+
+                                // Atualiza a transação
+                                $transaction->update([
+                                    'recurrence_interval' => TransactionItem::where('transaction_id', $transaction->id)->count(),
+                                ]);
+
+                                $transactionItemService = new TransactionItemService();
+                                $transactionItemService->updateAmountAndInstallmentCount($record);
+                            }
+
+                            Notification::make()
+                                ->title('Parcelas excluídas com sucesso!')
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                ])
             ])
+            ->checkIfRecordIsSelectableUsing(
+                fn (Model $record): bool => $record->status !== 'PAID',
+            )
             ->recordUrl(null)
             ->recordAction('editTransactionItem')
             ->headerActions([
