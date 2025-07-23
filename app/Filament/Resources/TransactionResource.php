@@ -148,10 +148,9 @@ class TransactionResource extends Resource
                     ->autoApply()
                     ->modifyQueryUsing(function (Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) {
                         if (!empty($dateString) && $startDate && $endDate) {
-                            $start = $startDate->copy()->subDays(3);
 
-                            return $query->whereHas('items', function (Builder $q) use ($start, $endDate) {
-                                $q->whereBetween('due_date', [$start, $endDate]);
+                            return $query->whereHas('items', function (Builder $q) use ($startDate, $endDate) {
+                                $q->whereBetween('due_date', [$startDate, $endDate]);
                             });
                         }
 
