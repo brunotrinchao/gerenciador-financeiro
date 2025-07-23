@@ -153,12 +153,14 @@ class InstallmentEvolutionChart extends ChartWidget
                tooltip: {
                    callbacks: {
                        footer: (tooltipItems) => {
-                          let sum = '';
+                          let sum = 0;
 
                           tooltipItems.forEach(function(tooltipItem) {
-                            sum += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(tooltipItem.parsed.y / 100);
+                            sum += tooltipItem.parsed.y / 100;
                           });
-                          return 'Total: ' + sum
+                          let total = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(sum);
+
+                          return 'Total: ' + total;
                         },
                        label: function(context) {
                            let label = context.dataset.label || '';
