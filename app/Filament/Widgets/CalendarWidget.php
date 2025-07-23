@@ -56,7 +56,9 @@ class CalendarWidget extends FullCalendarWidget
     public function fetchEvents(array $fetchInfo): array
     {
         return TransactionItem::query()
-            ->with('transaction')
+            ->whereHas('transaction', function ($q) {
+                $q->where('method', '!=', 'CARD');
+            })
             ->whereBetween('due_date', [$fetchInfo['start'], $fetchInfo['end']])
             ->get()
             ->map(
