@@ -112,6 +112,8 @@ return [
         'others' => 'Outros',
         'payment_date' => 'Data de pagamento',
         'day' => 'dia',
+        'expense' => 'Despesas',
+        'income' => 'Receitas',
     ],
 
     'actions' => [

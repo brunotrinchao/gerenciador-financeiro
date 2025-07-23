@@ -165,7 +165,7 @@ class TransactionItemResource extends Resource
                     ->fillForm(fn ($record) => [
                         'amount' => $record->amount,
                         'due_date' => $record->due_date,
-                        'payment_date' => $record->payment_date,
+                        'payment_date' => $record->payment_date ?? $record->due_date,
                         'status' => $record->status,
                     ])
                     ->action(fn (array $data, $record) => $record->update($data))

@@ -54,11 +54,24 @@ class CountChartWidget extends ChartWidget
             ->get();
 
 
+        $incomeItems = TransactionItem::query()
+            ->selectRaw("DATE_FORMAT(due_date, '%Y-%m') as month, SUM(amount) as total")
+            ->whereHas('transaction', fn ($q) => $q->where('type', 'INCOME'))
+            ->whereBetween('due_date', [
+                Carbon::parse($filters['startDate'])->startOfYear(),
+                Carbon::parse($filters['endDate'])->endOfYear()
+            ])
+            ->groupBy(DB::raw("DATE_FORMAT(due_date, '%Y-%m')"))
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
         $labels = [];
         $data = [];
         $backgroundColors = [];
         $borderColors = [];
         $currentMonth = Carbon::now()->format('Y-m');
+        $incomeData = [];
 
         foreach ($items as $item) {
             $month = $item->month;
@@ -68,6 +81,10 @@ class CountChartWidget extends ChartWidget
             // Define cor especial para o mês atual
             $borderColors[] = $month === $currentMonth ? '#60a5fa' : '#cbd5e1';
             $backgroundColors[] = $month === $currentMonth ? 'rgb(96,165,250, 0.5)' : 'rgb(204,204,204,0.5)';
+
+            // Já temos os labels e data das despesas montados
+            $incomeTotal = $incomeItems[$month]->total ?? 0;
+            $incomeData[] = $incomeTotal / 100;
         }
 
 //        $labels = $items->pluck('month')->map(fn ($month) => Carbon::createFromFormat('Y-m', $month)->translatedFormat('F'));
@@ -76,11 +93,22 @@ class CountChartWidget extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => __('forms.widgets.amount'),
+                    'label' => __('forms.widgets.expense'),
                     'data' => $data,
                     'backgroundColor' => $backgroundColors,
                     'borderColor' => $borderColors,
                     'tension' => 0.6
+                ],
+                [
+                    'label' => __('forms.widgets.income'),
+                    'data' => $incomeData,
+                    'borderColor' => 'rgb(34,197,94)', // verde
+                    'backgroundColor' => 'rgba(34,197,94, 0.3)',
+                    'type' => 'line',
+                    'fill' => false,
+                    'tension' => 0.4,
+                    'pointRadius' => 4,
+                    'pointHoverRadius' => 6
                 ],
             ],
             'labels' => $labels,
@@ -91,20 +119,6 @@ class CountChartWidget extends ChartWidget
     {
         return 'bar';
     }
-
-//    protected static ?array $options = [
-//        'plugins' => [
-//            'scales' => {
-//                'y' => {
-//                    'ticks' => {
-//                        'callback' => function($value, $index, $ticks) {
-//                            return '$' . $value.toLocaleString();
-//                        }
-//                    }
-//                }
-//            }
-//        ],
-//    ];
 
     protected function getOptions(): RawJs
     {

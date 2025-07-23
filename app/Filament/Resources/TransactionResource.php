@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -341,87 +342,102 @@ class TransactionResource extends Resource
                 ActionHelper::makeSlideOver(
                     name: 'createTransaction',
                     form: [
-                        Radio::make('type')
-                            ->label(__('forms.forms.type'))
-                            ->options([
-                                'INCOME' => __('forms.enums.transaction_type.INCOME'),
-                                'EXPENSE' => __('forms.enums.transaction_type.EXPENSE'),
-                            ])
-                            ->inline()
-                            ->required()
-                            ->inlineLabel(false),
-                        Select::make('category_id')
-                            ->required()
-                            ->label(__('forms.forms.category'))
-                            ->relationship('category', 'name'),
-                        Select::make('method')
-                            ->label(__('forms.forms.method'))
-                            ->options([
-                                'CARD' => __('forms.enums.method.card'),
-                                'ACCOUNT' => __('forms.enums.method.account'),
-                                'CASH' => __('forms.enums.method.cash'),
-                            ])
-                            ->reactive()
-                            ->required(),
-                        Select::make('card_id')
-                            ->label(__('forms.forms.card'))
-                            ->options(fn () => Card::all()->pluck('name', 'id'))
-                            ->visible(fn ($get) => $get('method') === 'CARD')
-                            ->required(fn ($get) => $get('method') === 'CARD'),
-                        Select::make('account_id')
-                            ->label(__('forms.forms.account'))
-                            ->options(fn () => Account::with('bank')->get()->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
-                            ->visible(fn ($get) => $get('method') === 'ACCOUNT')
-                            ->required(fn ($get) => $get('method') === 'ACCOUNT'),
-                        TextInput::make('amount')
-                            ->required()
-                            ->label(__('forms.forms.amount'))
-                            ->mask(MaskHelper::maskMoney())
-                            ->stripCharacters(',')
-                            ->numeric()
-                            ->prefix('R$')
-                            ->reactive()
-                            ->hint(function ($get) {
-                                $installments = (int) $get('recurrence_interval');
+                        Grid::make(3)->schema(
+                            [
+                                Radio::make('type')
+                                    ->label(__('forms.forms.type'))
+                                    ->options([
+                                        'INCOME' => __('forms.enums.transaction_type.INCOME'),
+                                        'EXPENSE' => __('forms.enums.transaction_type.EXPENSE'),
+                                    ])
+                                    ->inline()
+                                    ->required()
+                                    ->inlineLabel(false),
+                                Select::make('category_id')
+                                    ->required()
+                                    ->label(__('forms.forms.category'))
+                                    ->relationship('category', 'name'),
+                                Select::make('method')
+                                    ->label(__('forms.forms.method'))
+                                    ->options([
+                                        'CARD' => __('forms.enums.method.card'),
+                                        'ACCOUNT' => __('forms.enums.method.account'),
+                                        'CASH' => __('forms.enums.method.cash'),
+                                    ])
+                                    ->reactive()
+                                    ->required(),
+                            ]
+                        ),
+                        Grid::make(3)->schema([
 
-                                $amount = (float) str_replace(['.', ','], ['', '.'], $get('amount'));
+                            Select::make('card_id')
+                                ->label(__('forms.forms.card'))
+                                ->options(fn () => Card::all()->pluck('name', 'id'))
+                                ->visible(fn ($get) => $get('method') === 'CARD')
+                                ->required(fn ($get) => $get('method') === 'CARD'),
+                            Select::make('account_id')
+                                ->label(__('forms.forms.account'))
+                                ->options(fn () => Account::with('bank')->get()->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
+                                ->visible(fn ($get) => $get('method') === 'ACCOUNT')
+                                ->required(fn ($get) => $get('method') === 'ACCOUNT'),
+                        ]),
+                        Grid::make(3)->schema([
+                            TextInput::make('description')
+                                ->required()
+                                ->label(__('forms.forms.description')),
+                            TextInput::make('amount')
+                                ->required()
+                                ->label(__('forms.forms.amount'))
+                                ->mask(MaskHelper::maskMoney())
+                                ->stripCharacters(',')
+                                ->numeric()
+                                ->prefix('R$')
+                                ->reactive()
+                                ->hint(function ($get) {
+                                    $installments = (int) $get('recurrence_interval');
 
-                                if ($amount && $installments > 0) {
-                                    $value = round($amount / $installments, 2); // preserva 2 casas decimais corretamente
-                                    return 'Valor por parcela: R$ ' . number_format($value, 2, ',', '.');
-                                }
+                                    $amount = (float) str_replace(['.', ','], ['', '.'], $get('amount'));
 
-                                return null;
-                            }),
-                        Toggle::make('is_recurring')
-                            ->label(__('forms.forms.is_recurring'))
-                            ->default(false)
-                            ->inline(false)
-                            ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null)),
-                        DatePicker::make('date')
-                            ->required()
-                            ->label(__('forms.forms.date')),
-                        Textarea::make('description')
-                            ->required()
-                            ->label(__('forms.forms.description'))
-                            ->maxLength(100),
-                        TextInput::make('recurrence_interval')
-                            ->label(__('forms.forms.recurrence_interval'))
-                            ->hidden(fn ($get) => !$get('is_recurring'))
-                            ->minValue(fn ($get) => $get('is_recurring') ? 2 : null)
-                            ->numeric()
-                            ->reactive(),
-                        Select::make('recurrence_type')
-                            ->label(__('forms.forms.recurrence_type'))
-                            ->options([
-                                'DAILY' => __('forms.enums.recurrence_type.DAILY'),
-                                'WEEKLY' => __('forms.enums.recurrence_type.WEEKLY'),
-                                'MONTHLY' => __('forms.enums.recurrence_type.MONTHLY'),
-                                'YEARLY' => __('forms.enums.recurrence_type.YEARLY'),
-                            ])
-                            ->hidden(fn ($get) => !$get('is_recurring')),
-                        Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+                                    if ($amount && $installments > 0) {
+                                        $value = round($amount / $installments, 2); // preserva 2 casas decimais corretamente
+                                        return 'Valor por parcela: R$ ' . number_format($value, 2, ',', '.');
+                                    }
+
+                                    return null;
+                                }),
+                            DatePicker::make('date')
+                                ->required()
+                                ->label(__('forms.forms.date')),
+                            Toggle::make('is_recurring')
+                                ->label(__('forms.forms.is_recurring'))
+                                ->default(false)
+                                ->inline(false)
+                                ->reactive()
+                                ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null)),
+                            TextInput::make('recurrence_interval')
+                                ->label(__('forms.forms.recurrence_interval'))
+                                ->hidden(fn ($get) => !$get('is_recurring'))
+                                ->minValue(fn ($get) => $get('is_recurring') ? 2 : null)
+                                ->numeric()
+                                ->reactive(),
+                            Select::make('recurrence_type')
+                                ->label(__('forms.forms.recurrence_type'))
+                                ->options([
+                                    'DAILY' => __('forms.enums.recurrence_type.DAILY'),
+                                    'WEEKLY' => __('forms.enums.recurrence_type.WEEKLY'),
+                                    'MONTHLY' => __('forms.enums.recurrence_type.MONTHLY'),
+                                    'YEARLY' => __('forms.enums.recurrence_type.YEARLY'),
+                                ])
+                                ->hidden(fn ($get) => !$get('is_recurring')),
+                            TextInput::make('paid_interval')
+                                ->label('Parcelas já pagas')
+                                ->visible(fn ($get) => $get('is_recurring') && (int) $get('recurrence_interval') >= 1)
+                                ->minValue(fn ($get) => $get('is_recurring') && (int) $get('recurrence_interval') >= 1 ? 0 : null)
+                                ->numeric()
+                                ->default(0)
+                                ->reactive(),
+                            Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+                          ])
                     ],
                     modalHeading: __('forms.modal_headings.create_transaction'),
                     label: __('forms.buttons.create'),
@@ -449,20 +465,21 @@ class TransactionResource extends Resource
                             }
                         }
 
-                        for ($i = 1; $i <= $installmentsCount; $i++) {
+                        for ($i = 0; $i <= $installmentsCount; $i++) {
                             $currentAmount = $i === $installmentsCount - 1 ? $baseValue + $remaining : $baseValue;
                             $paymentDate = (clone $date)->addMonths($i);
 
                             if ($cardDueDay) {
                                 $paymentDate->day = min($cardDueDay, $paymentDate->daysInMonth);
                             }
-
+                            $status = $data['paid_interval'] > 0 && $i + 1 <= $data['paid_interval'] ? 'PAID' : (in_array($data['method'], ['CARD', 'ACCOUNT']) ? 'DEBIT' : 'PENDING');
                             TransactionItem::create([
                                 'transaction_id' => $transaction->id,
                                 'due_date' => $paymentDate,
+                                'payment_date' => $data['paid_interval'] > 0 && $i + 1 <= $data['paid_interval'] ? $paymentDate : null,
                                 'amount' => $currentAmount,
-                                'installment_number' => $installmentsCount,
-                                'status' => in_array($data['method'], ['CARD', 'ACCOUNT']) ? 'DEBIT' : 'PENDING' ,
+                                'installment_number' => $i + 1,
+                                'status' =>  $status,
                             ]);
                         }
 

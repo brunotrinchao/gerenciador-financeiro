@@ -50,7 +50,8 @@ class CalendarWidget extends FullCalendarWidget
                             'amount' => $record->amount
                         ]);
                     }
-                ),
+                )
+                ->disabled(function (TransactionItem $record) {}),
             Actions\DeleteAction::make(),
         ];
     }
