@@ -86,21 +86,20 @@ class UpcomingTransactionsWidget extends BaseWidget
                 }),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')->formatStateUsing(function (string $state) {
-                        return $state;
-//                        return match ($state) {
-//                            'PAID' => __('forms.widgets.paid') ,
-//                            'SCHEDULED' => __('forms.widgets.scheduled') ,
-//                            'DEBIT' => __('forms.widgets.debit') ,
-//                            'PENDING' => __('forms.widgets.pending'),
-//                        };
+                        return match ($state) {
+                            'PAID' => __('forms.widgets.paid') ,
+                            'SCHEDULED' => __('forms.widgets.scheduled') ,
+                            'DEBIT' => __('forms.widgets.debit') ,
+                            'PENDING' => __('forms.widgets.pending'),
+                        };
                     })
-//                    ->badge()
-//                    ->color(fn (string $state): string => match ($state) {
-//                        'PAID' => 'success',
-//                        'SCHEDULED' => 'warning',
-//                        'DEBIT' => 'info',
-//                        'PENDING' => 'gray',
-//                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'PAID' => 'success',
+                        'SCHEDULED' => 'warning',
+                        'DEBIT' => 'info',
+                        'PENDING' => 'gray',
+                    })
         ];
     }
 
