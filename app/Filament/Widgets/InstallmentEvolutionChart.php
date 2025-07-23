@@ -127,8 +127,13 @@ class InstallmentEvolutionChart extends ChartWidget
 
     protected function getOptions(): RawJs
     {
+
         return RawJs::make(<<<JS
         {
+             interaction: {
+                  intersect: false,
+                  mode: 'index',
+            },
             scales: {
                 y: {
                     beginAtZero: true,
@@ -147,6 +152,14 @@ class InstallmentEvolutionChart extends ChartWidget
             plugins: {
                tooltip: {
                    callbacks: {
+                       footer: (tooltipItems) => {
+                          let sum = '';
+
+                          tooltipItems.forEach(function(tooltipItem) {
+                            sum += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(tooltipItem.parsed.y / 100);
+                          });
+                          return 'Total: ' + sum
+                        },
                        label: function(context) {
                            let label = context.dataset.label || '';
                            if (label) {
@@ -158,7 +171,7 @@ class InstallmentEvolutionChart extends ChartWidget
                            return label;
                        }
                    }
-               }
+               },
            }
         }
     JS);
