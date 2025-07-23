@@ -84,7 +84,6 @@ class InstallmentEvolutionChart extends ChartWidget
             [199, 21, 133],
         ];
 
-// Gera RGB e RGBA
         $fixedColors = array_map(fn($rgb) => [
             'fill' => "rgba({$rgb[0]}, {$rgb[1]}, {$rgb[2]}, 0.2)",
             'border' => "rgb({$rgb[0]}, {$rgb[1]}, {$rgb[2]})"
@@ -135,7 +134,14 @@ class InstallmentEvolutionChart extends ChartWidget
                   mode: 'index',
             },
             scales: {
+                 x: {
+                    display: true,
+                    title: {
+                      display: true
+                    }
+                 },
                 y: {
+                    display: true,
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
