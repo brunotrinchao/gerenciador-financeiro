@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Card;
 use App\Models\TransactionItem;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -10,6 +11,7 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Support\Colors\Color;
 use Saade\FilamentFullCalendar\Actions\ViewAction;
 use Saade\FilamentFullCalendar\Widgets\Concerns\InteractsWithEvents;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
@@ -55,7 +57,7 @@ class CalendarWidget extends FullCalendarWidget
 
     public function fetchEvents(array $fetchInfo): array
     {
-        return TransactionItem::query()
+        $transactionEvents = TransactionItem::query()
             ->whereHas('transaction', function ($q) {
                 $q->where('method', '!=', 'CARD');
             })
@@ -74,6 +76,53 @@ class CalendarWidget extends FullCalendarWidget
                 ]
             )
             ->all();
+
+        $cardDueEvents = Card::query()
+            ->with(['items', 'items.transaction.account.bank'])
+            ->whereNotNull('due_date')
+            ->get()
+            ->flatMap(function ($card) use ($fetchInfo) {
+                $events = [];
+                $start = \Carbon\Carbon::parse($fetchInfo['start'])->copy()->startOfMonth();
+                $end = \Carbon\Carbon::parse($fetchInfo['end'])->copy()->endOfMonth();
+
+                $current = $start->copy();
+
+                while ($current->lte($end)) {
+                    $dueDay = (int) $card->due_date;
+                    $dueDate = $current->copy()->day(min($dueDay, $current->daysInMonth));
+
+                    // Itens do mês do vencimento
+                    $itemsOfMonth = $card->transactions
+                        ->flatMap->items
+                        ->filter(fn ($item) => \Carbon\Carbon::parse($item->due_date)->isSameMonth($dueDate) &&
+                            \Carbon\Carbon::parse($item->due_date)->between($start, $end));
+
+                    $monthlyAmount = $itemsOfMonth->sum('amount');
+
+                    $allPaid = $itemsOfMonth->isNotEmpty() && $itemsOfMonth->every(fn ($item) => $item->status === 'PAID');
+                    $color = $allPaid ? 'PAID' : 'DEBIT';
+
+                    if ($dueDate->between($start, $end)) {
+                        $events[] = [
+                            'id' => 'card-due-' . $card->id . '-' . $dueDate->format('Y-m-d'),
+                            'title' => $card->name,
+                            'start' => $dueDate->toDateString(),
+                            'end' => $dueDate->toDateString(),
+                            'color' => $this->colorStatus($color),
+                            'amount' => $monthlyAmount,
+                            'shouldOpenUrlInNewTab' => false,
+                        ];
+                    }
+
+                    $current->addMonth();
+                }
+
+                return $events;
+            })
+            ->all();
+
+        return array_merge($transactionEvents, $cardDueEvents);
     }
 
     public function getFormSchema(): array

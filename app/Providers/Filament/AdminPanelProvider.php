@@ -56,7 +56,8 @@ class AdminPanelProvider extends PanelProvider
                 'info' => Color::Blue,
                 'success' => Color::Green,
                 'warning' => Color::Amber,
-                'stone' => Color::Stone
+                'stone' => Color::Stone,
+                'purple' => Color::Purple,
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
