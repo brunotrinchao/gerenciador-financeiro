@@ -61,38 +61,53 @@ class InstallmentEvolutionChart extends ChartWidget
             }
         }
 
-        $fixedColors = [
-            'rgb(255, 99, 132)',
-            'rgb(54, 162, 235)',
-            'rgb(255, 206, 86)',
-            'rgb(75, 192, 192)',
-            'rgb(153, 102, 255)',
-            'rgb(255, 159, 64)',
-            'rgb(201, 203, 207)',
-            'rgb(0, 128, 128)',
-            'rgb(255, 105, 180)',
-            'rgb(100, 149, 237)',
-            'rgb(255, 215, 0)',
-            'rgb(0, 206, 209)',
-            'rgb(139, 69, 19)',
-            'rgb(255, 69, 0)',
-            'rgb(46, 139, 87)',
-            'rgb(123, 104, 238)',
-            'rgb(72, 209, 204)',
-            'rgb(240, 230, 140)',
-            'rgb(70, 130, 180)',
-            'rgb(199, 21, 133)',
+        $baseColors = [
+            [255, 99, 132],
+            [54, 162, 235],
+            [255, 206, 86],
+            [75, 192, 192],
+            [153, 102, 255],
+            [255, 159, 64],
+            [201, 203, 207],
+            [0, 128, 128],
+            [255, 105, 180],
+            [100, 149, 237],
+            [255, 215, 0],
+            [0, 206, 209],
+            [139, 69, 19],
+            [255, 69, 0],
+            [46, 139, 87],
+            [123, 104, 238],
+            [72, 209, 204],
+            [240, 230, 140],
+            [70, 130, 180],
+            [199, 21, 133],
         ];
+
+// Gera RGB e RGBA
+        $fixedColors = array_map(fn($rgb) => [
+            'fill' => "rgba({$rgb[0]}, {$rgb[1]}, {$rgb[2]}, 0.2)",
+            'border' => "rgb({$rgb[0]}, {$rgb[1]}, {$rgb[2]})"
+        ], $baseColors);
 
         $datasets = [];
         $index = 0;
         foreach ($cardSums as $cardId => $values) {
+
+            $colors = $fixedColors[$index % count($fixedColors)];
+
             $datasets[] = [
                 'label' => $cardNames[$cardId],
                 'data' => $values,
-                'backgroundColor' => $fixedColors[$index],
-                'borderColor' => $fixedColors[$index],
-                'tension' => 0.6
+                'backgroundColor' => $colors['fill'],
+                'borderColor' => $colors['border'],
+                'pointBackgroundColor' => $colors['border'],
+                'pointBorderColor' => $colors['border'],
+                'borderWidth' => 2,
+                'tension' => 0.5,
+                'pointStyle' => 'circle',
+                'pointRadius' => 6,
+                'pointHoverRadius' => 9,
             ];
             $index++;
         }
@@ -128,6 +143,7 @@ class InstallmentEvolutionChart extends ChartWidget
                     }
                 }
             },
+            responsive: true,
             plugins: {
                tooltip: {
                    callbacks: {
