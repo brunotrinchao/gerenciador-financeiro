@@ -63,16 +63,16 @@ class UserResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('avatar_url')
-                    ->label(__('system.labels.avatar'))
+                    ->label(__('forms.forms.avatar'))
                     ->disk('public')
                     ->circular()
                     ->stacked(),
                 TextColumn::make('name')
-                    ->label(__('system.labels.name')),
+                    ->label(__('forms.forms.name')),
                 TextColumn::make('email')
-                    ->label(__('system.labels.email')),
+                    ->label(__('forms.forms.email')),
                 TextColumn::make('roles.name')
-                    ->label(__('system.labels.role'))
+                    ->label(__('forms.forms.role'))
                     ->formatStateUsing(function (Model $record) {
                         $role = $record->roles->first();
                         return $role ? RolesEnum::getLabel($role->name) : '-';
