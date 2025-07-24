@@ -8,6 +8,7 @@ use App\Helpers\Filament\ActionHelper;
 use App\Helpers\Filament\MaskHelper;
 use App\Models\Account;
 use App\Models\Card;
+use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Services\TransactionItemService;
@@ -31,9 +32,11 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class TransactionResource extends Resource
@@ -139,48 +142,87 @@ class TransactionResource extends Resource
                     ->toggleable(),
             ])
             ->filters([
-                DateRangeFilter::make('items_due_date')
-                    ->label(__('forms.filters.period'))
-                    ->startDate(Carbon::now()->startOfMonth())
-                    ->endDate(Carbon::now()->endOfMonth())
-                    ->withIndicator()
-                    ->useRangeLabels()
-                    ->autoApply()
-                    ->modifyQueryUsing(function (Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) {
-                        if (!empty($dateString) && $startDate && $endDate) {
+                Filter::make('filter')
+                    ->label(__('forms.columns.filter'))
+                    ->form([
+                        DateRangePicker::make('items_due_date')
+                            ->label(__('forms.filters.period'))
+                            ->startDate(Carbon::now()->startOfMonth())
+                            ->endDate(Carbon::now()->endOfMonth())
+                            ->minYear(2020)
+                            ->maxYear(Carbon::now()->addYear(5)->year)
+                            ->showDropdowns(),
+                        Select::make('category_id')
+                            ->label(__('system.labels.category'))
+                            ->relationship('category', 'name'),
+                        Select::make('method')
+                            ->label(__('forms.forms.method'))
+                            ->options([
+                                'CARD' => __('forms.enums.method.card'),
+                                'ACCOUNT' => __('forms.enums.method.account'),
+                                'CASH' => __('forms.enums.method.cash'),
+                            ]),
+                        Select::make('status')
+                            ->label(__('forms.forms.status'))
+                            ->options([
+                                'PENDING' => __('forms.enums.status.pending'),
+                                'PAID' => __('forms.enums.status.paid'),
+                                'SCHEDULED' => __('forms.enums.status.scheduled'),
+                                'DEBIT' => __('forms.enums.status.debit'),
+                            ])
+                    ])
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
 
-                            return $query->whereHas('items', function (Builder $q) use ($startDate, $endDate) {
+                        if (!empty($data['items_due_date'])) {
+                            $indicators[] = Indicator::make('Período: ' . $data['items_due_date'])
+                                ->removeField('items_due_date');
+                        }
+
+                        if (!empty($data['category_id'])) {
+                            $category = Category::find($data['category_id']);
+                            $indicators[] = Indicator::make('Categoria: ' . $category->name)
+                                ->removeField('category_id');
+                        }
+
+                        if (!empty($data['method'])) {
+                            $indicators[] = Indicator::make(__('forms.forms.method') . ': ' . __('forms.enums.method.' . strtolower($data['method'])))
+                                ->removeField('method');
+                        }
+
+                        if (!empty($data['status'])) {
+                            $indicators[] = Indicator::make(__('forms.forms.status') . ': ' . __('forms.enums.status.' . strtolower($data['status'])))
+                                ->removeField('status');
+                        }
+
+                        return $indicators;
+                    })
+
+                    ->modifyQueryUsing(function (Builder $query, array $data) {
+                        $dates = $data['items_due_date'] ?? null;
+                        $status = $data['status'] ?? null;
+                        $method = $data['method'] ?? null;
+                        $category = $data['category_id'] ?? null;
+
+                        $query->when($method, fn ($q) => $q->where('method', $method));
+                        $query->when($category, fn ($q) => $q->where('category_id', $category));
+
+                        if ($dates) {
+                            [$start, $end] = explode(' - ', $dates);
+                            $startDate = Carbon::createFromFormat('d/m/Y', trim($start))->startOfDay();
+                            $endDate = Carbon::createFromFormat('d/m/Y', trim($end))->endOfDay();
+
+                            $query->whereHas('items', function (Builder $q) use ($startDate, $endDate, $status) {
                                 $q->whereBetween('due_date', [$startDate, $endDate]);
+
+                                if ($status) {
+                                    $q->where('status', $status);
+                                }
                             });
                         }
 
                         return $query;
-                    }),
-                Tables\Filters\SelectFilter::make('category_id')
-                    ->label(__('system.labels.category'))
-                    ->relationship('category', 'name'),
-                Tables\Filters\SelectFilter::make('method')
-                    ->label(__('forms.forms.method'))
-                    ->options([
-                        'CARD' => __('forms.enums.method.card'),
-                        'ACCOUNT' => __('forms.enums.method.account'),
-                        'CASH' => __('forms.enums.method.cash'),
-                    ]),
-                Tables\Filters\SelectFilter::make('status')
-                    ->label(__('forms.forms.status'))
-                    ->options([
-                        'PENDING' => __('forms.enums.status.pending'),
-                        'PAID' => __('forms.enums.status.paid'),
-                        'SCHEDULED' => __('forms.enums.status.scheduled'),
-                        'DEBIT' => __('forms.enums.status.debit'),
-                    ])
-                ->modifyQueryUsing(function (Builder $query, array $data) {
-                    if ($data['value']) {
-                        $query->whereHas('items', function (Builder $q) use ($data) {
-                            $q->where('status', $data['value']);
-                        });
-                    }
-                })
+                    })
 
             ])
             ->actions([
