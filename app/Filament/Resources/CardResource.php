@@ -62,39 +62,39 @@ class CardResource extends Resource
         }');
 
         return $form->schema([
-            Select::make('bank_id')
-                ->label(__('forms.columns.bank'))
-                ->prefixIcon('phosphor-bank')
-                ->options(Bank::pluck('name', 'id'))
-                ->disabled(),
-            TextInput::make('name')
-                ->label(__('forms.columns.name'))
-                ->disabled(),
-            TextInput::make('number')
-                ->prefixIcon('heroicon-m-credit-card')
-                ->label(__('forms.columns.number'))
-                ->mask(RawJs::make(<<<'JS'
-                    $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
-                JS))
-                ->disabled(),
-            Select::make('brand_id')
-                ->label(__('forms.columns.brand'))
-                ->searchable()
-                ->relationship('brand', 'name')
-                ->preload()
-                ->disabled(),
-            TextInput::make('due_date')
-                ->label(__('forms.columns.due_date'))
-                ->numeric()
-                ->minValue(1)
-                ->maxValue(31)
-                ->disabled(),
-            TextInput::make('limit')
-                ->label(__('forms.columns.limit'))
-                ->prefix('R$')
-                ->mask($moneyMask)
-                ->default(0)
-                ->disabled(),
+//            Select::make('bank_id')
+//                ->label(__('forms.columns.bank'))
+//                ->prefixIcon('phosphor-bank')
+//                ->options(Bank::pluck('name', 'id'))
+//                ->disabled(),
+//            TextInput::make('name')
+//                ->label(__('forms.columns.name'))
+//                ->disabled(),
+//            TextInput::make('number')
+//                ->prefixIcon('heroicon-m-credit-card')
+//                ->label(__('forms.columns.number'))
+//                ->mask(RawJs::make(<<<'JS'
+//                    $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
+//                JS))
+//                ->disabled(),
+//            Select::make('brand_id')
+//                ->label(__('forms.columns.brand'))
+//                ->searchable()
+//                ->relationship('brand', 'name')
+//                ->preload()
+//                ->disabled(),
+//            TextInput::make('due_date')
+//                ->label(__('forms.columns.due_date'))
+//                ->numeric()
+//                ->minValue(1)
+//                ->maxValue(31)
+//                ->disabled(),
+//            TextInput::make('limit')
+//                ->label(__('forms.columns.limit'))
+//                ->prefix('R$')
+//                ->mask($moneyMask)
+//                ->default(0)
+//                ->disabled(),
         ]);
     }
 

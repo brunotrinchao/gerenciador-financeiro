@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
@@ -66,8 +67,7 @@ class TransactionResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([])
-            ->columns(3);
+            ->schema([]);
     }
 
     public static function table(Table $table): Table
@@ -390,11 +390,7 @@ class TransactionResource extends Resource
                 Tables\Actions\DeleteAction::make()
             ])
             ->bulkActions([
-//                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-//                ]),
             ])
-//            ->recordUrl(null)
             ->recordAction('editTransaction')
             ->headerActions([
                 ActionHelper::makeSlideOver(
