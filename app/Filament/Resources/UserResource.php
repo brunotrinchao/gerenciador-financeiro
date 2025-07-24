@@ -7,8 +7,11 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Helpers\Filament\ActionHelper;
 use App\Helpers\TranslateString;
+use App\Mail\OverdueTransactionItemsMail;
+use App\Mail\WelcomeToSystemCreateUser;
 use App\Models\Role;
 use App\Models\User;
+use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -24,6 +27,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Mail;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -87,31 +91,38 @@ class UserResource extends Resource
                     name: 'editUser',
                     form: [
                         TextInput::make('name')
-                            ->label(__('system.labels.name')),
+                            ->label(__('forms.forms.name')),
                         TextInput::make('email')
-                            ->label(__('system.labels.email')),
+                            ->label(__('forms.forms.email')),
                         Select::make('roles')
-                            ->label(__('system.labels.role'))
+                            ->label(__('forms.forms.role'))
                             ->options(
                                 collect(RolesEnum::cases())
-                                    ->filter(fn ($role) => $role !== RolesEnum::ADMIN)
+                                    ->filter(function ($role) {
+                                        // Oculta ADMIN se o usuário logado não for ADMIN
+                                        return $role !== RolesEnum::ADMIN->value || auth()->user()->hasRole(RolesEnum::ADMIN->value);
+                                    })
                                     ->mapWithKeys(fn ($role) => [$role->name => $role->value])
                                     ->toArray()
                             )
                             ->required(),
                         FileUpload::make('avatar_url')
-                            ->label(__('system.labels.avatar'))
+                            ->label(__('forms.forms.avatar'))
                             ->disk('public')
                             ->directory('avatars')
                             ->image()
                             ->imageEditor()
                     ],
                     modalHeading: __('forms.modal_headings.edit_user'),
-                    fillForm: fn ($record) => [
-                        'name' => $record->name,
-                        'email' => $record->email,
-                        'avatar_url' => $record->avatar_url
-                    ]
+                    fillForm: function ($record) {
+
+                        return [
+                            'name' => $record->name,
+                            'email' => $record->email,
+                            'avatar_url' => $record->avatar_url,
+                            'roles' => auth()->user()->getRoleNames()[0],
+                        ];
+                    }
                 ),
             ])
             ->recordUrl(null)
@@ -125,26 +136,26 @@ class UserResource extends Resource
                 ActionHelper::makeSlideOver(
                     name: 'createUser',
                     form: [
-                        TextInput::make('name')->label(__('system.labels.name'))->required(),
-                        TextInput::make('email')->label(__('system.labels.email'))->email()->required(),
+                        TextInput::make('name')->label(__('forms.forms.name'))->required(),
+                        TextInput::make('email')->label(__('forms.forms.email'))->email()->required(),
                         FileUpload::make('avatar_url')
-                            ->label(__('system.labels.avatar'))
+                            ->label(__('forms.forms.avatar'))
                             ->disk('public')
                             ->directory('avatars')
                             ->image()
                             ->imageEditor(),
                         TextInput::make('password')
-                            ->label(__('system.labels.password'))
+                            ->label(__('forms.forms.password'))
                             ->password()
                             ->required()
                             ->minLength(6),
                         TextInput::make('password_confirmation')
-                            ->label(__('system.labels.password_confirmation'))
+                            ->label(__('forms.forms.password_confirmation'))
                             ->password()
                             ->required()
                             ->same('password'),
                         Select::make('roles')
-                            ->label(__('system.labels.role'))
+                            ->label(__('forms.forms.role'))
                             ->options(
                                 collect(RolesEnum::cases())
                                     ->filter(fn ($role) => $role !== RolesEnum::ADMIN)
@@ -154,7 +165,7 @@ class UserResource extends Resource
                             ->required()
                     ],
                     modalHeading: __('system.modal_headings.create_user'),
-                    label: __('system.buttons.create'),
+                    label: __('forms.buttons.create'),
                     action: function (array $data) {
                         if (User::where('email', $data['email'])->exists()) {
                             Notification::make()
@@ -180,6 +191,8 @@ class UserResource extends Resource
                             ->body(__('forms.notifications.user_created_body'))
                             ->success()
                             ->send();
+
+                        Mail::to($user->email)->send(new WelcomeToSystemCreateUser($user));
                     }),
             ]);
     }

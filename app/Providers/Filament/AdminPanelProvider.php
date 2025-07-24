@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Enum\RolesEnum;
+use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Resources\TransactionItemResource;
 use App\Filament\Widgets\CountChartWidget;
 use App\Filament\Widgets\CountWidget;
@@ -44,10 +45,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('')
             ->profile(isSimple: false)
             ->login()
-            ->passwordReset()
+            ->passwordReset(RequestPasswordReset::class)
 //            ->brandLogo(asset('images/logo.svg'))
 //            ->brandName('Gerenciador financeiro')
-            ->defaultThemeMode(ThemeMode::Dark)
+            ->defaultThemeMode(ThemeMode::Light)
             ->font('Exo')
             ->colors([
                 'primary' => Color::Sky,
