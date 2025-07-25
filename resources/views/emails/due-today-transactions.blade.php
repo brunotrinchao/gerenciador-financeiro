@@ -58,7 +58,7 @@
 
     @foreach ($items as $item)
         @php
-            $parts = explode(' | ', $item);
+            $parts = explode(' <br> ', $item);
 
             $valor = $parts[0] ?? 'Valor não informado';
             $produto = $parts[1] ?? 'Produto não informado';

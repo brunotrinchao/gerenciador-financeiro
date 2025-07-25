@@ -19,9 +19,7 @@ class NotifyOverdueTransactionItems extends Command
 
     public function handle(): void
     {
-        $items = TransactionItem::with('transaction')
-            ->where('status', 'PENDING')
-            ->whereDate('due_date', '<', now())
+        $items = TransactionItem::with('transaction')->where('status', 'PENDING')->whereDate('due_date', '<', now())
             ->get();
 
         if ($items->isEmpty()) {
