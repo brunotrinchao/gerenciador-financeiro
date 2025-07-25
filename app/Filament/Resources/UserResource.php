@@ -28,6 +28,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
@@ -152,12 +153,15 @@ class UserResource extends Resource
                             ->label(__('forms.forms.password'))
                             ->password()
                             ->required()
-                            ->minLength(6),
+                            ->minLength(6)
+                            ->same('password_confirmation')
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->dehydrateStateUsing(fn ($state) => Hash::make($state)),
                         TextInput::make('password_confirmation')
                             ->label(__('forms.forms.password_confirmation'))
                             ->password()
                             ->required()
-                            ->same('password'),
+                            ->dehydrated(false),
                         Select::make('roles')
                             ->label(__('forms.forms.role'))
                             ->options(
@@ -180,10 +184,7 @@ class UserResource extends Resource
                             return;
                         }
 
-                        $data['password'] = bcrypt($data['password']);
-                        unset($data['password_confirmation']);
-
-                        $user = \App\Models\User::create($data);
+                        $user = User::create($data);
                         if (isset($data['roles'])) {
                             $role = \Spatie\Permission\Models\Role::where('name', $data['roles'])->first();
                             if ($role) {
