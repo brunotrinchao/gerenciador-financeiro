@@ -17,6 +17,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Auth\VerifyEmail;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -75,6 +76,9 @@ class UserResource extends Resource
                     ->label(__('forms.forms.name')),
                 TextColumn::make('email')
                     ->label(__('forms.forms.email')),
+                Tables\Columns\TextColumn::make('email_verified_at')
+                    ->label('Email Verified')
+                    ->dateTime('d m Y H:i'),
                 TextColumn::make('roles.name')
                     ->label(__('forms.forms.role'))
                     ->formatStateUsing(function (Model $record) {
@@ -192,8 +196,12 @@ class UserResource extends Resource
                             ->success()
                             ->send();
 
-                        Mail::to($user->email)->send(new WelcomeToSystemCreateUser($user));
-                    }),
+//                        Mail::to($user->email)->send(new WelcomeToSystemCreateUser($user));
+                        $notification = new VerifyEmail();
+                        $notification->url = filament()->getVerifyEmailUrl($user);
+                        $user->notify($notification);
+                    })
+                    ->requiresConfirmation(),
             ]);
     }
 
