@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -142,6 +143,11 @@ class TransactionItemService
                 'installment_number' => $installmentNumber,
                 'due_date' => $dueDate,
             ]);
+
+            Notification::make()
+                ->title('Registro atualizado com sucesso!')
+                ->success()
+                ->send();
         }
     }
 }

@@ -12,6 +12,7 @@ use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Services\TransactionItemService;
+use App\Services\TransactionService;
 use Carbon\Carbon;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
@@ -36,6 +37,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
@@ -114,8 +116,12 @@ class TransactionResource extends Resource
                 TextColumn::make('installment_value')
                     ->label('Valor da Parcela')
                     ->getStateUsing(function ($record) {
+                        $interval = $record->items()
+                            ->where('status', '<>', 'PAID');
+
+                        $sum = $interval->sum('amount');
                         if ($record->recurrence_interval > 0) {
-                            return round($record->amount / $record->recurrence_interval) / 100;
+                            return round($sum/ $interval->count()) / 100;
                         }
                         return null;
                     })
@@ -375,22 +381,19 @@ class TransactionResource extends Resource
                         'user_id'             => $record->user_id,
                     ],
                     action: function (array $data, $record) {
-                        if(isset($data['amount']) && !empty($data['amount'])) {
-                            $data['amount'] = (int) preg_replace('/[^0-9,]/', '', $data['amount']);
-                        }
-
-                        $record->update($data);
-
-                        $service = new TransactionItemService();
-                        $service->update($record, false);
-
-                        return true;
+                        app(TransactionService::class)->update($record, $data);
                     }
                 ),
                 Tables\Actions\DeleteAction::make()
             ])
             ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()
             ])
+            ->checkIfRecordIsSelectableUsing(
+                function (Model $record) {
+                    return !$record?->items()->where('status', 'PAID')->exists();
+                }
+            )
             ->recordAction('editTransaction')
             ->headerActions([
                 ActionHelper::makeSlideOver(
@@ -495,55 +498,8 @@ class TransactionResource extends Resource
                     ],
                     modalHeading: __('forms.modal_headings.create_transaction'),
                     label: __('forms.buttons.create'),
-                    action: function (array $data, Action $action) {
-
-                        $data['amount'] = preg_replace('/[^0-9,]/', '', $data['amount']);
-
-                        $transaction = Transaction::create($data);
-
-                        $installmentsCount = !empty($data['is_recurring']) ? (int) ($data['recurrence_interval'] ?? 1) : 1;
-
-                        $amount = (int) str_replace(['.', ','], ['', '.'], $data['amount']);
-
-
-                        $baseValue = intdiv($amount, $installmentsCount);
-                        $remaining = $amount - ($baseValue * $installmentsCount);
-
-                        $date = Carbon::parse($data['date']);
-
-                        $cardDueDay = null;
-                        if ($data['method'] === 'CARD' && !empty($data['card_id'])) {
-                            $card = \App\Models\Card::find($data['card_id']);
-                            if ($card && $card->due_date) {
-                                $cardDueDay = (int) $card->due_date;
-                            }
-                        }
-
-                        for ($i = 0; $i < $installmentsCount; $i++) {
-                            $currentAmount = $i === $installmentsCount - 1 ? $baseValue + $remaining : $baseValue;
-                            $paymentDate = (clone $date)->addMonths($i);
-
-                            if ($cardDueDay) {
-                                $paymentDate->day = min($cardDueDay, $paymentDate->daysInMonth);
-                            }
-                            $paidInterval = $data['paid_interval'] ?? 0;
-                            $paidIntervalItem = $paidInterval > 0 && $i + 1 <= $paidInterval;
-                            $status = $paidIntervalItem ? 'PAID' : (in_array($data['method'], ['CARD', 'ACCOUNT']) ? 'DEBIT' : 'PENDING');
-                            TransactionItem::create([
-                                'transaction_id' => $transaction->id,
-                                'due_date' => $paymentDate,
-                                'payment_date' => $paidIntervalItem ? $paymentDate : null,
-                                'amount' => $currentAmount,
-                                'installment_number' => $i + 1,
-                                'status' =>  $status,
-                            ]);
-                        }
-
-                        Notification::make()
-                            ->title(__('forms.notifications.transaction_created_title'))
-                            ->body(trans_choice(__('forms.notifications.transaction_created_body'), $installmentsCount, ['count' => $installmentsCount]))
-                            ->success()
-                            ->send();
+                    action: function (array $data) {
+                        app(TransactionService::class)->create($data);
                     }
                 ),
             ]);

@@ -46,7 +46,7 @@ class AdminPanelProvider extends PanelProvider
             ->profile(isSimple: false)
             ->login()
             ->passwordReset()
-            ->emailVerification()
+//            ->emailVerification()
 //            ->brandLogo(asset('images/logo.svg'))
 //            ->brandName('Gerenciador financeiro')
             ->defaultThemeMode(ThemeMode::Light)
