@@ -59,7 +59,8 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label(__('forms.columns.name')),
+                    ->label(__('forms.columns.name'))
+                    ->searchable(),
             ])
             ->actions([
                 ActionHelper::makeSlideOver(

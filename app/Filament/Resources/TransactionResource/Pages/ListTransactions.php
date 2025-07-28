@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TransactionResource\Pages;
 
+use App\Enum\TransactionTypeEnum;
 use App\Filament\Resources\TransactionResource;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;
@@ -11,8 +12,6 @@ use Illuminate\Database\Eloquent\Builder;
 class ListTransactions extends ListRecords
 {
     protected static string $resource = TransactionResource::class;
-
-    protected static ?string $navigationSearch = 'description';
 
     protected function getHeaderActions(): array
     {
@@ -26,10 +25,13 @@ class ListTransactions extends ListRecords
         return [
             'Todos' => Tab::make(),
             'Receita' => Tab::make()->modifyQueryUsing(function (Builder $query) {
-                $query->where('type', 'INCOME');
+                $query->where('type', TransactionTypeEnum::INCOME->name);
             }),
             'Despesa' => Tab::make()->modifyQueryUsing(function (Builder $query) {
-                $query->where('type', 'EXPENSE');
+                $query->where('type', TransactionTypeEnum::EXPENSE->name);
+            }),
+            'Transferência' => Tab::make()->modifyQueryUsing(function (Builder $query) {
+                $query->where('type', TransactionTypeEnum::TRANSFER->name);
             })
         ];
     }

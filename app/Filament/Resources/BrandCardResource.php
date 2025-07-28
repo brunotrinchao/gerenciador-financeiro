@@ -60,7 +60,8 @@ class BrandCardResource extends Resource
                     ->height(25),
 
                 TextColumn::make('name')
-                    ->label(__('forms.columns.name')),
+                    ->label(__('forms.columns.name'))
+                    ->searchable(),
 
                 TextColumn::make('slug')
                     ->label('Slug'),

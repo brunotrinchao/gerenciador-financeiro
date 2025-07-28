@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\TransactionTypeEnum;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
 use App\Helpers\Filament\ActionHelper;
@@ -39,8 +40,10 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Route;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use Filament\Tables\Filters\TrashedFilter;
 
 class TransactionResource extends Resource
 {
@@ -82,9 +85,15 @@ class TransactionResource extends Resource
                     ->color(fn (string $state): string => match ($state) {
                         'INCOME' => 'success',
                         'EXPENSE' => 'danger',
+                        'TRANSFER' => 'purple',
                     })
                     ->sortable()
-                    ->formatStateUsing(fn (string $state) => __('forms.enums.transaction_type.' . $state)),
+                    ->formatStateUsing(fn (string $state) => __('forms.enums.transaction_type.' . $state))
+                ->icon(fn (string $state): string => match ($state) {
+                    'INCOME' => 'heroicon-o-arrow-long-up',
+                    'EXPENSE' => 'heroicon-o-arrow-long-down',
+                    'TRANSFER' => 'heroicon-o-arrows-right-left',
+                }),
                 TextColumn::make('description')
                     ->label(__('forms.columns.description'))
                     ->limit(20)
@@ -121,7 +130,11 @@ class TransactionResource extends Resource
 
                         $sum = $interval->sum('amount');
                         if ($record->recurrence_interval > 0) {
-                            return round($sum/ $interval->count()) / 100;
+                            $count = $interval->count() > 0 ? $interval->count() : 1;
+                            if($count == 1){
+                                return $record->amount / 100;
+                            }
+                            return round($sum/ $count) / 100;
                         }
                         return null;
                     })
@@ -146,8 +159,15 @@ class TransactionResource extends Resource
                     ->label(__('forms.columns.method'))
                     ->getStateUsing(fn ($record) => __('forms.enums.method.' . strtolower($record->method)))
                     ->toggleable(),
+                TextColumn::make('deleted_at')
+                    ->label('Deletado em')
+                    ->date('d/m/Y')
+                    ->toggleable(isToggledHiddenByDefault: true)
             ])
             ->filters([
+
+                TrashedFilter::make()
+                    ->visible(fn () => auth()->user()?->hasRole('ADMIN')),
                 Filter::make('filter')
                     ->label(__('forms.columns.filter'))
                     ->form([
@@ -203,7 +223,6 @@ class TransactionResource extends Resource
 
                         return $indicators;
                     })
-
                     ->modifyQueryUsing(function (Builder $query, array $data) {
                         $dates = $data['items_due_date'] ?? null;
                         $status = $data['status'] ?? null;
@@ -226,172 +245,183 @@ class TransactionResource extends Resource
                                 }
                             });
                         }
-
                         return $query;
                     })
 
             ])
             ->actions([
-                ActionHelper::makeSlideOver(
-                    name: 'editTransaction',
-                    form: [
-                        Radio::make('type')
-                            ->label(__('forms.forms.type'))
-                            ->options([
-                                'INCOME' => __('forms.enums.transaction_type.INCOME'),
-                                'EXPENSE' => __('forms.enums.transaction_type.EXPENSE'),
-                            ])
-                            ->inline()
-                            ->required()
-                            ->inlineLabel(false),
-                        Select::make('category_id')
-                            ->required()
-                            ->label(__('forms.forms.category'))
-                            ->relationship('category', 'name'),
-                        Select::make('method')
-                            ->label(__('forms.forms.method'))
-                            ->options([
-                                'CARD' => __('forms.enums.method.card'),
-                                'ACCOUNT' => __('forms.enums.method.account'),
-                                'CASH' => __('forms.enums.method.cash'),
-                            ])
-                            ->reactive()
-                            ->required()
-                            ->disabled(function ($get, $record) {
-                                return $record?->items()->where('status', 'PAID')->exists();
-                            })
-                            ->hint(function ($get, $record) {
-                                return $record?->items()->where('status', 'PAID')->exists()
-                                    ? 'Este campo está bloqueado porque há parcelas já pagas.'
-                                    : null;
-                            }),
-                        Select::make('card_id')
-                            ->label(__('forms.forms.card'))
-                            ->options(fn () => Card::all()->pluck('name', 'id'))
-                            ->visible(fn ($get) => $get('method') === 'CARD')
-                            ->required(fn ($get) => $get('method') === 'CARD')
-                            ->disabled(function ($get, $record) {
-                                return $get('method') === 'CARD' && $record?->items()->where('status', 'PAID')->exists();
-                            })
-                            ->hint(function ($get, $record) {
-                                return $get('method') === 'CARD' && $record?->items()->where('status', 'PAID')->exists()
-                                    ? 'Este campo está bloqueado porque há parcelas já pagas.'
-                                    : null;
-                            }),
-                        Select::make('account_id')
-                            ->label(__('forms.forms.account'))
-                            ->options(fn () => Account::with('bank')->get()->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
-                            ->visible(fn ($get) => $get('method') === 'ACCOUNT')
-                            ->required(fn ($get) => $get('method') === 'ACCOUNT'),
-                        TextInput::make('amount')
-                            ->required()
-                            ->label(__('forms.forms.amount'))
-                            ->mask(MaskHelper::maskMoney())
-                            ->stripCharacters(',')
-                            ->numeric()
-                            ->prefix('R$')
-                            ->disabled(function ($get, $record) {
+//                ActionHelper::makeSlideOver(
+//                    name: 'editTransaction',
+//                    form: [
+//                        Grid::make(3)->schema([
+//                            Select::make('type')
+//                                ->label(__('forms.forms.type'))
+//                                ->options([
+//                                    TransactionTypeEnum::INCOME->name => __('forms.enums.transaction_type.INCOME'),
+//                                    TransactionTypeEnum::EXPENSE->name => __('forms.enums.transaction_type.EXPENSE'),
+//                                    TransactionTypeEnum::TRANSFER->name => __('forms.enums.transaction_type.TRANSFER'),
+//                                ])
+//                                ->reactive()
+//                                ->required(),
+//                            Select::make('category_id')
+//                                ->required()
+//                                ->label(__('forms.forms.category'))
+//                                ->relationship('category', 'name'),
+//                            Select::make('method')
+//                                ->label(__('forms.forms.method'))
+//                                ->options([
+//                                    'CARD' => __('forms.enums.method.card'),
+//                                    'ACCOUNT' => __('forms.enums.method.account'),
+//                                    'CASH' => __('forms.enums.method.cash'),
+//                                ])
+//                                ->reactive()
+//                                ->required()
+//                                ->disabled(function ($get, $record) {
+//                                    return $record?->items()->where('status', 'PAID')->exists();
+//                                })
+//                                ->hint(function ($get, $record) {
+//                                    $items = $record?->items()->where('status', 'PAID');
+//                                    $s = $items->count() > 1 ? 's' : null;
+//                                    return $items->exists()
+//                                        ? "{$items->count()} parcela{$s} já paga{$s}."
+//                                        : null;
+//                                }),
+//                        ]),
+//                        Select::make('card_id')
+//                            ->label(__('forms.forms.card'))
+//                            ->options(fn () => Card::all()->pluck('name', 'id'))
+//                            ->visible(fn ($get) => $get('method') === 'CARD')
+//                            ->required(fn ($get) => $get('method') === 'CARD')
+//                            ->disabled(function ($get, $record) {
+//                                return $get('method') === 'CARD' && $record?->items()->where('status', 'PAID')->exists();
+//                            })
+//                            ->hint(function ($get, $record) {
+//                                $items = $record?->items()->where('status', 'PAID');
+//                                $s = $items->count() > 1 ? 's' : null;
+//                                return $items->exists()
+//                                    ? "{$items->count()} parcela{$s} já paga{$s}."
+//                                    : null;
+//                            }),
+//                        Select::make('account_id')
+//                            ->label(__('forms.forms.account'))
+//                            ->options(fn () => Account::with('bank')->get()->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
+//                            ->visible(fn ($get) => $get('method') === 'ACCOUNT')
+//                            ->required(fn ($get) => $get('method') === 'ACCOUNT'),
+//                        TextInput::make('amount')
+//                            ->required()
+//                            ->label(__('forms.forms.amount'))
+//                            ->mask(MaskHelper::maskMoney())
+//                            ->stripCharacters(',')
+//                            ->numeric()
+//                            ->prefix('R$')
+//                            ->disabled(function ($get, $record) {
 //                                return $record?->items()->where('status', 'PAID')->exists();
-                            })
-                            ->hint(function ($get, $record) {
-                                $amount = (int) $get('amount');
-
-                                $installments = (int) $get('recurrence_interval');
-
-                                if ($record?->items()->where('status', 'PAID')->exists()) {
-                                    return 'Este campo está bloqueado porque há parcelas já pagas.';
-                                }
-
-                                if ($amount > 0 && $installments > 0) {
-                                    $valuePerInstallment = round(($amount / 100) / $installments, 2);
-
-                                    return 'Valor por parcela: R$ ' . number_format($valuePerInstallment, 2, ',', '.');
-                                }
-
-                                return null;
-                            }),
-                        DatePicker::make('date')
-                            ->required()
-                            ->label(__('forms.forms.date')),
-                        Textarea::make('description')
-                            ->required()
-                            ->label(__('forms.forms.description'))
-                            ->maxLength(100),
-                        Toggle::make('is_recurring')
-                            ->label(__('forms.forms.is_recurring'))
-                            ->default(false)
-                            ->inline(false)
-                            ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null))
-                            ->disabled(function ($get, $record) {
-                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists();
-                            })
-                            ->hint(function ($get, $record) {
-                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists()
-                                    ? 'Este campo está bloqueado porque há parcelas já pagas.'
-                                    : null;
-                            }),
-                        TextInput::make('recurrence_interval')
-                            ->required(fn ($get) => $get('is_recurring'))
-                            ->label(__('forms.forms.recurrence_interval'))
-                            ->hidden(fn ($get) => !$get('is_recurring'))
-                            ->numeric()
-                            ->minValue(fn ($get) => $get('is_recurring') ? 2 : null)
-                            ->disabled(function ($get, $record) {
-                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists();
-                            })
-                            ->hint(function ($get, $record) {
-                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists()
-                                    ? 'Este campo está bloqueado porque há parcelas já pagas.'
-                                    : null;
-                            }),
-                        Select::make('recurrence_type')
-                            ->label(__('forms.forms.recurrence_type'))
-                            ->options([
-                                'DAILY' => __('forms.enums.recurrence_type.DAILY'),
-                                'WEEKLY' => __('forms.enums.recurrence_type.WEEKLY'),
-                                'MONTHLY' => __('forms.enums.recurrence_type.MONTHLY'),
-                                'YEARLY' => __('forms.enums.recurrence_type.YEARLY'),
-                            ])
-                            ->hidden(fn ($get) => !$get('is_recurring'))
-                            ->disabled(function ($get, $record) {
-                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists();
-                            })
-                            ->hint(function ($get, $record) {
-                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists()
-                                    ? 'Este campo está bloqueado porque há parcelas já pagas.'
-                                    : null;
-                            }),
-                        Forms\Components\Hidden::make('user_id')->default(auth()->id()),
-                    ],
-                    modalHeading: __('forms.modal_headings.edit_transaction'),
-                    label: __('forms.buttons.edit'),
-                    fillForm: fn ($record) => [
-                        'type'                => $record->type,
-                        'category_id'         => $record->category_id,
-                        'method'              => $record->method,
-                        'card_id'             => $record->card_id,
-                        'account_id'          => $record->account_id,
-                        'amount'              => $record->amount,
-                        'date'                => $record->date,
-                        'description'         => $record->description,
-                        'is_recurring'        => $record->is_recurring,
-                        'recurrence_interval' => $record->recurrence_interval,
-                        'recurrence_type'     => $record->recurrence_type,
-                        'user_id'             => $record->user_id,
-                    ],
-                    action: function (array $data, $record) {
-                        app(TransactionService::class)->update($record, $data);
-                    }
-                ),
-                Tables\Actions\DeleteAction::make()
+//                            })
+//                            ->hint(function ($get, $record) {
+//                                $amount = (int) $get('amount');
+//
+//                                $installments = (int) $get('recurrence_interval');
+//                                $items = $record?->items()->where('status', 'PAID');
+//                                $s = $items->count() > 1 ? 's' : null;
+//                                if ($items->exists()) {
+//                                    return "{$items->count()} parcela{$s} já paga{$s}.";
+//                                }
+//
+//                                if ($amount > 0 && $installments > 0) {
+//                                    $valuePerInstallment = round(($amount / 100) / $installments, 2);
+//
+//                                    return 'Valor por parcela: R$ ' . number_format($valuePerInstallment, 2, ',', '.');
+//                                }
+//
+//                                return null;
+//                            }),
+//                        DatePicker::make('date')
+//                            ->required()
+//                            ->label(__('forms.forms.date')),
+//                        Textarea::make('description')
+//                            ->required()
+//                            ->label(__('forms.forms.description'))
+//                            ->maxLength(100),
+//                        Toggle::make('is_recurring')
+//                            ->label(__('forms.forms.is_recurring'))
+//                            ->default(false)
+//                            ->inline(false)
+//                            ->reactive()
+//                            ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null))
+//                            ->disabled(function ($get, $record) {
+//                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists();
+//                            })
+//                            ->hint(function ($get, $record) {
+//                                $items = $record?->items()->where('status', 'PAID');
+//                                $s = $items->count() > 1 ? 's' : null;
+//                                return $items->exists()
+//                                    ? "{$items->count()} parcela{$s} já paga{$s}."
+//                                    : null;
+//                            }),
+//                        TextInput::make('recurrence_interval')
+//                            ->required(fn ($get) => $get('is_recurring'))
+//                            ->label(__('forms.forms.recurrence_interval'))
+//                            ->hidden(fn ($get) => !$get('is_recurring'))
+//                            ->numeric()
+//                            ->minValue(fn ($get) => $get('is_recurring') ? 2 : null)
+//                            ->disabled(function ($get, $record) {
+//                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists();
+//                            })
+//                            ->hint(function ($get, $record) {
+//                                $items = $record?->items()->where('status', 'PAID');
+//                                $s = $items->count() > 1 ? 's' : null;
+//                                return $items->exists()
+//                                    ? "{$items->count()} parcela{$s} já paga{$s}."
+//                                    : null;
+//                            }),
+//                        Select::make('recurrence_type')
+//                            ->label(__('forms.forms.recurrence_type'))
+//                            ->options([
+//                                'DAILY' => __('forms.enums.recurrence_type.DAILY'),
+//                                'WEEKLY' => __('forms.enums.recurrence_type.WEEKLY'),
+//                                'MONTHLY' => __('forms.enums.recurrence_type.MONTHLY'),
+//                                'YEARLY' => __('forms.enums.recurrence_type.YEARLY'),
+//                            ])
+//                            ->hidden(fn ($get) => !$get('is_recurring'))
+//                            ->disabled(function ($get, $record) {
+//                                return $get('is_recurring') && $record?->items()->where('status', 'PAID')->exists();
+//                            })
+//                            ->hint(function ($get, $record) {
+//                                $items = $record?->items()->where('status', 'PAID');
+//                                $s = $items->count() > 1 ? 's' : null;
+//                                return $items->exists()
+//                                    ? "{$items->count()} parcela{$s} já paga{$s}."
+//                                    : null;
+//                            }),
+//                        Forms\Components\Hidden::make('user_id')->default(auth()->id()),
+//                    ],
+//                    modalHeading: __('forms.modal_headings.edit_transaction'),
+//                    label: __('forms.buttons.edit'),
+//                    fillForm: fn ($record) => [
+//                        'type'                => $record->type,
+//                        'category_id'         => $record->category_id,
+//                        'method'              => $record->method,
+//                        'card_id'             => $record->card_id,
+//                        'account_id'          => $record->account_id,
+//                        'amount'              => $record->amount,
+//                        'date'                => $record->date,
+//                        'description'         => $record->description,
+//                        'is_recurring'        => $record->is_recurring,
+//                        'recurrence_interval' => $record->recurrence_interval,
+//                        'recurrence_type'     => $record->recurrence_type,
+//                        'user_id'             => $record->user_id,
+//                    ],
+//                    action: function (array $data, $record) {
+//                        app(TransactionService::class)->update($record, $data);
+//                    }
+//                ),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()
             ])
             ->checkIfRecordIsSelectableUsing(
-                function (Model $record) {
-                    return !$record?->items()->where('status', 'PAID')->exists();
+                function (Transaction $record) {
+                    return !$record?->trashed();
                 }
             )
             ->recordAction('editTransaction')
@@ -401,47 +431,106 @@ class TransactionResource extends Resource
                     form: [
                         Grid::make(3)->schema(
                             [
-                                Radio::make('type')
+                                Select::make('type')
                                     ->label(__('forms.forms.type'))
                                     ->options([
-                                        'INCOME' => __('forms.enums.transaction_type.INCOME'),
-                                        'EXPENSE' => __('forms.enums.transaction_type.EXPENSE'),
-                                    ])
-                                    ->inline()
-                                    ->required()
-                                    ->inlineLabel(false),
-                                Select::make('category_id')
-                                    ->required()
-                                    ->label(__('forms.forms.category'))
-                                    ->relationship('category', 'name'),
-                                Select::make('method')
-                                    ->label(__('forms.forms.method'))
-                                    ->options([
-                                        'CARD' => __('forms.enums.method.card'),
-                                        'ACCOUNT' => __('forms.enums.method.account'),
-                                        'CASH' => __('forms.enums.method.cash'),
+                                        TransactionTypeEnum::INCOME->name => __('forms.enums.transaction_type.INCOME'),
+                                        TransactionTypeEnum::EXPENSE->name => __('forms.enums.transaction_type.EXPENSE'),
+                                        TransactionTypeEnum::TRANSFER->name => __('forms.enums.transaction_type.TRANSFER'),
                                     ])
                                     ->reactive()
                                     ->required(),
+                                Select::make('method')
+                                    ->label(__('forms.forms.method'))
+                                    ->options(function (callable $get) {
+                                        $type = $get('type');
+                                        $accountName = $type !== TransactionTypeEnum::TRANSFER->name ? __('forms.enums.method.account') : __('forms.enums.method.beteewn_account');
+                                        $options = [
+                                            'ACCOUNT' => $accountName,
+                                            'CASH' => __('forms.enums.method.cash'),
+                                        ];
+
+                                        if (!in_array($type,[TransactionTypeEnum::TRANSFER->name, TransactionTypeEnum::INCOME->name])) {
+                                            $options['CARD'] = __('forms.enums.method.card');
+                                        }
+
+                                        return $options;
+                                    })
+                                    ->reactive()
+                                    ->required()
+                                    ->disabled(fn ($get) => $get('type') === null || $get('type') === ''),
+                                Select::make('category_id')
+                                    ->required()
+                                    ->label(__('forms.forms.category'))
+                                    ->relationship('category', 'name')
+                                    ->disabled(fn ($get) => $get('type') === null || $get('type') === '' || $get('method') === null || $get('method') === ''),
                             ]
                         ),
                         Grid::make(3)->schema([
+                            // TRANSFERÊNCIA (origem - apenas se ACCOUNT)
+                            Select::make('origin_account_id')
+                                ->label(__('forms.forms.origin_account'))
+                                ->options(fn () => Account::with('bank')->get()
+                                    ->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
+                                ->visible(fn ($get) =>
+                                    $get('type') === TransactionTypeEnum::TRANSFER->name &&
+                                    $get('method') === 'ACCOUNT'
+                                )
+                                ->required(fn ($get) =>
+                                    $get('type') === TransactionTypeEnum::TRANSFER->name &&
+                                    $get('method') === 'ACCOUNT'
+                                ),
 
+                            // TRANSFERÊNCIA (destino - sempre se ACCOUNT ou CASH)
+                            Select::make('target_account_id')
+                                ->label(__('forms.forms.target_account'))
+                                ->options(fn () => Account::with('bank')->get()
+                                    ->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
+                                ->visible(fn ($get) =>
+                                    $get('type') === TransactionTypeEnum::TRANSFER->name &&
+                                    in_array($get('method'), ['ACCOUNT', 'CASH'])
+                                )
+                                ->required(fn ($get) =>
+                                    $get('type') === TransactionTypeEnum::TRANSFER->name &&
+                                    in_array($get('method'), ['ACCOUNT', 'CASH'])
+                                ),
+
+                            // NÃO TRANSFER: Cartão
                             Select::make('card_id')
                                 ->label(__('forms.forms.card'))
                                 ->options(fn () => Card::all()->pluck('name', 'id'))
-                                ->visible(fn ($get) => $get('method') === 'CARD')
-                                ->required(fn ($get) => $get('method') === 'CARD'),
+                                ->visible(fn ($get) =>
+                                    $get('type') !== TransactionTypeEnum::TRANSFER->name &&
+                                    $get('method') === 'CARD'
+                                )
+                                ->required(fn ($get) =>
+                                    $get('type') !== TransactionTypeEnum::TRANSFER->name &&
+                                    $get('method') === 'CARD'
+                                ),
+
+                            // NÃO TRANSFER: Conta
                             Select::make('account_id')
                                 ->label(__('forms.forms.account'))
-                                ->options(fn () => Account::with('bank')->get()->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
-                                ->visible(fn ($get) => $get('method') === 'ACCOUNT')
-                                ->required(fn ($get) => $get('method') === 'ACCOUNT'),
+                                ->options(fn () => Account::with('bank')->get()
+                                    ->mapWithKeys(fn ($account) => [$account->id => $account->bank->name ?? 'Sem banco']))
+                                ->visible(fn ($get) =>
+                                    $get('type') !== TransactionTypeEnum::TRANSFER->name &&
+                                    $get('method') === 'ACCOUNT'
+                                )
+                                ->required(fn ($get) =>
+                                    $get('type') !== TransactionTypeEnum::TRANSFER->name &&
+                                    $get('method') === 'ACCOUNT'
+                                ),
                         ]),
                         Grid::make(3)->schema([
                             TextInput::make('description')
                                 ->required()
-                                ->label(__('forms.forms.description')),
+                                ->label(__('forms.forms.description'))
+                                ->required()
+                                ->disabled(function ($get) {
+                                    return $get('type') === null ||  $get('type') === '' ||
+                                            $get('method') === null ||  $get('method') === '';
+                                }),
                             TextInput::make('amount')
                                 ->required()
                                 ->label(__('forms.forms.amount'))
@@ -461,16 +550,29 @@ class TransactionResource extends Resource
                                     }
 
                                     return null;
+                                })
+                                ->disabled(function ($get) {
+                                    return $get('type') === null ||  $get('type') === '' ||
+                                        $get('method') === null ||  $get('method') === '';
                                 }),
                             DatePicker::make('date')
                                 ->required()
-                                ->label(__('forms.forms.date')),
+                                ->label(__('forms.forms.date'))
+                                ->default(now())
+                                ->disabled(function ($get) {
+                                    return $get('type') === null ||  $get('type') === '' ||
+                                        $get('method') === null ||  $get('method') === '';
+                                }),
                             Toggle::make('is_recurring')
                                 ->label(__('forms.forms.is_recurring'))
                                 ->default(false)
                                 ->inline(false)
                                 ->reactive()
-                                ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null)),
+                                ->afterStateUpdated(fn ($state, callable $set) => $set('recurrence_interval', $state ? 1 : null))
+                                ->visible(fn ($get) =>
+                                    $get('type') !== TransactionTypeEnum::TRANSFER->name
+                                )
+                                ->disabled(fn ($get) => $get('type') === null || $get('type') === ''),
                             TextInput::make('recurrence_interval')
                                 ->label(__('forms.forms.recurrence_interval'))
                                 ->hidden(fn ($get) => !$get('is_recurring'))
@@ -514,11 +616,13 @@ class TransactionResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->with([
+        $query = parent::getEloquentQuery();
+        $query->with([
                 'account.bank',
                 'card',
             ]);
+
+        return $query;
     }
 
     public static function getPages(): array

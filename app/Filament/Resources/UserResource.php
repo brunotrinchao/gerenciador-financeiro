@@ -74,9 +74,11 @@ class UserResource extends Resource
                     ->circular()
                     ->stacked(),
                 TextColumn::make('name')
-                    ->label(__('forms.forms.name')),
+                    ->label(__('forms.forms.name'))
+                    ->searchable(),
                 TextColumn::make('email')
-                    ->label(__('forms.forms.email')),
+                    ->label(__('forms.forms.email'))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->label('Email Verified')
                     ->dateTime('d m Y H:i'),

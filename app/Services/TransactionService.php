@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Enum\TransactionTypeEnum;
 use App\Models\Account;
 use App\Models\Card;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use App\Models\Transfer;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,11 @@ class TransactionService
     {
         DB::transaction(function () use ($data) {
             $data['amount'] = preg_replace('/[^0-9,]/', '', $data['amount']);
+
+            if($data['type'] == TransactionTypeEnum::TRANSFER->value){
+                $this->handleTransfer($data);
+                return;
+            }
 
             $transaction = Transaction::create($data);
 
@@ -36,6 +43,17 @@ class TransactionService
         if(isset($data['amount']) && !empty($data['amount'])) {
             $data['amount'] = (int) preg_replace('/[^0-9,]/', '', $data['amount']);
         }
+
+        if($record->type == TransactionTypeEnum::TRANSFER->value){
+            $transfer = Transfer::where('source_transaction_id', $record->id)
+                ->orWhere('target_transaction_id', $record->id)
+                ->first();
+
+            Transaction::find($transfer->source_transaction_id)->update($data);
+            Transaction::find($transfer->target_transaction_id)->update($data);
+        }
+
+        dd($transfer);
 
         $record->update($data);
 
@@ -132,5 +150,72 @@ class TransactionService
             ->success()
             ->send();
     }
+
+    protected function handleTransfer(array $data): void
+    {
+        $dataOrigin = $data;
+        $dataTarget = $data;
+        $origin = null;
+
+        unset($dataOrigin['origin_account_id'], $dataOrigin['target_account_id']);
+        unset($dataTarget['origin_account_id'], $dataTarget['target_account_id']);
+
+        // Criação da transação de origem (somente se não for dinheiro)
+        if ($data['method'] !== 'CASH') {
+            $accountOrigin = Account::find($data['origin_account_id']);
+            $dataOrigin['account_id'] = $accountOrigin?->id;
+            $dataOrigin['description'] = "Origem: {$accountOrigin?->bank->name}. | {$data['description']}";
+
+            $origin = Transaction::create($dataOrigin);
+            $this->handleTransferSide($origin, true);
+        }
+
+        // Criação da transação de destino (sempre ocorre)
+        $accountTarget = Account::find($data['target_account_id']);
+        $dataTarget['account_id'] = $accountTarget?->id;
+        $dataTarget['description'] = "Destino: {$accountTarget?->bank->name}. | {$data['description']}";
+
+        $target = Transaction::create($dataTarget);
+        $this->handleTransferSide($target, false);
+
+        // Relacionamento entre as duas transações
+        Transfer::create([
+            'source_transaction_id' => $origin?->id ?? null,
+            'target_transaction_id' => $target->id,
+        ]);
+
+        // Notifica com base na origem (se houver), senão na de destino
+        $this->notifyTransactionCreated($origin ?? $target);
+    }
+
+
+    protected function createTransactionItem(Transaction $transaction, int $amount, Carbon $date): void
+    {
+        TransactionItem::create([
+            'transaction_id' => $transaction->id,
+            'due_date' => $date,
+            'payment_date' => $date,
+            'amount' => $amount,
+            'installment_number' => 1,
+            'status' => 'PAID',
+        ]);
+    }
+
+    protected function handleTransferSide(Transaction $transaction, bool $isOrigin): void
+    {
+        $amount = $transaction->amount;
+        $date = Carbon::parse($transaction->date);
+        $sign = $isOrigin ? -1 : 1;
+
+        // Atualiza saldo
+        if (in_array($transaction->method, ['ACCOUNT','CASH']) && $transaction->account_id) {
+            $account = $transaction->account()->lockForUpdate()->first();
+            $account->balance = (int) $account->balance + ($sign * $amount);
+            $account->save();
+        }
+
+        $this->createTransactionItem($transaction, $amount, $date);
+    }
+
 
 }

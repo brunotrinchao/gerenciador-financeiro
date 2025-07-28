@@ -71,7 +71,8 @@ class AccountResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('bank.name')
-                    ->label(__('forms.columns.bank')),
+                    ->label(__('forms.columns.bank'))
+                    ->searchable(),
                 TextColumn::make('type')
                     ->label(__('forms.columns.type'))
                     ->formatStateUsing(fn ($state) => TranslateString::getAccountType((int) $state)),

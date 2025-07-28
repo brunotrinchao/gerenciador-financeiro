@@ -18,6 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class ActionLogResource extends Resource
 {
@@ -54,7 +55,8 @@ class ActionLogResource extends Resource
             ->columns([
                 TextColumn::make('user_id')
                     ->label(__('forms.columns.user'))
-                    ->formatStateUsing(fn($state) => User::find($state)?->name ?? __('forms.misc.unknown')),
+                    ->formatStateUsing(fn($state) => User::find($state)?->name ?? __('forms.misc.unknown'))
+                    ->searchable(),
                 TextColumn::make('action')->label(__('forms.columns.action')),
                 TextColumn::make('model_type')->label(__('forms.columns.model')),
                 TextColumn::make('model_id')->label(__('forms.columns.model_id')),
@@ -106,6 +108,10 @@ class ActionLogResource extends Resource
                             'created_at' => $record->created_at->format('d/m/Y H:i:s'),
                         ];
                     }),
+            ])
+            ->filters([
+                DateRangeFilter::make('created_at')
+                ->label(__('forms.columns.created_at'))
             ])
             ->recordUrl(null)
             ->recordAction('viewLog');

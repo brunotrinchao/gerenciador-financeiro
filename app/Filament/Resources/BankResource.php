@@ -61,8 +61,8 @@ class BankResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label(__('forms.columns.name')),
-                TextColumn::make('code')->label(__('forms.columns.code')),
+                TextColumn::make('name')->label(__('forms.columns.name'))->searchable(),
+                TextColumn::make('code')->label(__('forms.columns.code'))->searchable(),
             ])
             ->actions([
                 ActionHelper::makeSlideOver(

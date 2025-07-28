@@ -106,7 +106,8 @@ class CardResource extends Resource
                     ->label(__('forms.columns.brand'))
                     ->height(30)
                     ->stacked(),
-                TextColumn::make('name')->label(__('forms.columns.name')),
+                TextColumn::make('name')->label(__('forms.columns.name'))
+                    ->searchable(),
                 TextColumn::make('number')->label(__('forms.columns.number')),
                 TextColumn::make('bank.name')->label(__('forms.columns.bank')),
                 TextColumn::make('limit')->label(__('forms.columns.limit'))->currency('BRL'),

@@ -23,6 +23,8 @@ return [
         'status' => 'Status',
         'category' => 'Categoria',
         'account' => 'Conta',
+        'origin_account' => 'Conta origem',
+        'target_account' => 'Conta destino',
         'type' => 'Tipo',
         'period' => 'Período',
         'start_date' => 'Data início',
@@ -178,6 +180,7 @@ return [
             'cash' => 'Dinheiro',
             'account' => 'Débito',
             'card' => 'Cartão de crédito',
+            'beteewn_account' => 'Entre conta',
         ],
         'installments' => [
             'cash' => 'À vista',
@@ -191,6 +194,7 @@ return [
         'transaction_type' => [
             'INCOME' => 'Receita',
             'EXPENSE' => 'Despesa',
+            'TRANSFER' => 'Transferência'
         ],
         'recurrence_type' => [
             'DAILY' => 'Diário',
