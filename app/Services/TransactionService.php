@@ -40,6 +40,7 @@ class TransactionService
 
     public function update(Transaction $record, array $data): void
     {
+
         if(isset($data['amount']) && !empty($data['amount'])) {
             $data['amount'] = (int) preg_replace('/[^0-9,]/', '', $data['amount']);
         }
@@ -52,8 +53,6 @@ class TransactionService
             Transaction::find($transfer->source_transaction_id)->update($data);
             Transaction::find($transfer->target_transaction_id)->update($data);
         }
-
-        dd($transfer);
 
         $record->update($data);
 

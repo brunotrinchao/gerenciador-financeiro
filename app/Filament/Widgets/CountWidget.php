@@ -53,7 +53,7 @@ class CountWidget extends BaseWidget
         $service = new TransactionItemFilterService($filters);
         $items = $service->items()
                 ->get()
-                ->groupBy(fn ($item) => $item->transaction->type);
+                ->groupBy(fn ($item) => $item?->transaction?->type);
 
         $expenses = $items->get('EXPENSE', collect());
         $incomes = $items->get('INCOME', collect());

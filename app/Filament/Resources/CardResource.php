@@ -214,7 +214,8 @@ class CardResource extends Resource
                 ->mask(MaskHelper::maskMoney())
                 ->stripCharacters(',')
                 ->numeric()
-                ->default(0),
+                ->default(0)
+                ->required(),
         ];
     }
 

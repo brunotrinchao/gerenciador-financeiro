@@ -50,7 +50,8 @@ class CategoryResource extends Resource
         return $form->schema([
             Forms\Components\TextInput::make('name')
                 ->label(__('forms.columns.name'))
-                ->required(),
+                ->required()
+                ->unique(Category::class, 'name'),
         ]);
     }
 

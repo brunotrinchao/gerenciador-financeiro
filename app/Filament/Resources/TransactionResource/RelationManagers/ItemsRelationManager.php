@@ -30,6 +30,7 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -232,6 +233,53 @@ class ItemsRelationManager extends RelationManager
                             'method' => $record->transaction->method,
                             'status' => $record->transaction->method == 'CARD' ? 'DEBIT' : $record->status
                         ];
+                    },
+                    action: function (array $data, $record) {
+                        $transaction = $record->transaction;
+
+                        $paidItems = $transaction->items()->where('status', 'PAID')->get();
+
+                        $otherPendingItems = $transaction->items()
+                            ->where('id', '!=', $record->id)
+                            ->where('status', '!=', 'PAID')
+                            ->get();
+
+                        // Novo valor convertido para centavos
+                        $newAmount = (int) preg_replace('/[^0-9]/', '', $data['amount']);
+
+                        $somaPagas = $paidItems->sum('amount');
+                        $somaPendentes = $otherPendingItems->sum('amount');
+
+                        $valorRestante = $transaction->amount - $somaPagas - $newAmount;
+
+                        $temOutrasPendentes = $otherPendingItems->count() > 0;
+
+                        // Validação principal
+                        if (
+                            ($temOutrasPendentes && $valorRestante < 0) ||
+                            (!$temOutrasPendentes && $valorRestante !== 0)
+                        ) {
+                            $maxAmount = $transaction->amount - $somaPagas - ($temOutrasPendentes ? 0 : $somaPendentes);
+
+                            Notification::make()
+                                ->title('A soma das parcelas excede o valor da transação.')
+                                ->danger()
+                                ->send();
+
+                            return throw ValidationException::withMessages([
+                                'amount' => "O valor da parcela não pode ser maior que o valor restante da transação (R$ " . number_format($maxAmount / 100, 2, ',', '.') . ").",
+                            ]);
+                        }
+
+                        // Atualiza e recalcula
+                        $record->update([
+                            'amount' => $newAmount,
+                            'due_date' => $data['due_date'],
+                            'payment_date' => $data['payment_date'],
+                            'status' => $data['status'],
+                        ]);
+
+                        (new TransactionItemService())->recalcAmountTransactionItem($record);
                     },
                     after: function (array $data, $record) {
                         $transactionItemService = new TransactionItemService();

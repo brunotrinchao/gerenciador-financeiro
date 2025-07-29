@@ -12,9 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('transactions', function (Blueprint $table) {
+
+        if (config('database.default') !== 'sqlite') {
             DB::statement("ALTER TABLE transactions MODIFY type ENUM('INCOME', 'EXPENSE', 'TRANSFER') NOT NULL");
-        });
+        } else {
+            // SQLite não suporta MODIFY nem ENUM. Alternativa segura:
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->string('type')->default('TRANSFER')->change(); // enum lógico via app
+            });
+
+        }
     }
 
     /**

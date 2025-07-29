@@ -71,10 +71,10 @@ class BrandCardResource extends Resource
                     name: 'editBrand',
                     form: [
                         TextInput::make('name')
+                            ->required()
                             ->label(__('forms.columns.name'))
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn(string $state, Set $set) => $set('slug', Str::slug($state))),
-
+                            ->live(onBlur: true),
+//                            ->afterStateUpdated(fn(?string $state, Set $set) => $set('slug', Str::slug($state ?? ''))),
                         TextInput::make('slug')
                             ->label('Slug')
                             ->disabled()
@@ -128,9 +128,11 @@ class BrandCardResource extends Resource
                     name: 'createBrand',
                     form: [
                         TextInput::make('name')
+                            ->required()
                             ->label(__('forms.columns.name'))
                             ->live(onBlur: true)
-                            ->afterStateUpdated(fn(string $state, Set $set) => $set('slug', Str::slug($state))),
+                            ->unique(BrandCard::class, 'name'),
+//                            ->afterStateUpdated(fn(?string $state, Set $set) => $set('slug', Str::slug($state ?? ''))),
 
                         TextInput::make('slug')
                             ->label('Slug')
@@ -157,6 +159,8 @@ class BrandCardResource extends Resource
                             $action->cancel();
                             return;
                         }
+
+                        $data['slug'] = Str::slug($data['name']);
 
                         BrandCard::create($data);
 

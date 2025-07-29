@@ -70,7 +70,7 @@ class CardTransactionRelationManager extends RelationManager
             ])
             ->actions([
                 ActionHelper::makeSlideOver(
-                    name: 'editTransaction',
+                    name: 'editTransactionRelation',
                     form: [
                         Radio::make('type')
                             ->label(__('forms.forms.type'))

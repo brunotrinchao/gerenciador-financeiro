@@ -58,11 +58,13 @@ class AccountResource extends Resource
                 ]),
             Select::make('bank_id')
                 ->label(__('forms.forms.bank'))
+                ->required()
                 ->relationship('bank', 'name'),
             TextInput::make('balance')
                 ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
                 ->prefix('R$')
-                ->label(__('forms.forms.balance')),
+                ->label(__('forms.forms.balance'))
+                ->required(),
         ]);
     }
 
