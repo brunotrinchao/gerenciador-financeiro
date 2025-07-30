@@ -39,12 +39,11 @@ class CategoryResourceTest extends TestCase
     public function test_can_create_category(): void
     {
 
-        Livewire::test(CreateCategory::class)
-            ->fillForm([
+        Livewire::test(ListCategories::class)
+            ->callTableAction('createCategory', data: [
                 'name' => 'Nova Categoria',
             ])
-            ->call('create')
-            ->assertHasNoErrors();
+            ->assertHasNoTableActionErrors();
 
         $this->assertDatabaseHas('categories', [
             'name' => 'Nova Categoria',
@@ -55,12 +54,11 @@ class CategoryResourceTest extends TestCase
     {
         $category = Category::factory()->create(['name' => 'Antigo Nome']);
 
-        Livewire::test(EditCategory::class, ['record' => $category->getKey()])
-            ->fillForm([
+        Livewire::test(ListCategories::class)
+            ->callTableAction('editCategory', $category, data: [
                 'name' => 'Novo Nome',
             ])
-            ->call('save')
-            ->assertHasNoErrors();
+            ->assertHasNoTableActionErrors();
 
         $this->assertDatabaseHas('categories', [
             'id' => $category->id,
@@ -82,12 +80,11 @@ class CategoryResourceTest extends TestCase
 
     public function test_validation_fails_when_name_is_missing(): void
     {
-        Livewire::test(CreateCategory::class)
-            ->fillForm([
+        Livewire::test(ListCategories::class)
+            ->callTableAction('createCategory', data: [
                 'name' => '', // campo obrigatório vazio
             ])
-            ->call('create')
-            ->assertHasFormErrors(['name' => 'required']);
+            ->assertHasTableActionErrors(['name' => 'required']);
 
         $this->assertDatabaseCount('categories', 0);
     }
@@ -96,12 +93,11 @@ class CategoryResourceTest extends TestCase
     {
         $category = Category::factory()->create();
 
-        Livewire::test(EditCategory::class, ['record' => $category->getKey()])
-            ->fillForm([
+        Livewire::test(ListCategories::class)
+            ->callTableAction('editCategory', $category, data: [
                 'name' => '',
             ])
-            ->call('save')
-            ->assertHasFormErrors(['name' => 'required']);
+            ->assertHasTableActionErrors(['name' => 'required']);
     }
 
     public function test_validation_fails_when_category_name_is_duplicated(): void
@@ -109,12 +105,11 @@ class CategoryResourceTest extends TestCase
 
         Category::factory()->create(['name' => 'Duplicado']);
 
-        Livewire::test(CreateCategory::class)
-            ->fillForm([
+        $response=Livewire::test(ListCategories::class)
+            ->callTableAction('createCategory', data: [
                 'name' => 'Duplicado',
             ])
-            ->call('create')
-            ->assertHasFormErrors(['name' => 'unique']);
+        ->assertHasTableActionErrors(['name' => 'unique']);
 
         // Verifica que só há uma categoria no banco
         $this->assertDatabaseCount('categories', 1);

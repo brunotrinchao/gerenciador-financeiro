@@ -47,12 +47,7 @@ class CategoryResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('name')
-                ->label(__('forms.columns.name'))
-                ->required()
-                ->unique(Category::class, 'name'),
-        ]);
+        return $form->schema([]);
     }
 
     public static function table(Table $table): Table
@@ -105,6 +100,7 @@ class CategoryResource extends Resource
                     form: [
                         Forms\Components\TextInput::make('name')
                             ->label(__('forms.columns.name'))
+                            ->unique(Category::class, 'name')
                             ->required(),
                     ],
                     modalHeading: __('forms.actions.new_category'),
