@@ -15,6 +15,16 @@ class AccountResourceTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
+    }
+
     public function test_required_fields_validation_fails_for_account(): void
     {
         $user = User::factory()->create();
@@ -36,11 +46,10 @@ class AccountResourceTest extends TestCase
 
     public function test_can_create_account(): void
     {
-        $user = User::factory()->create();
         $bank = \App\Models\Bank::factory()->create();
 
-        Livewire::actingAs($user)
-            ->test(\App\Filament\Resources\AccountResource\Pages\CreateAccount::class)
+        Livewire::actingAs($this->user)
+            ->test(CreateAccount::class)
             ->fillForm([
                 'type' => 'CHECKING',
                 'bank_id' => $bank->id,
@@ -58,13 +67,11 @@ class AccountResourceTest extends TestCase
 
     public function test_type_validation_fails_with_invalid_value(): void
     {
-        $user = User::factory()->create();
-        $bank = Bank::factory()->create();
 
-        $response = Livewire::actingAs($user)
+        Livewire::actingAs($this->user)
             ->test(CreateAccount::class)
             ->fillForm([
-                'user_id' => $user->id,
+                'user_id' => $this->user->id,
                 'type' => null,
                 'bank_id' => null,
                 'balance' => null,
@@ -79,17 +86,16 @@ class AccountResourceTest extends TestCase
 
     public function test_can_update_account(): void
     {
-        $user = User::factory()->create();
         $bank = Bank::factory()->create();
 
         $account = Account::factory()->create([
-            'user_id' => $user->id,
+            'user_id' => $this->user->id,
             'type' => 'SAVINGS',
             'bank_id' => $bank->id,
             'balance' => 500,
         ]);
 
-        Livewire::actingAs($user)
+        Livewire::actingAs($this->user)
             ->test(EditAccount::class, [
                 'record' => $account->getKey(),
             ])

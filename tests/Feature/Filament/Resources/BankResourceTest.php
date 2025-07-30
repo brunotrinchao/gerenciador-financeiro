@@ -3,6 +3,7 @@
 namespace Feature\Filament\Resources;
 
 use App\Filament\Resources\BankResource;
+use App\Filament\Resources\BankResource\Pages\CreateBank;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -12,18 +13,25 @@ class BankResourceTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
+    }
     public function test_can_render_bank_create_page(): void
     {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)
+        $this->actingAs($this->user)
             ->get(BankResource::getUrl('create'))
             ->assertSuccessful();
     }
 
     public function test_bank_form_requires_name_and_code(): void
     {
-        Livewire::test(BankResource\Pages\CreateBank::class)
+        Livewire::test(CreateBank::class)
             ->fillForm([
                 'name' => '',
                 'code' => '',
@@ -37,7 +45,7 @@ class BankResourceTest extends TestCase
 
     public function test_bank_code_must_be_numeric(): void
     {
-        Livewire::test(BankResource\Pages\CreateBank::class)
+        Livewire::test(CreateBank::class)
             ->fillForm([
                 'name' => 'Banco Teste',
                 'code' => 'abc',
@@ -50,7 +58,7 @@ class BankResourceTest extends TestCase
 
     public function test_can_create_bank(): void
     {
-        Livewire::test(BankResource\Pages\CreateBank::class)
+        Livewire::test(CreateBank::class)
             ->fillForm([
                 'name' => 'Banco do Brasil',
                 'code' => '001',
