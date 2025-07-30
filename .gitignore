@@ -22,3 +22,4 @@ yarn-error.log
 /.vscode
 /.zed
 .vercel
+public/js/app/money-script.js
