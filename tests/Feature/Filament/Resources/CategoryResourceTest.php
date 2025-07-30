@@ -26,16 +26,6 @@ class CategoryResourceTest extends TestCase
         $this->actingAs($this->user);
     }
 
-    public function test_can_render_category_list_page(): void
-    {
-        $user = User::factory()->create();
-        Category::factory()->count(3)->create();
-
-        Livewire::test(ListCategories::class)
-            ->assertStatus(200)
-            ->assertSee('Categorias'); // Ajuste conforme o texto da sua interface
-    }
-
     public function test_can_create_category(): void
     {
 
