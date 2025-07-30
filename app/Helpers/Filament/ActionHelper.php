@@ -31,11 +31,14 @@ class ActionHelper
 
                 foreach ($data as $key => $value) {
                     if (in_array($key, ['limit', 'amount', 'balance'])) {
-                        $newValue = preg_replace('/[^0-9,]/', '', $value);
-//                        $newValue = str_replace(',', '.', $newValue);
-                        $data[$key] = (float)$newValue === 0.0 ? 0 : $newValue;
+                        // Permite números, vírgula e sinal negativo
+                        $newValue = preg_replace('/[^0-9,\-]/', '', $value);
+
+                        // Substitui vírgula por ponto e converte para float
+                        $data[$key] = (float) str_replace(',', '.', $newValue);
                     }
                 }
+
 
                 $record->update($data);
 
