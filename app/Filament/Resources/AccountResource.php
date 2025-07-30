@@ -126,6 +126,7 @@ class AccountResource extends Resource
                 ActionHelper::makeSlideOver(
                     name: 'createAccount',
                     form: [
+
                         Select::make('type')
                             ->required()
                             ->label(__('forms.forms.type'))
