@@ -199,10 +199,10 @@ class UserResource extends Resource
                             ->success()
                             ->send();
 
-//                        Mail::to($user->email)->send(new WelcomeToSystemCreateUser($user));
-                        $notification = new VerifyEmail();
-                        $notification->url = filament()->getVerifyEmailUrl($user);
-                        $user->notify($notification);
+                        Mail::to($user->email)->send(new WelcomeToSystemCreateUser($user));
+//                        $notification = new VerifyEmail();
+//                        $notification->url = filament()->getVerifyEmailUrl($user);
+//                        $user->notify($notification);
                     })
                     ->requiresConfirmation(),
             ]);

@@ -54,7 +54,11 @@ class NotifyOverdueTransactionItems extends Command
 
         $this->info("Foram notificadas {$items->count()} transações em atraso.");
 
+        $ccRecipients = \App\Models\User::pluck('email')->toArray();
+        $ccRecipients = array_diff($ccRecipients, [$recepient->email]);
+
+
         // Envia email com todas as transações vencidas
-        Mail::to($recepient->email)->send(new OverdueTransactionItemsMail($htmlEmail));
+        Mail::to($recepient->email)->cc($ccRecipients)->send(new OverdueTransactionItemsMail($htmlEmail));
     }
 }

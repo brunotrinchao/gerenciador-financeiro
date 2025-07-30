@@ -59,7 +59,10 @@ class NotifyDueTodayTransactionItems extends Command
                 ->sendToDatabase($recipient);
         }
 
-        Mail::to($recipient->email)->send(new DueTodayTransactionItemsMail($htmlEmail));
+        $ccRecipients = \App\Models\User::pluck('email')->toArray();
+        $ccRecipients = array_diff($ccRecipients, [$recipient->email]);
+
+        Mail::to($recipient->email)->cc($ccRecipients)->send(new DueTodayTransactionItemsMail($htmlEmail));
 
         $this->info("Foram notificadas {$items->count()} transações com vencimento hoje.");
 
