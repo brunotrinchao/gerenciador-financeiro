@@ -27,10 +27,7 @@ class AccountResourceTest extends TestCase
 
     public function test_required_fields_validation_fails_for_account(): void
     {
-        $user = User::factory()->create();
-
-        Livewire::actingAs($user)
-            ->test(CreateAccount::class)
+        Livewire::test(CreateAccount::class)
             ->fillForm([
                 'type' => '',
                 'bank_id' => '',
@@ -48,8 +45,7 @@ class AccountResourceTest extends TestCase
     {
         $bank = \App\Models\Bank::factory()->create();
 
-        Livewire::actingAs($this->user)
-            ->test(CreateAccount::class)
+        Livewire::test(CreateAccount::class)
             ->fillForm([
                 'type' => 'CHECKING',
                 'bank_id' => $bank->id,
@@ -68,8 +64,7 @@ class AccountResourceTest extends TestCase
     public function test_type_validation_fails_with_invalid_value(): void
     {
 
-        Livewire::actingAs($this->user)
-            ->test(CreateAccount::class)
+        Livewire::test(CreateAccount::class)
             ->fillForm([
                 'user_id' => $this->user->id,
                 'type' => null,
@@ -95,8 +90,7 @@ class AccountResourceTest extends TestCase
             'balance' => 500,
         ]);
 
-        Livewire::actingAs($this->user)
-            ->test(EditAccount::class, [
+        Livewire::test(EditAccount::class, [
                 'record' => $account->getKey(),
             ])
             ->fillForm([

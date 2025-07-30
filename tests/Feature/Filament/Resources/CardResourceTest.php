@@ -36,8 +36,7 @@ class CardResourceTest extends TestCase
         $bank = Bank::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($this->user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => $bank->id,
                 'name' => 'Cartão Teste',
@@ -60,8 +59,7 @@ class CardResourceTest extends TestCase
         $bank = Bank::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($this->user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => $bank->id,
                 'name' => '',
@@ -78,8 +76,7 @@ class CardResourceTest extends TestCase
     {
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($this->user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => null,
                 'name' => 'Cartão Teste',
@@ -96,8 +93,7 @@ class CardResourceTest extends TestCase
         $bank = Bank::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($this->user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => $bank->id,
                 'name' => 'Cartão Teste',
@@ -114,8 +110,7 @@ class CardResourceTest extends TestCase
         $bank = Bank::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($this->user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => $bank->id,
                 'name' => 'Cartão Teste',
