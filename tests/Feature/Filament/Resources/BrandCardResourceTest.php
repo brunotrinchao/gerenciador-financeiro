@@ -17,19 +17,26 @@ class BrandCardResourceTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
+    }
+
     public function test_can_render_brand_card_create_page(): void
     {
-        $user = User::factory()->create();
-        $this->actingAs($user)
+        $this->actingAs($this->user)
             ->get(BrandCardResource::getUrl('create'))
             ->assertSuccessful();
     }
 
     public function test_brand_card_name_is_required(): void
     {
-        $user = User::factory()->create();
-        Livewire::actingAs($user)
-            ->test(ListBrandCards::class)
+        Livewire::test(ListBrandCards::class)
             ->callTableAction('createBrand', data: [
                 'name' => '', // ← campo obrigatório vazio
             ])
@@ -38,10 +45,7 @@ class BrandCardResourceTest extends TestCase
 
     public function test_slug_is_generated_from_name(): void
     {
-        $user = User::factory()->create();
-
-        Livewire::actingAs($user)
-            ->test(ListBrandCards::class)
+        Livewire::test(ListBrandCards::class)
             ->callTableAction('createBrand', data: [
                 'name' => 'Meu Cartão Exemplo',
                 // Não enviar o slug manualmente!
@@ -56,10 +60,7 @@ class BrandCardResourceTest extends TestCase
 
     public function test_brand_card_can_be_created(): void
     {
-        $user = User::factory()->create();
-
-        Livewire::actingAs($user)
-            ->test(\App\Filament\Resources\BrandCardResource\Pages\ListBrandCards::class)
+        Livewire::test(ListBrandCards::class)
             ->callTableAction('createBrand', data: [
                 'name' => 'Mastercard',
             ])
@@ -71,11 +72,9 @@ class BrandCardResourceTest extends TestCase
 
     public function test_brand_card_name_must_be_unique(): void
     {
-        $user = User::factory()->create();
         BrandCard::factory()->create(['name' => 'Visa']);
 
-        Livewire::actingAs($user)
-            ->test(\App\Filament\Resources\BrandCardResource\Pages\ListBrandCards::class)
+        Livewire::test(ListBrandCards::class)
             ->callTableAction('createBrand', data: [
                 'name' => 'Visa',
             ])
@@ -95,8 +94,7 @@ class BrandCardResourceTest extends TestCase
 
         $fakeImage = UploadedFile::fake()->image('logo.jpg');
 
-        Livewire::actingAs($user)
-            ->test(ListBrandCards::class)
+        Livewire::test(ListBrandCards::class)
             ->callTableAction('createBrand', data: [
                 'name' => 'Marca Teste',
                 'slug' => 'marca-teste',

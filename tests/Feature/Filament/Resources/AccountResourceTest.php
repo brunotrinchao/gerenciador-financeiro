@@ -4,6 +4,8 @@ namespace Feature\Filament\Resources;
 
 use App\Filament\Resources\AccountResource\Pages\CreateAccount;
 use App\Filament\Resources\AccountResource\Pages\EditAccount;
+use App\Filament\Resources\AccountResource\Pages\ListAccounts;
+use App\Filament\Resources\TransactionResource\Pages\ListTransactions;
 use App\Models\Bank;
 use App\Models\User;
 use App\Models\Account;
@@ -15,42 +17,47 @@ class AccountResourceTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
+    }
+
     public function test_required_fields_validation_fails_for_account(): void
     {
-        $user = User::factory()->create();
-
-        Livewire::actingAs($user)
-            ->test(CreateAccount::class)
-            ->fillForm([
+        $response = Livewire::test(ListAccounts::class)
+            ->callTableAction('createAccount', data: [
                 'type' => '',
                 'bank_id' => '',
                 'balance' => '',
-            ])
-            ->call('create')
-            ->assertHasFormErrors([
+            ]);
+
+        $response->assertHasTableActionErrors([
                 'type' => 'required',
                 'bank_id' => 'required',
                 'balance' => 'required',
             ]);
+
     }
 
     public function test_can_create_account(): void
     {
-        $user = User::factory()->create();
         $bank = \App\Models\Bank::factory()->create();
 
-        Livewire::actingAs($user)
-            ->test(\App\Filament\Resources\AccountResource\Pages\CreateAccount::class)
-            ->fillForm([
-                'type' => 'CHECKING',
+        $response = Livewire::test(ListAccounts::class)
+            ->callTableAction('createAccount', data: [
+                'type' => 1,
                 'bank_id' => $bank->id,
                 'balance' => 1000,
-            ])
-            ->call('create')
-            ->assertHasNoFormErrors();
+            ]);
+        $response->assertHasNoTableActionErrors();
 
         $this->assertDatabaseHas('accounts', [
-            'type' => 'CHECKING',
+            'type' => 1,
             'bank_id' => $bank->id,
             'balance' => 1000,
         ]);
@@ -58,52 +65,43 @@ class AccountResourceTest extends TestCase
 
     public function test_type_validation_fails_with_invalid_value(): void
     {
-        $user = User::factory()->create();
-        $bank = Bank::factory()->create();
 
-        $response = Livewire::actingAs($user)
-            ->test(CreateAccount::class)
-            ->fillForm([
-                'user_id' => $user->id,
+        Livewire::test(ListAccounts::class)
+            ->callTableAction('createAccount', data: [
+                'user_id' => $this->user->id,
                 'type' => null,
                 'bank_id' => null,
                 'balance' => null,
             ])
-            ->call('create')
-            ->assertHasErrors([
-                'data.type' => 'required',
-                'data.bank_id' => 'required',
-                'data.balance' => 'required',
+            ->assertHasTableActionErrors([
+                'type' => 'required',
+                'bank_id' => 'required',
+                'balance' => 'required',
             ]);
     }
 
     public function test_can_update_account(): void
     {
-        $user = User::factory()->create();
         $bank = Bank::factory()->create();
 
         $account = Account::factory()->create([
-            'user_id' => $user->id,
-            'type' => 'SAVINGS',
+            'user_id' => $this->user->id,
+            'type' => 1,
             'bank_id' => $bank->id,
             'balance' => 500,
         ]);
 
-        Livewire::actingAs($user)
-            ->test(EditAccount::class, [
-                'record' => $account->getKey(),
-            ])
-            ->fillForm([
-                'type' => 'CHECKING',
+        Livewire::test(ListAccounts::class)
+            ->callTableAction('editAccount', record: $account, data: [
+                'type' => 2,
                 'bank_id' => $bank->id,
                 'balance' => 750,
             ])
-            ->call('save')
-            ->assertHasNoFormErrors();
+            ->assertHasNoTableActionErrors();
 
         $this->assertDatabaseHas('accounts', [
             'id' => $account->id,
-            'type' => 'CHECKING',
+            'type' => 2,
             'balance' => 750,
         ]);
     }

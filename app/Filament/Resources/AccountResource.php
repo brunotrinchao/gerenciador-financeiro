@@ -48,24 +48,7 @@ class AccountResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            Select::make('type')
-                ->required()
-                ->label(__('forms.forms.type'))
-                ->options([
-                    1 => __('forms.forms.account_checking'), // nova chave de tradução sugerida
-                    2 => __('forms.forms.account_savings'),
-                ]),
-            Select::make('bank_id')
-                ->label(__('forms.forms.bank'))
-                ->required()
-                ->relationship('bank', 'name'),
-            TextInput::make('balance')
-                ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
-                ->prefix('R$')
-                ->label(__('forms.forms.balance'))
-                ->required(),
-        ]);
+        return $form->schema([]);
     }
 
     public static function table(Table $table): Table
@@ -126,6 +109,7 @@ class AccountResource extends Resource
                 ActionHelper::makeSlideOver(
                     name: 'createAccount',
                     form: [
+
                         Select::make('type')
                             ->required()
                             ->label(__('forms.forms.type'))
@@ -139,6 +123,7 @@ class AccountResource extends Resource
                             ->relationship('bank', 'name'),
                         TextInput::make('balance')
                             ->mask(MaskHelper::maskMoney())
+                            ->required()
                             ->stripCharacters(',')
                             ->numeric()
                             ->prefix('R$')

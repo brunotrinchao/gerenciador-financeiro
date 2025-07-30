@@ -14,23 +14,29 @@ use Livewire\Livewire;
 class CardResourceTest extends TestCase
 {
     use RefreshDatabase;
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
+    }
 
     public function test_can_render_card_list_page(): void
     {
-        $user = User::factory()->create();
-        $this->actingAs($user)
+        $this->actingAs($this->user)
             ->get(CardResource::getUrl('index'))
             ->assertSuccessful();
     }
 
     public function test_can_create_card(): void
     {
-        $user = User::factory()->create();
         $bank = Bank::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => $bank->id,
                 'name' => 'Cartão Teste',
@@ -50,12 +56,10 @@ class CardResourceTest extends TestCase
 
     public function test_name_is_required(): void
     {
-        $user = User::factory()->create();
         $bank = Bank::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        $response = Livewire::actingAs($user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => $bank->id,
                 'name' => '',
@@ -70,11 +74,9 @@ class CardResourceTest extends TestCase
 
     public function test_bank_id_is_required(): void
     {
-        $user = User::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => null,
                 'name' => 'Cartão Teste',
@@ -88,12 +90,10 @@ class CardResourceTest extends TestCase
 
     public function test_due_date_is_required(): void
     {
-        $user = User::factory()->create();
         $bank = Bank::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => $bank->id,
                 'name' => 'Cartão Teste',
@@ -107,12 +107,10 @@ class CardResourceTest extends TestCase
 
     public function test_limit_is_required(): void
     {
-        $user = User::factory()->create();
         $bank = Bank::factory()->create();
         $brand = BrandCard::factory()->create();
 
-        Livewire::actingAs($user)
-            ->test(ListCards::class)
+        Livewire::test(ListCards::class)
             ->callTableAction('createCard', data: [
                 'bank_id' => $bank->id,
                 'name' => 'Cartão Teste',

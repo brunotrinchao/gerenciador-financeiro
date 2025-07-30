@@ -22,6 +22,7 @@ class ActionHelper
 
         $actionBuilder = Action::make($name)
             ->form($form)
+            ->model('formData')
             ->modalHeading($modalHeading)
             ->modalButton($isEdit ? 'Salvar alterações' : 'Salvar')
             ->label($label)
