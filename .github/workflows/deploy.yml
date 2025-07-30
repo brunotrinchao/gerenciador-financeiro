@@ -1,4 +1,4 @@
-name: Deploy para HostGator
+name: Deploy
 
 on:
   push:
@@ -7,8 +7,29 @@ on:
 
 jobs:
   deploy:
+    name: Deploy to HostGator
     runs-on: ubuntu-latest
+
     steps:
-      - name: Disparar deploy no servidor
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar chave SSH
         run: |
-          curl -A "Mozilla/5.0" -X POST "https://brunotrinchao.com.br/deploy.php?token=kWcqJEoujc79QLBsrgb6AcRO8c"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_hostgator
+          chmod 600 ~/.ssh/id_hostgator
+          echo "Host hostgator
+            HostName 162.241.3.41
+            User brun0976
+            Port 22
+            IdentityFile ~/.ssh/id_hostgator
+            IdentitiesOnly yes" >> ~/.ssh/config
+
+      - name: Desabilitar verificação de host
+        run: |
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
+      - name: Executar SSH e rodar git pull
+        run: |
+          ssh hostgator "cd public_html && git pull"
