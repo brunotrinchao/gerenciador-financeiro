@@ -4,6 +4,7 @@ namespace Feature\Filament\Resources;
 
 use App\Filament\Resources\BankResource;
 use App\Filament\Resources\BankResource\Pages\CreateBank;
+use App\Filament\Resources\BankResource\Pages\ListBanks;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -45,26 +46,23 @@ class BankResourceTest extends TestCase
 
     public function test_bank_code_must_be_numeric(): void
     {
-        Livewire::test(CreateBank::class)
-            ->fillForm([
+
+        Livewire::test(ListBanks::class)
+            ->callTableAction('createBank', data: [
                 'name' => 'Banco Teste',
                 'code' => 'abc',
             ])
-            ->call('create')
-            ->assertHasErrors([
-                'data.code' => 'numeric',
-            ]);
+            ->assertHasTableActionErrors(['code']);
     }
 
     public function test_can_create_bank(): void
     {
-        Livewire::test(CreateBank::class)
-            ->fillForm([
+        Livewire::test(ListBanks::class)
+            ->callTableAction('createBank', data: [
                 'name' => 'Banco do Brasil',
                 'code' => '001',
             ])
-            ->call('create')
-            ->assertHasNoFormErrors();
+            ->assertHasNoTableActionErrors();
 
         $this->assertDatabaseHas('banks', [
             'name' => 'Banco do Brasil',

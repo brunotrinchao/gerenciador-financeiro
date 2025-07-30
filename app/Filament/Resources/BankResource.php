@@ -96,6 +96,8 @@ class BankResource extends Resource
                 ActionHelper::makeSlideOver(
                     name: 'createBank',
                     form: [
+                        Forms\Components\Grid::make()
+                            ->schema([
                         TextInput::make('name')
                             ->required()
                             ->label(__('forms.columns.name'))
@@ -104,6 +106,7 @@ class BankResource extends Resource
                             ->required()
                             ->label(__('forms.columns.code'))
                             ->numeric(),
+                        ])
                     ],
                     modalHeading: __('forms.actions.new_bank'),
                     label: __('forms.actions.create'),

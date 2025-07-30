@@ -38,12 +38,13 @@ class TransactionResourceTest extends TestCase
 
     public function test_required_fields_validation(): void
     {
-        Livewire::test(ListTransactions::class)
+        $response = Livewire::test(ListTransactions::class)
             ->callTableAction('createTransaction', data: [
                 'type' => 'INCOME',
                 'method' => 'ACCOUNT',
-            ])
-            ->assertHasTableActionErrors([
+            ]);
+
+        $response->assertHasTableActionErrors([
                 'category_id' => 'required',
                 'description' => 'required',
                 'amount' => 'required',

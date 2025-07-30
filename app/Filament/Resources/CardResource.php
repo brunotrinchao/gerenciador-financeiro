@@ -95,7 +95,8 @@ class CardResource extends Resource
 //                ->mask($moneyMask)
 //                ->default(0)
 //                ->disabled(),
-        ]);
+        ])
+            ->statePath(null);
     }
 
     public static function table(Table $table): Table
