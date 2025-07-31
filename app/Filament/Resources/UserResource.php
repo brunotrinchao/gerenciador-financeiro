@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 
 class UserResource extends Resource
@@ -145,25 +146,25 @@ class UserResource extends Resource
                     form: [
                         TextInput::make('name')->label(__('forms.forms.name'))->required(),
                         TextInput::make('email')->label(__('forms.forms.email'))->email()->required(),
-                        FileUpload::make('avatar_url')
-                            ->label(__('forms.forms.avatar'))
-                            ->disk('public')
-                            ->directory('avatars')
-                            ->image()
-                            ->imageEditor(),
-                        TextInput::make('password')
-                            ->label(__('forms.forms.password'))
-                            ->password()
-                            ->required()
-                            ->minLength(6)
-                            ->same('password_confirmation')
-                            ->dehydrated(fn ($state) => filled($state))
-                            ->dehydrateStateUsing(fn ($state) => Hash::make($state)),
-                        TextInput::make('password_confirmation')
-                            ->label(__('forms.forms.password_confirmation'))
-                            ->password()
-                            ->required()
-                            ->dehydrated(false),
+//                        FileUpload::make('avatar_url')
+//                            ->label(__('forms.forms.avatar'))
+//                            ->disk('public')
+//                            ->directory('avatars')
+//                            ->image()
+//                            ->imageEditor(),
+//                        TextInput::make('password')
+//                            ->label(__('forms.forms.password'))
+//                            ->password()
+//                            ->required()
+//                            ->minLength(6)
+//                            ->same('password_confirmation')
+//                            ->dehydrated(fn ($state) => filled($state))
+//                            ->dehydrateStateUsing(fn ($state) => Hash::make($state)),
+//                        TextInput::make('password_confirmation')
+//                            ->label(__('forms.forms.password_confirmation'))
+//                            ->password()
+//                            ->required()
+//                            ->dehydrated(false),
                         Select::make('roles')
                             ->label(__('forms.forms.role'))
                             ->options(
@@ -186,6 +187,9 @@ class UserResource extends Resource
                             return;
                         }
 
+                        $randomPassword = Str::random(10);
+                        $data['password'] = Hash::make($randomPassword);
+
                         $user = User::create($data);
                         if (isset($data['roles'])) {
                             $role = \Spatie\Permission\Models\Role::where('name', $data['roles'])->first();
@@ -199,7 +203,8 @@ class UserResource extends Resource
                             ->success()
                             ->send();
 
-                        Mail::to($user->email)->send(new WelcomeToSystemCreateUser($user));
+
+                        Mail::to($user->email)->send(new WelcomeToSystemCreateUser($user, $randomPassword));
 //                        $notification = new VerifyEmail();
 //                        $notification->url = filament()->getVerifyEmailUrl($user);
 //                        $user->notify($notification);
