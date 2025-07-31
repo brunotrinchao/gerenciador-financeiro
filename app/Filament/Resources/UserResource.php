@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enum\RolesEnum;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
+use App\Helpers\ColumnFormatter;
 use App\Helpers\Filament\ActionHelper;
 use App\Helpers\TranslateString;
 use App\Mail\OverdueTransactionItemsMail;
@@ -20,9 +21,13 @@ use Filament\Forms\Form;
 use Filament\Notifications\Auth\VerifyEmail;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontFamily;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -67,29 +72,23 @@ class UserResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $livewire = $table->getLivewire();
+
         return $table
-            ->columns([
-                ImageColumn::make('avatar_url')
-                    ->label(__('forms.forms.avatar'))
-                    ->disk('public')
-                    ->circular()
-                    ->stacked(),
-                TextColumn::make('name')
-                    ->label(__('forms.forms.name'))
-                    ->searchable(),
-                TextColumn::make('email')
-                    ->label(__('forms.forms.email'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->label('Email Verified')
-                    ->dateTime('d m Y H:i'),
-                TextColumn::make('roles.name')
-                    ->label(__('forms.forms.role'))
-                    ->formatStateUsing(function (Model $record) {
-                        $role = $record->roles->first();
-                        return $role ? RolesEnum::getLabel($role->name) : '-';
-                    }),
-            ])
+            ->columns(
+                $livewire->isGridLayout()
+                    ? static::getGridTableColumns()
+                    : static::getListTableColumns()
+                )
+            ->contentGrid(
+                fn () => $livewire->isListLayout()
+                    ? null
+                    : [
+                        'md' => 2,
+                        'lg' => 3,
+                        'xl' => 4,
+                    ]
+            )
             ->filters([
                 //
             ])
@@ -146,25 +145,6 @@ class UserResource extends Resource
                     form: [
                         TextInput::make('name')->label(__('forms.forms.name'))->required(),
                         TextInput::make('email')->label(__('forms.forms.email'))->email()->required(),
-//                        FileUpload::make('avatar_url')
-//                            ->label(__('forms.forms.avatar'))
-//                            ->disk('public')
-//                            ->directory('avatars')
-//                            ->image()
-//                            ->imageEditor(),
-//                        TextInput::make('password')
-//                            ->label(__('forms.forms.password'))
-//                            ->password()
-//                            ->required()
-//                            ->minLength(6)
-//                            ->same('password_confirmation')
-//                            ->dehydrated(fn ($state) => filled($state))
-//                            ->dehydrateStateUsing(fn ($state) => Hash::make($state)),
-//                        TextInput::make('password_confirmation')
-//                            ->label(__('forms.forms.password_confirmation'))
-//                            ->password()
-//                            ->required()
-//                            ->dehydrated(false),
                         Select::make('roles')
                             ->label(__('forms.forms.role'))
                             ->options(
@@ -205,19 +185,71 @@ class UserResource extends Resource
 
 
                         Mail::to($user->email)->send(new WelcomeToSystemCreateUser($user, $randomPassword));
-//                        $notification = new VerifyEmail();
-//                        $notification->url = filament()->getVerifyEmailUrl($user);
-//                        $user->notify($notification);
                     })
                     ->requiresConfirmation(),
             ]);
     }
 
-    public static function getRelations(): array
+    public static function getListTableColumns(): array
     {
         return [
-            //
+            ImageColumn::make('avatar_url')
+                ->label(__('forms.forms.avatar'))
+                ->disk('public')
+                ->circular()
+                ->stacked(),
+            TextColumn::make('name')
+                ->label(__('forms.forms.name'))
+                ->searchable(),
+            TextColumn::make('email')
+                ->label(__('forms.forms.email'))
+                ->searchable(),
+            Tables\Columns\TextColumn::make('email_verified_at')
+                ->label('Email Verified')
+                ->dateTime('d m Y H:i'),
+            TextColumn::make('roles.name')
+                ->label(__('forms.forms.role'))
+                ->formatStateUsing(function (Model $record) {
+                    $role = $record->roles->first();
+                    return $role ? RolesEnum::getLabel($role->name) : '-';
+                }),
         ];
+    }
+    public static function getGridTableColumns(): array
+    {
+        return [
+            Split::make([
+                // Parte esquerda: avatar
+                ImageColumn::make('avatar_url')
+                    ->label(__('forms.forms.avatar'))
+                    ->disk('public')
+                    ->circular()
+                    ->extraAttributes(['class' => 'w-12 h-12']), // opcional para controlar tamanho
+                // Parte direita: nome + informações abaixo
+                Stack::make([
+                    TextColumn::make('name')
+                        ->weight(FontWeight::Bold)
+                        ->searchable()
+                        ->formatStateUsing(ColumnFormatter::labelValue(__('forms.forms.name'))),
+                    TextColumn::make('email')
+                        ->icon('heroicon-m-envelope')
+                        ->fontFamily(FontFamily::Mono)
+                        ->iconColor('primary')
+                        ->searchable()
+                        ->formatStateUsing(ColumnFormatter::labelValue(__('forms.forms.email'))),
+                    TextColumn::make('email_verified_at')
+                        ->label('Email Verified')
+                        ->dateTime('d/m/Y H:i'),
+                    TextColumn::make('roles.name')
+                        ->label(__('forms.forms.role'))
+                        ->formatStateUsing(function (Model $record) {
+                            $role = $record->roles->first();
+                            return $role ? RolesEnum::getLabel($role->name) : '-';
+                        }),
+                ]),
+            ]),
+        ];
+
     }
 
     public static function canViewAny(): bool
