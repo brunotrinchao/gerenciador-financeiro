@@ -1,4 +1,10 @@
-<h2>Transações em Atraso</h2>
+@extends('emails.layout')
+
+@section('title', 'Transações em Atraso |' . config('app.name'))
+
+@section('header', 'Transações em Atraso')
+
+@section('content')
 
 <ul style="list-style-type: none; padding: 0;">
     @foreach ($items as $item)
@@ -21,3 +27,4 @@
         </div>
     @endforeach
 </ul>
+@endsection
