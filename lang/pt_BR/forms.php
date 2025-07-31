@@ -85,6 +85,8 @@ return [
         'method' => 'Método',
         'installments' => 'Parcelas',
         'amount' => 'Valor',
+        'paid_amount' => 'Pago',
+        'installment_value' => 'Valor da parcela',
         'payment_date' => 'Data de pagamento',
         'status' => 'Status',
     ],

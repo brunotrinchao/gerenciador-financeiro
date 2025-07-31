@@ -7,10 +7,13 @@ use App\Filament\Resources\TransactionResource;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Hydrat\TableLayoutToggle\Concerns\HasToggleableTable;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListTransactions extends ListRecords
 {
+    use HasToggleableTable;
+
     protected static string $resource = TransactionResource::class;
 
     protected function getHeaderActions(): array

@@ -24,6 +24,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Widgets;
+use Hydrat\TableLayoutToggle\TableLayoutTogglePlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -102,6 +103,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
+                TableLayoutTogglePlugin::make(),
                 \Hasnayeen\Themes\ThemesPlugin::make(),
                 EnvironmentIndicatorPlugin::make()
                     ->visible(fn () => auth()->user()?->hasRole(RolesEnum::ADMIN->name))
