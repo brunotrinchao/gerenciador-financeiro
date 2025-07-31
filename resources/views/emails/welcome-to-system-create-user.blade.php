@@ -9,7 +9,7 @@
 <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
     <tr>
         <td align="center" style="padding: 30px 20px;">
-            <img src="{{ asset('storage/logo.png') }}" alt="Logo do {{ config('app.name') }}" width="120" style="margin-bottom: 20px;">
+            <img src="{{ asset('logo.png') }}" alt="Logo do {{ config('app.name') }}" width="120" style="margin-bottom: 20px;">
             <h2 style="color: #333333;">Bem-vindo ao {{ config('app.name') }}!</h2>
             <p style="color: #555555; font-size: 16px;">
                 Olá {{ $user->name }}, você foi cadastrado no sistema com sucesso.
