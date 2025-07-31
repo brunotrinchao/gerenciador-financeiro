@@ -12,7 +12,11 @@
             <img src="{{ asset('storage/logo.png') }}" alt="Logo do {{ config('app.name') }}" width="120" style="margin-bottom: 20px;">
             <h2 style="color: #333333;">Bem-vindo ao {{ config('app.name') }}!</h2>
             <p style="color: #555555; font-size: 16px;">
-                Olá {{ $user->name }}, você foi cadastrado no sistema com sucesso. Clique no botão abaixo para acessar:
+                Olá {{ $user->name }}, você foi cadastrado no sistema com sucesso.
+                <br/><br/>
+                Seu login é: <b>{{ $user->email }}</b>
+                Sua senha temporária é: <b>{{ $password }}</b>
+                <br/><br/>Clique no botão abaixo para acessar:
             </p>
 
             <a href="{{ config('app.url') }}" target="_blank" style="display: inline-block; padding: 12px 24px; margin-top: 20px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold;">

@@ -15,10 +15,12 @@ class WelcomeToSystemCreateUser extends Mailable
     use Queueable, SerializesModels;
 
     private User $user;
+    private string $password;
 
-    public function __construct($user)
+    public function __construct($user, $password)
     {
         $this->user = $user;
+        $this->password = $password;
     }
 
 
@@ -35,7 +37,8 @@ class WelcomeToSystemCreateUser extends Mailable
         return new Content(
             view: 'emails.welcome-to-system-create-user',
             with: [
-                'user' => $this->user
+                'user' => $this->user,
+                'password' => $this->password,
             ],
         );
     }
