@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\RolesEnum;
 use App\Enum\TransactionTypeEnum;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
@@ -98,9 +99,8 @@ class TransactionResource extends Resource
                     ]
             )
             ->filters([
-
                 TrashedFilter::make()
-                    ->visible(fn () => auth()->user()?->hasRole('ADMIN')),
+                    ->visible(fn () => auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name)),
                 Filter::make('filter')
                     ->label(__('forms.columns.filter'))
                     ->form([

@@ -30,6 +30,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
@@ -47,9 +48,6 @@ class AdminPanelProvider extends PanelProvider
             ->profile(isSimple: false)
             ->login()
             ->passwordReset()
-//            ->emailVerification()
-//            ->brandLogo(asset('images/logo.svg'))
-//            ->brandName('Gerenciador financeiro')
             ->defaultThemeMode(ThemeMode::Light)
             ->font('Exo')
             ->colors([
@@ -73,6 +71,9 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label(__('system.labels.finance'))
                     ->icon('heroicon-o-banknotes'),
+                NavigationGroup::make()
+                    ->label(__('system.labels.account_payable_receivable'))
+                    ->icon('heroicon-s-arrows-right-left'),
                 NavigationGroup::make()
                     ->label(__('system.labels.settings'))
                     ->icon('heroicon-o-lock-closed')

@@ -7,10 +7,12 @@ use App\Filament\Widgets\InstallmentEvolutionChart;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
+use Hydrat\TableLayoutToggle\Concerns\HasToggleableTable;
 
 
 class ListCards extends ListRecords
 {
+    use HasToggleableTable;
     protected static string $resource = CardResource::class;
 
 

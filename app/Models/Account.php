@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class Account extends Model
 {
@@ -23,5 +25,14 @@ class Account extends Model
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('family', function (Builder $builder) {
+            if (auth()->check()) {
+                $builder->where('family_id', auth()->user()->family_id);
+            }
+        });
     }
 }

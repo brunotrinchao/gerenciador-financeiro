@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class Card extends Model
 {
@@ -44,4 +46,12 @@ class Card extends Model
         return $this->hasManyThrough(TransactionItem::class, Transaction::class);
     }
 
+    protected static function booted()
+    {
+        static::addGlobalScope('family', function (Builder $builder) {
+            if (auth()->check()) {
+                $builder->where('family_id', auth()->user()->family_id);
+            }
+        });
+    }
 }

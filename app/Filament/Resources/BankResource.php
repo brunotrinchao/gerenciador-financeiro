@@ -82,14 +82,20 @@ class BankResource extends Resource
                     fillForm: fn ($record) => [
                         'name' => $record->name,
                         'code' => $record->code,
-                    ]
+                    ],
+                    visible: function ($record) {
+                        return $record?->family_id === (int) auth()->user()?->family_id;
+                    }
                 ),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ])
+            ->checkIfRecordIsSelectableUsing(
+                function (Bank $record) {
+                    return $record->family_id === (int) auth()->user()?->family_id;
+                }
+            )
             ->recordUrl(null)
             ->recordAction('editBank')
             ->headerActions([
@@ -131,7 +137,8 @@ class BankResource extends Resource
                             ->body(__('forms.notifications.bank_created_body'))
                             ->success()
                             ->send();
-                    }
+                    },
+                    visible: true
                 ),
             ]);
     }

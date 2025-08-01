@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\RolesEnum;
 use App\Filament\Resources\ActionLogResource\Pages;
 use App\Filament\Resources\ActionLogResource\RelationManagers;
 use App\Models\ActionLog;
@@ -124,7 +125,7 @@ class ActionLogResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole('ADMIN');
+        return auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function getPages(): array

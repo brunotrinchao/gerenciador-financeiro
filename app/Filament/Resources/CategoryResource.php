@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\RolesEnum;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource\RelationManagers;
+use App\Helpers\ColumnFormatter;
 use App\Helpers\Filament\ActionHelper;
 use App\Models\Category;
 use Filament\Actions\DeleteAction;
@@ -15,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -52,12 +55,21 @@ class CategoryResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $livewire = $table->getLivewire();
+
         return $table
-            ->columns([
-                TextColumn::make('name')
-                    ->label(__('forms.columns.name'))
-                    ->searchable(),
-            ])
+            ->columns($livewire->isGridLayout()
+                ? static::getGridTableColumns()
+                : static::getListTableColumns())
+            ->contentGrid(
+                fn () => $livewire->isListLayout()
+                    ? null
+                    : [
+                        'md' => 2,
+                        'lg' => 3,
+                        'xl' => 4,
+                    ]
+            )
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editCategory',
@@ -68,10 +80,15 @@ class CategoryResource extends Resource
                     ],
                     modalHeading: __('forms.actions.edit_category'),
                     label: __('forms.actions.edit'),
-                    fillForm: fn($record) => ['name' => $record->name]
+                    fillForm: fn($record) => ['name' => $record->name],
+                    visible: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name)
                 ),
                 Tables\Actions\DeleteAction::make('delete')
                     ->label(__('forms.actions.delete'))
+                    ->visible(function ($record) {
+                        return $record?->family_id === (int) auth()->user()?->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name);
+
+                    })
                     ->before(function ($record, $action) {
                         $totalTransactions = $record->transactions()->count();
                         if ($totalTransactions > 0) {
@@ -93,7 +110,6 @@ class CategoryResource extends Resource
             ])
             ->recordUrl(null)
             ->recordAction('editCategory')
-            ->bulkActions([])
             ->headerActions([
                 ActionHelper::makeSlideOver(
                     name: 'createCategory',
@@ -124,7 +140,9 @@ class CategoryResource extends Resource
                             ->body(__('forms.notifications.category_created_msg'))
                             ->success()
                             ->send();
-                    }
+                    },
+                    visible: true,
+
                 ),
             ]);
     }
@@ -140,6 +158,26 @@ class CategoryResource extends Resource
             'index' => Pages\ListCategories::route('/'),
             'create' => Pages\CreateCategory::route('/create'),
             'edit' => Pages\EditCategory::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getGridTableColumns(): array
+    {
+        return [
+            Stack::make([
+                TextColumn::make('name')
+                    ->formatStateUsing(ColumnFormatter::labelValue(__('forms.columns.name')))
+                    ->searchable(),
+                ])
+        ];
+    }
+
+    public static function getListTableColumns(): array
+    {
+        return [
+            TextColumn::make('name')
+                ->label(__('forms.columns.name'))
+                ->searchable(),
         ];
     }
 }

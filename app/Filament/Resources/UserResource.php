@@ -10,6 +10,7 @@ use App\Helpers\Filament\ActionHelper;
 use App\Helpers\TranslateString;
 use App\Mail\OverdueTransactionItemsMail;
 use App\Mail\WelcomeToSystemCreateUser;
+use App\Models\Family;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
@@ -107,7 +108,7 @@ class UserResource extends Resource
                                 collect(RolesEnum::cases())
                                     ->filter(function ($role) {
                                         // Oculta ADMIN se o usuário logado não for ADMIN
-                                        return $role !== RolesEnum::ADMIN->value || auth()->user()->hasRole(RolesEnum::ADMIN->value);
+                                        return $role !== RolesEnum::ADMIN->value || auth()->user()->hasRole(RolesEnum::ADMIN->value) || $role !== RolesEnum::SUPER->value || auth()->user()->hasRole(RolesEnum::SUPER->value);;
                                     })
                                     ->mapWithKeys(fn ($role) => [$role->name => $role->value])
                                     ->toArray()
@@ -139,6 +140,11 @@ class UserResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
+            ->checkIfRecordIsSelectableUsing(
+                function ($record) {
+                    return auth()->user()?->hasRole(RolesEnum::SUPER->name) || !auth()->user()?->hasRole(RolesEnum::ADMIN->name);
+                }
+            )
             ->headerActions([
                 ActionHelper::makeSlideOver(
                     name: 'createUser',
@@ -149,14 +155,20 @@ class UserResource extends Resource
                             ->label(__('forms.forms.role'))
                             ->options(
                                 collect(RolesEnum::cases())
-                                    ->filter(fn ($role) => $role !== RolesEnum::ADMIN)
+                                    ->filter(fn ($role) => $role !== RolesEnum::ADMIN && $role !== RolesEnum::SUPER)
                                     ->mapWithKeys(fn ($role) => [$role->name => $role->value])
                                     ->toArray()
                             )
-                            ->required()
+                            ->required(),
+                        Select::make('family_id')
+                            ->label('Família')
+                            ->options(Family::pluck('name', 'id')->toArray())
+                            ->required(fn () => auth()->user()?->hasRole(RolesEnum::SUPER->name))
+                            ->visible(fn () => auth()->user()?->hasRole(RolesEnum::SUPER->name))
                     ],
-                    modalHeading: __('system.modal_headings.create_user'),
+                    modalHeading: __('forms.modal_headings.create_user'),
                     label: __('forms.buttons.create'),
+                    visible: true,
                     action: function (array $data) {
                         if (User::where('email', $data['email'])->exists()) {
                             Notification::make()
@@ -201,6 +213,10 @@ class UserResource extends Resource
             TextColumn::make('name')
                 ->label(__('forms.forms.name'))
                 ->searchable(),
+            TextColumn::make('family.name')
+            ->label('Familia')
+            ->searchable()
+            ->visible(fn () => auth()->user()->hasRole(RolesEnum::SUPER->name)),
             TextColumn::make('email')
                 ->label(__('forms.forms.email'))
                 ->searchable(),
@@ -224,6 +240,7 @@ class UserResource extends Resource
                     ->label(__('forms.forms.avatar'))
                     ->disk('public')
                     ->circular()
+                    ->visible(fn ($record): bool => filled($record?->avatar_url))
                     ->extraAttributes(['class' => 'w-12 h-12']), // opcional para controlar tamanho
                 // Parte direita: nome + informações abaixo
                 Stack::make([
@@ -231,6 +248,11 @@ class UserResource extends Resource
                         ->weight(FontWeight::Bold)
                         ->searchable()
                         ->formatStateUsing(ColumnFormatter::labelValue(__('forms.forms.name'))),
+                    TextColumn::make('family.name')
+                        ->label('Familia')
+                        ->searchable()
+                        ->formatStateUsing(ColumnFormatter::labelValue('Familia'))
+                        ->visible(fn () => auth()->user()->hasRole(RolesEnum::SUPER->name)),
                     TextColumn::make('email')
                         ->icon('heroicon-m-envelope')
                         ->fontFamily(FontFamily::Mono)
@@ -242,10 +264,14 @@ class UserResource extends Resource
                         ->dateTime('d/m/Y H:i'),
                     TextColumn::make('roles.name')
                         ->label(__('forms.forms.role'))
+                        ->searchable()
                         ->formatStateUsing(function (Model $record) {
                             $role = $record->roles->first();
-                            return $role ? RolesEnum::getLabel($role->name) : '-';
+                            $label = $role ? RolesEnum::getLabel($role->name) : '-';
+
+                            return ColumnFormatter::labelValue(__('forms.forms.role'))($label);
                         }),
+
                 ]),
             ]),
         ];
@@ -254,27 +280,32 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->can('view users');
+        return auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->can('create users');
+        return auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->can('edit users');
+        return auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->can('delete users');
+        return auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('roles');
+        $query = parent::getEloquentQuery()->with('roles');
+        if(auth()->user()->hasRole(RolesEnum::ADMIN->name)) {
+            $query->where('family_id', auth()->user()->family_id);
+        }
+
+        return $query;
     }
 
     public static function getPages(): array

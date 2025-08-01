@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Observers\TransactionItemObserver;
 use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,5 +38,16 @@ class TransactionItem extends Model
     public function card(): BelongsTo
     {
         return $this->belongsTo(Card::class);
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('family', function (Builder $builder) {
+            if (auth()->check()) {
+                $builder->whereHas('transaction', function ($builder) {
+                    $builder->where('family_id', auth()->user()->family_id);
+                });
+            }
+        });
     }
 }
