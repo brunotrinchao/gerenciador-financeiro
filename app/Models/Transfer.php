@@ -19,6 +19,10 @@ class Transfer extends Model
         return $this->belongsTo(Transaction::class, 'target_transaction_id');
     }
 
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
+    }
     protected static function booted()
     {
         static::addGlobalScope('family', function (Builder $builder) {

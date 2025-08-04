@@ -24,6 +24,7 @@ class TransactionFactory extends Factory
             'date' => now(),
             'recurrence_interval' => 1,
             'description' => $this->faker->sentence(),
+            'family_id' => 1,
         ];
     }
 }

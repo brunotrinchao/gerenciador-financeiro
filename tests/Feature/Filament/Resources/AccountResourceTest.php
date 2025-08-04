@@ -7,6 +7,7 @@ use App\Filament\Resources\AccountResource\Pages\EditAccount;
 use App\Filament\Resources\AccountResource\Pages\ListAccounts;
 use App\Filament\Resources\TransactionResource\Pages\ListTransactions;
 use App\Models\Bank;
+use App\Models\Family;
 use App\Models\User;
 use App\Models\Account;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +23,7 @@ class AccountResourceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
+        Family::factory()->create(['id' => 1]);
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
     }
@@ -98,6 +99,10 @@ class AccountResourceTest extends TestCase
                 'balance' => 750,
             ])
             ->assertHasNoTableActionErrors();
+
+        $account->refresh();
+        $this->assertEquals(2, $account->type);
+        $this->assertEquals(750, $account->balance);
 
         $this->assertDatabaseHas('accounts', [
             'id' => $account->id,

@@ -12,17 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         $tables = [
-//            'users',
-//            'accounts',
-//            'cards',
-//            'transactions',
-//            'jobs',
-//            'categories',
-//            'notifications',
-//            'action_logs',
-//            'imports',
-//            'exports',
-//            'transfers',
+            'users',
+            'accounts',
+            'cards',
+            'transactions',
+            'jobs',
+            'categories',
+            'notifications',
+            'action_logs',
+            'imports',
+            'exports',
+            'transfers',
             'banks'
         ];
 

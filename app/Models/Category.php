@@ -10,11 +10,16 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'family_id'];
 
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
     }
 
     protected static function booted()

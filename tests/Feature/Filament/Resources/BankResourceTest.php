@@ -5,6 +5,7 @@ namespace Feature\Filament\Resources;
 use App\Filament\Resources\BankResource;
 use App\Filament\Resources\BankResource\Pages\CreateBank;
 use App\Filament\Resources\BankResource\Pages\ListBanks;
+use App\Models\Family;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,7 +20,7 @@ class BankResourceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
+        Family::factory()->create(['id' => 1]);
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
     }

@@ -27,6 +27,11 @@ class Account extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
+    }
+
     protected static function booted()
     {
         static::addGlobalScope('family', function (Builder $builder) {

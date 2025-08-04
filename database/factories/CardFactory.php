@@ -26,6 +26,7 @@ class CardFactory extends Factory
             'brand_id' => $this->faker->numberBetween(1, 100),
             'limit' => $this->faker->numberBetween(1, 10000),
             'due_date' => $this->faker->numberBetween(1, 30),
+            'family_id' => 1,
         ];
     }
 }

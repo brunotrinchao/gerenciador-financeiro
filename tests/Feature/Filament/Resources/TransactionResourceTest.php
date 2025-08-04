@@ -10,6 +10,7 @@ use App\Models\Bank;
 use App\Models\BrandCard;
 use App\Models\Card;
 use App\Models\Category;
+use App\Models\Family;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,7 +26,7 @@ class TransactionResourceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
+        Family::factory()->create(['id' => 1]);
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
     }

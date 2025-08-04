@@ -24,7 +24,8 @@ class Transaction extends Model
         'method',
         'is_recurring',
         'recurrence_interval',
-        'description'
+        'description',
+        'family_id'
     ];
 
     protected $casts = [
@@ -54,6 +55,11 @@ class Transaction extends Model
     public function items()
     {
         return $this->hasMany(TransactionItem::class);
+    }
+
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
     }
 
     protected static function booted()

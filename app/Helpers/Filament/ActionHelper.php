@@ -7,6 +7,8 @@ use Filament\Forms\Components\Component;
 use Filament\Notifications\Notification;
 use Filament\Support\RawJs;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Log;
+
 class ActionHelper
 {
     public static function makeSlideOver(
@@ -30,7 +32,7 @@ class ActionHelper
             ->icon($isEdit ? 'heroicon-c-pencil-square' : 'heroicon-m-plus-circle')
             ->label($label)
             ->action($action ?? function (array $data, $record) {
-
+                Log::info('Editando conta', ['data' => $data]);
                 foreach ($data as $key => $value) {
                     if (in_array($key, ['limit', 'amount', 'balance'])) {
                         // Permite números, vírgula e sinal negativo

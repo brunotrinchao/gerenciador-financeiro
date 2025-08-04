@@ -21,6 +21,7 @@ class BankFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'code' => $this->faker->unique()->randomNumber(9, true),
+            'family_id' => 1,
         ];
     }
 }
