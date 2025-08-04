@@ -27,8 +27,28 @@
 
 {{--    </div>--}}
 
-    <div class="pt-1 text-2xl font-bold text-sky-500 dark:text-sky-500">
-        {{ config('app.name') }}
+    @php
+        $user = auth()->user();
+        $familyName = $user && $user->family
+            ? '<p  class="text-gray-600 dark:text-gray-400" style="font-size: 12px; display: inline-block; margin-top: 3px; line-height:14px; text-align: center; width: 100%;">Família ' . e($user->family->name) . '</p>'
+            : '';
+
+        $name = config('app.name');
+        $expName = explode(' ', $name);
+        $expName[count($expName) - 1] = '<span class="text-primary-500 dark:text-primary-500">'. $expName[count($expName) - 1] .'</span>';
+        $nameFinal = implode(' ', $expName);
+    @endphp
+
+    <div class="pt-1 text-2xl"
+         style="display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;">
+        <p style="line-height: 23px;" class="font-bold" ">{!! $nameFinal !!}</p>{!! $familyName !!}
     </div>
+
+
+
 
 </div>

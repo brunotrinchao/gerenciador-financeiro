@@ -9,7 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Lang;
 
-class ResetPasswordNotification extends Notification implements \Illuminate\Contracts\Mail\Mailable
+class ResetPasswordNotification extends Notification
 {
     use Queueable;
 

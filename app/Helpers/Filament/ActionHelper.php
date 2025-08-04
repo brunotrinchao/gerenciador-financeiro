@@ -2,10 +2,13 @@
 
 namespace App\Helpers\Filament;
 
+use Closure;
 use Filament\Forms\Components\Component;
 use Filament\Notifications\Notification;
 use Filament\Support\RawJs;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\Log;
+
 class ActionHelper
 {
     public static function makeSlideOver(
@@ -17,6 +20,7 @@ class ActionHelper
         ?callable $action = null,
         ?callable $before= null,
         ?callable $after = null,
+        bool|callable $visible = null
     ): Action {
         $isEdit = $label === 'Editar';
 
@@ -25,10 +29,10 @@ class ActionHelper
             ->model('formData')
             ->modalHeading($modalHeading)
             ->modalButton($isEdit ? 'Salvar alterações' : 'Salvar')
+            ->icon($isEdit ? 'heroicon-c-pencil-square' : 'heroicon-m-plus-circle')
             ->label($label)
-            ->icon($isEdit ? 'heroicon-m-pencil' : 'heroicon-m-plus')
             ->action($action ?? function (array $data, $record) {
-
+                Log::info('Editando conta', ['data' => $data]);
                 foreach ($data as $key => $value) {
                     if (in_array($key, ['limit', 'amount', 'balance'])) {
                         // Permite números, vírgula e sinal negativo
@@ -49,10 +53,16 @@ class ActionHelper
             })
             ->before($before)
             ->after($after)
+            ->modalIcon($isEdit ? 'heroicon-c-pencil-square' : 'heroicon-m-plus-circle')
             ->slideOver(true);
 
         if ($isEdit && $fillForm !== false) {
             $actionBuilder->fillForm($fillForm ?? fn ($record) => $record->toArray());
+        }
+
+
+        if($visible) {
+            $actionBuilder->visible($visible);
         }
 
         return $actionBuilder;

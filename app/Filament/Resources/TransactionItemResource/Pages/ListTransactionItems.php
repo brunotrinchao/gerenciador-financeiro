@@ -18,12 +18,14 @@ use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
+use Hydrat\TableLayoutToggle\Concerns\HasToggleableTable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class ListTransactionItems extends ListRecords
 {
     use ExposesTableToWidgets;
+    use HasToggleableTable;
 
     protected static string $resource = TransactionItemResource::class;
 

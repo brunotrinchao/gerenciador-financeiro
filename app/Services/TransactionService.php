@@ -112,7 +112,6 @@ class TransactionService
             : null;
 
         $paidInterval = (int) ($data['paid_interval'] ?? 0);
-
         for ($i = 0; $i < $installmentsCount; $i++) {
             $currentCents = $i === $installmentsCount - 1 ? $baseValue + $remaining : $baseValue;
             $paymentDate = (clone $date)->addMonths($i);

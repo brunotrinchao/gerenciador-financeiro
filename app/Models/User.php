@@ -3,11 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enum\RolesEnum;
+use App\Models\Models\Notification\CustomDatabaseNotification;
 use App\Notifications\ResetPasswordNotification;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -69,8 +72,29 @@ class User extends Authenticatable implements HasAvatar, FilamentUser, MustVerif
         return true;
     }
 
+    public function notifications()
+    {
+        return $this->morphMany(CustomDatabaseNotification::class, 'notifiable');
+    }
+
     public function sendPasswordResetNotification($token)
     {
         Mail::to($this->email)->send(new ResetPasswordNotification($token));
     }
+
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
+    }
+
+
+    protected static function booted()
+    {
+        if(auth()->check() && auth()->user()->hasRole(RolesEnum::ADMIN->name)) {
+            static::creating(function ($model) {
+                $model->family_id ??= auth()->user()->family_id;
+            });
+        }
+    }
+
 }

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class ActionLog extends Model
 {
@@ -20,5 +22,14 @@ class ActionLog extends Model
         'old_values' => 'array',
         'new_values' => 'array',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope('family', function (Builder $builder) {
+            if (auth()->check()) {
+                $builder->where('family_id', auth()->user()->family_id);
+            }
+        });
+    }
 
 }

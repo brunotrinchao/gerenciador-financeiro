@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\RolesEnum;
 use App\Filament\Resources\PermissionResource\Pages;
 use App\Filament\Resources\PermissionResource\RelationManagers;
 use App\Helpers\TranslateString;
@@ -71,9 +72,15 @@ class PermissionResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label(__('forms.actions.delete')),
+                    Tables\Actions\DeleteBulkAction::make()->label(__('forms.actions.delete'))
+                        ->visible(fn (): bool => auth()->user()->hasRole(RolesEnum::SUPER->name)),
                 ]),
-            ]);
+            ])
+            ->checkIfRecordIsSelectableUsing(
+                function ($record) {
+                    return auth()->user()?->hasRole(RolesEnum::SUPER->name);
+                }
+            );
     }
 
     public static function getRelations(): array
@@ -92,22 +99,22 @@ class PermissionResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->can('view users');
+        return auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->can('create users');
+        return auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->can('edit users');
+        return auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->can('delete users');
+        return auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 }
 

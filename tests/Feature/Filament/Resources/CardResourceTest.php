@@ -6,6 +6,7 @@ use App\Filament\Resources\CardResource;
 use App\Filament\Resources\CardResource\Pages\ListCards;
 use App\Models\Bank;
 use App\Models\BrandCard;
+use App\Models\Family;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,7 +20,7 @@ class CardResourceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
+        Family::factory()->create(['id' => 1]);
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
     }

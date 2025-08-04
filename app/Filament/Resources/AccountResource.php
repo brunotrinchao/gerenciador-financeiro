@@ -90,12 +90,7 @@ class AccountResource extends Resource
                     ],
                     modalHeading: __('forms.forms.edit_bank_account'),
                     label: __('forms.forms.edit'),
-                    fillForm: fn ($record) => [
-                        'name'     => $record->name,
-                        'bank_id'  => $record->bank_id,
-                        'type'     => $record->type,
-                        'balance'  => $record->balance,
-                    ]
+                    fillForm: fn ($record) => $record->only(['type', 'bank_id', 'balance'])
                 ),
             ])
             ->bulkActions([

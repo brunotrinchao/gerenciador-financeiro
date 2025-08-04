@@ -6,6 +6,7 @@ use App\Filament\Resources\CardResource\Pages;
 use App\Filament\Resources\CardResource\RelationManagers;
 use App\Filament\Resources\TransactionResource\RelationManagers\ItemsRelationManager;
 use App\Filament\Widgets\InstallmentEvolutionChart;
+use App\Helpers\ColumnFormatter;
 use App\Helpers\Filament\ActionHelper;
 use App\Helpers\Filament\MaskHelper;
 use App\Models\Bank;
@@ -21,6 +22,8 @@ use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -61,59 +64,27 @@ class CardResource extends Resource
             return value;
         }');
 
-        return $form->schema([
-//            Select::make('bank_id')
-//                ->label(__('forms.columns.bank'))
-//                ->prefixIcon('phosphor-bank')
-//                ->options(Bank::pluck('name', 'id'))
-//                ->disabled(),
-//            TextInput::make('name')
-//                ->label(__('forms.columns.name'))
-//                ->disabled(),
-//            TextInput::make('number')
-//                ->prefixIcon('heroicon-m-credit-card')
-//                ->label(__('forms.columns.number'))
-//                ->mask(RawJs::make(<<<'JS'
-//                    $input.startsWith('34') || $input.startsWith('37') ? '9999 999999 99999' : '9999 9999 9999 9999'
-//                JS))
-//                ->disabled(),
-//            Select::make('brand_id')
-//                ->label(__('forms.columns.brand'))
-//                ->searchable()
-//                ->relationship('brand', 'name')
-//                ->preload()
-//                ->disabled(),
-//            TextInput::make('due_date')
-//                ->label(__('forms.columns.due_date'))
-//                ->numeric()
-//                ->minValue(1)
-//                ->maxValue(31)
-//                ->disabled(),
-//            TextInput::make('limit')
-//                ->label(__('forms.columns.limit'))
-//                ->prefix('R$')
-//                ->mask($moneyMask)
-//                ->default(0)
-//                ->disabled(),
-        ])
+        return $form->schema([])
             ->statePath(null);
     }
 
     public static function table(Table $table): Table
     {
+        $livewire = $table->getLivewire();
+
         return $table
-            ->columns([
-                ImageColumn::make('brand.brand')
-                    ->label(__('forms.columns.brand'))
-                    ->height(30)
-                    ->stacked(),
-                TextColumn::make('name')->label(__('forms.columns.name'))
-                    ->searchable(),
-                TextColumn::make('number')->label(__('forms.columns.number')),
-                TextColumn::make('bank.name')->label(__('forms.columns.bank')),
-                TextColumn::make('limit')->label(__('forms.columns.limit'))->currency('BRL'),
-                TextColumn::make('due_date')->label(__('forms.columns.due_date'))->alignCenter(),
-            ])
+            ->columns($livewire->isGridLayout()
+                ? static::getGridTableColumns()
+                : static::getListTableColumns())
+            ->contentGrid(
+                fn () => $livewire->isListLayout()
+                    ? null
+                    : [
+                        'md' => 2,
+                        'lg' => 3,
+                        'xl' => 4,
+                    ]
+            )
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editCard',
@@ -235,6 +206,47 @@ class CardResource extends Resource
             'create' => Pages\CreateCard::route('/create'),
             'edit' => Pages\EditCard::route('/{record}/edit'),
             'import-transactions' => Pages\ImportCardTransactions::route('/{record}/import-transactions'),
+        ];
+    }
+
+    public static function getGridTableColumns(): array
+    {
+        return [
+            Split::make([
+                    ImageColumn::make('brand.brand')
+                        ->label(__('forms.columns.brand'))
+                        ->extraAttributes(['class' => 'h-12'])
+                        ->visible(fn ($record): bool => filled($record?->brand)),
+                    Stack::make([
+                        TextColumn::make('name')
+                            ->formatStateUsing(ColumnFormatter::labelValue(__('forms.columns.name')))
+                            ->searchable(),
+                        TextColumn::make('number')
+                            ->formatStateUsing(ColumnFormatter::labelValue(__('forms.columns.number'))),
+                        TextColumn::make('bank.name')
+                            ->formatStateUsing(ColumnFormatter::labelValue(__('forms.columns.bank'))),
+                        TextColumn::make('limit')
+                            ->formatStateUsing(ColumnFormatter::money(__('forms.columns.limit'))),
+                        TextColumn::make('due_date')
+                            ->formatStateUsing(ColumnFormatter::labelValue(__('forms.columns.due_date')))
+                    ])
+            ])
+        ];
+    }
+
+    public static function getListTableColumns(): array
+    {
+        return [
+            ImageColumn::make('brand.brand')
+                ->label(__('forms.columns.brand'))
+                ->height(30)
+                ->stacked(),
+            TextColumn::make('name')->label(__('forms.columns.name'))
+                ->searchable(),
+            TextColumn::make('number')->label(__('forms.columns.number')),
+            TextColumn::make('bank.name')->label(__('forms.columns.bank')),
+            TextColumn::make('limit')->label(__('forms.columns.limit'))->currency('BRL'),
+            TextColumn::make('due_date')->label(__('forms.columns.due_date'))->alignCenter(),
         ];
     }
 }

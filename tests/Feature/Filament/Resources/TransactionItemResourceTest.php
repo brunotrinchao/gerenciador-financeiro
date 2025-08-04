@@ -9,6 +9,7 @@ use App\Filament\Resources\TransactionResource\RelationManagers\ItemsRelationMan
 use App\Models\Account;
 use App\Models\Bank;
 use App\Models\Category;
+use App\Models\Family;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Models\User;
@@ -22,20 +23,24 @@ class TransactionItemResourceTest extends TestCase
 {
     use RefreshDatabase;
     protected User $user;
+    protected Family $family;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->user = User::factory()->create();
+        $this->family = Family::factory()->create(['id' => 1]);
+        $this->user = User::factory()->create(['family_id' => $this->family->id]);
         $this->actingAs($this->user);
     }
 
     public function test_edit_transaction_item_within_allowed_amount(): void
     {
-        $bank = Bank::factory()->create();
-        $account = Account::factory()->create(['bank_id' => $bank->id, 'user_id' => $this->user->id]);
-        $category = Category::factory()->create();
+        $bank = Bank::factory()->create(['family_id' => $this->family->id]);
+        $account = Account::factory()->create([
+            'bank_id' => $bank->id,
+            'user_id' => $this->user->id,
+            'family_id' => $this->family->id]);
+        $category = Category::factory()->create(['family_id' => $this->family->id]);
 
         $transactionData = [
             'type' => TransactionTypeEnum::EXPENSE->name,

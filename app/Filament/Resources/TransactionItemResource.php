@@ -6,6 +6,8 @@ use App\Enum\RolesEnum;
 use App\Filament\Exports\TransactionItemExporter;
 use App\Filament\Resources\TransactionItemResource\Pages;
 use App\Filament\Resources\TransactionItemResource\RelationManagers;
+use App\Helpers\ColumnFormatter;
+use App\Helpers\Filament\ActionHelper;
 use App\Models\Account;
 use App\Models\ActionLog;
 use App\Models\Card;
@@ -26,6 +28,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Enums\FiltersLayout;
@@ -65,58 +68,21 @@ class TransactionItemResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $livewire = $table->getLivewire();
+
         return $table
-            ->columns([
-                TextColumn::make('transaction.description')
-                    ->label(__('forms.columns.description'))
-                    ->searchable(),
-                TextColumn::make('transaction.category.name')
-                    ->label(__('forms.columns.category'))
-                    ->searchable(),
-                TextColumn::make('transaction.method')
-                    ->label(__('forms.columns.method'))
-                    ->searchable()
-                    ->formatStateUsing(fn (string $state) => match ($state) {
-                        'CASH' => __('forms.enums.method.cash'),
-                        'ACCOUNT' => __('forms.enums.method.account'),
-                        'CARD' => __('forms.enums.method.card'),
-                    }),
-                TextColumn::make('installment_number')
-                    ->label(__('forms.columns.installments'))
-                    ->formatStateUsing(fn ($state, $record) => (
-                    !$record->transaction || $record->transaction->recurrence_interval == 1
-                        ? __('forms.enums.installments.cash')
-                        : $state
-                    )),
-                TextColumn::make('amount')
-                    ->label(__('forms.columns.amount'))
-                    ->sortable()
-                    ->currency('BRL'),
-                TextColumn::make('due_date')
-                    ->label(__('forms.columns.due_date'))
-                    ->sortable()
-                    ->date('d/m/Y'),
-                TextColumn::make('payment_date')
-                    ->label(__('forms.columns.payment_date'))
-                    ->sortable()
-                    ->date('d/m/Y'),
-                TextColumn::make('status')
-                    ->label(__('forms.columns.status'))
-                    ->sortable()
-                    ->formatStateUsing(fn (string $state) => match ($state) {
-                        'PAID' => __('forms.enums.status.paid'),
-                        'SCHEDULED' => __('forms.enums.status.scheduled'),
-                        'DEBIT' => __('forms.enums.status.debit'),
-                        'PENDING' => __('forms.enums.status.pending'),
-                    })
-                    ->badge()
-                    ->color(fn (string $state) => match ($state) {
-                        'PAID' => 'success',
-                        'SCHEDULED' => 'warning',
-                        'DEBIT' => 'info',
-                        'PENDING' => 'gray',
-                    }),
-            ])
+            ->columns($livewire->isGridLayout()
+                ? static::getGridTableColumns()
+                : static::getListTableColumns())
+            ->contentGrid(
+                fn () => $livewire->isListLayout()
+                    ? null
+                    : [
+                        'md' => 2,
+                        'lg' => 3,
+                        'xl' => 4,
+                    ]
+            )
             ->striped()
             ->filters([
                 DateRangeFilter::make('due_date')
@@ -128,8 +94,9 @@ class TransactionItemResource extends Resource
                     ->autoApply(),
             ])
             ->actions([
-                Action::make('editTransactionItem')
-                    ->form([
+                ActionHelper::makeSlideOver(
+                    name: 'editTransactionItem',
+                    form: [
                         TextInput::make('amount')
                             ->label(__('forms.columns.amount'))
                             ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
@@ -161,34 +128,17 @@ class TransactionItemResource extends Resource
                                     : null,
                             ])
                             ->reactive()
-                    ])
-                    ->modalHeading(__('forms.actions.edit'))
-                    ->modalButton(__('forms.actions.save_changes'))
-                    ->label(__('forms.actions.edit'))
-                    ->icon('heroicon-m-pencil')
-                    ->fillForm(fn ($record) => [
+                    ],
+                    modalHeading: __('forms.actions.edit'),
+                    label: __('forms.actions.edit'),
+                    fillForm: fn($record) => [
                         'amount' => $record->amount,
                         'due_date' => $record->due_date,
                         'payment_date' => $record->payment_date ?? $record->due_date,
                         'status' => $record->status,
-                    ])
-                    ->action(fn (array $data, $record) => $record->update($data))
-                    ->slideOver(true),
-
-                Action::make('log')
-                    ->label(__('forms.actions.log'))
-                    ->icon('heroicon-m-document-text')
-                    ->modalHeading(__('forms.actions.log_history'))
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel(__('forms.actions.close'))
-                    ->modalContent(fn ($record) => view('filament.actions.transaction-log', [
-                        'logs' => ActionLog::where('model_type', \App\Models\TransactionItem::class)
-                            ->where('model_id', $record->id)
-                            ->latest()
-                            ->get(),
-                    ]))
-                    ->visible(auth()->check() && auth()->user()->hasRole(RolesEnum::ADMIN->name))
-                    ->slideOver()
+                    ],
+                    visible: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name)
+                )
             ])
             ->recordUrl(null)
             ->recordAction('editTransactionItem')
@@ -238,6 +188,130 @@ class TransactionItemResource extends Resource
             'index' => Pages\ListTransactionItems::route('/'),
             'create' => Pages\CreateTransactionItem::route('/create'),
             'edit' => Pages\EditTransactionItem::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getGridTableColumns(): array
+    {
+        return [
+            Stack::make(
+                [
+                    TextColumn::make('transaction.description')
+                        ->label(__('forms.columns.description'))
+                        ->formatStateUsing(ColumnFormatter::labelValue(__('forms.columns.description')))
+                        ->searchable(),
+                    TextColumn::make('transaction.category.name')
+                        ->label(__('forms.columns.category'))
+                        ->formatStateUsing(ColumnFormatter::labelValue(__('forms.columns.category')))
+                        ->searchable(),
+                    TextColumn::make('transaction.method')
+                        ->label(__('forms.columns.method'))
+                        ->searchable()
+                        ->formatStateUsing(function (string $state) {
+                            $translated = match ($state) {
+                                'CASH' => __('forms.enums.method.cash'),
+                                'ACCOUNT' => __('forms.enums.method.account'),
+                                'CARD' => __('forms.enums.method.card'),
+                                default => $state,
+                            };
+
+                            return ColumnFormatter::labelValue(__('forms.columns.method'))($translated);
+                        })
+                    ,
+                    TextColumn::make('installment_number')
+                        ->label(__('forms.columns.installments'))
+                        ->formatStateUsing(function ($state, $record) {
+                            $value = (!$record->transaction || $record->transaction->recurrence_interval == 1)
+                                ? __('forms.enums.installments.cash')
+                                : $state;
+
+                            return ColumnFormatter::labelValue(__('forms.columns.installments'))($value);
+                        }),
+                    TextColumn::make('amount')
+                        ->label(__('forms.columns.amount'))
+                        ->formatStateUsing(ColumnFormatter::money(__('forms.columns.amount')))
+                        ->sortable(),
+                    TextColumn::make('due_date')
+                        ->label(__('forms.columns.due_date'))
+                        ->formatStateUsing(ColumnFormatter::date(__('forms.columns.due_date')))
+                        ->sortable(),
+                    TextColumn::make('payment_date')
+                        ->formatStateUsing(ColumnFormatter::date(__('forms.columns.payment_date')))
+                        ->label(__('forms.columns.payment_date'))
+                        ->sortable(),
+                    TextColumn::make('status')
+                        ->label(__('forms.columns.status'))
+                        ->sortable()
+                        ->formatStateUsing(fn (string $state) => match ($state) {
+                            'PAID' => __('forms.enums.status.paid'),
+                            'SCHEDULED' => __('forms.enums.status.scheduled'),
+                            'DEBIT' => __('forms.enums.status.debit'),
+                            'PENDING' => __('forms.enums.status.pending'),
+                        })
+                        ->badge()
+                        ->color(fn (string $state) => match ($state) {
+                            'PAID' => 'success',
+                            'SCHEDULED' => 'warning',
+                            'DEBIT' => 'info',
+                            'PENDING' => 'gray',
+                        }),
+                ]
+            )
+        ];
+    }
+
+    public static function getListTableColumns(): array
+    {
+        return [
+            TextColumn::make('transaction.description')
+                ->label(__('forms.columns.description'))
+                ->searchable(),
+            TextColumn::make('transaction.category.name')
+                ->label(__('forms.columns.category'))
+                ->searchable(),
+            TextColumn::make('transaction.method')
+                ->label(__('forms.columns.method'))
+                ->searchable()
+                ->formatStateUsing(fn (string $state) => match ($state) {
+                    'CASH' => __('forms.enums.method.cash'),
+                    'ACCOUNT' => __('forms.enums.method.account'),
+                    'CARD' => __('forms.enums.method.card'),
+                }),
+            TextColumn::make('installment_number')
+                ->label(__('forms.columns.installments'))
+                ->formatStateUsing(fn ($state, $record) => (
+                !$record->transaction || $record->transaction->recurrence_interval == 1
+                    ? __('forms.enums.installments.cash')
+                    : $state
+                )),
+            TextColumn::make('amount')
+                ->label(__('forms.columns.amount'))
+                ->sortable()
+                ->currency('BRL'),
+            TextColumn::make('due_date')
+                ->label(__('forms.columns.due_date'))
+                ->sortable()
+                ->date('d/m/Y'),
+            TextColumn::make('payment_date')
+                ->label(__('forms.columns.payment_date'))
+                ->sortable()
+                ->date('d/m/Y'),
+            TextColumn::make('status')
+                ->label(__('forms.columns.status'))
+                ->sortable()
+                ->formatStateUsing(fn (string $state) => match ($state) {
+                    'PAID' => __('forms.enums.status.paid'),
+                    'SCHEDULED' => __('forms.enums.status.scheduled'),
+                    'DEBIT' => __('forms.enums.status.debit'),
+                    'PENDING' => __('forms.enums.status.pending'),
+                })
+                ->badge()
+                ->color(fn (string $state) => match ($state) {
+                    'PAID' => 'success',
+                    'SCHEDULED' => 'warning',
+                    'DEBIT' => 'info',
+                    'PENDING' => 'gray',
+                }),
         ];
     }
 }

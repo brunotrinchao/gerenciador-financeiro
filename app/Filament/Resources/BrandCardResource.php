@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\RolesEnum;
 use App\Filament\Resources\BrandCardResource\Pages;
 use App\Filament\Resources\BrandCardResource\RelationManagers;
+use App\Helpers\ColumnFormatter;
 use App\Helpers\Filament\ActionHelper;
 use App\Models\BrandCard;
 use Filament\Forms;
@@ -16,6 +18,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -53,19 +57,21 @@ class BrandCardResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $livewire = $table->getLivewire();
+
         return $table
-            ->columns([
-                ImageColumn::make('brand')
-                    ->label(__('forms.columns.brand'))
-                    ->height(25),
-
-                TextColumn::make('name')
-                    ->label(__('forms.columns.name'))
-                    ->searchable(),
-
-                TextColumn::make('slug')
-                    ->label('Slug'),
-            ])
+            ->columns($livewire->isGridLayout()
+                ? static::getGridTableColumns()
+                : static::getListTableColumns())
+            ->contentGrid(
+                fn () => $livewire->isListLayout()
+                    ? null
+                    : [
+                        'md' => 2,
+                        'lg' => 3,
+                        'xl' => 4,
+                    ]
+            )
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editBrand',
@@ -93,11 +99,13 @@ class BrandCardResource extends Resource
                         'name'  => $record->name,
                         'slug'  => $record->slug,
                         'brand' => $record->brand,
-                    ]
+                    ],
+                    visible: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name)
                 ),
 
                 Tables\Actions\DeleteAction::make('delete')
                     ->label(__('forms.actions.delete'))
+                    ->visible(fn (): bool => auth()->user()->hasRole(RolesEnum::SUPER->name))
                     ->before(function ($record, $action) {
                         $totalCards = $record->cards()->count();
                         if ($totalCards > 0) {
@@ -114,13 +122,20 @@ class BrandCardResource extends Resource
                             return false;
                         }
                         return true;
-                    }),
+                    })
+                    ->modalIcon('heroicon-o-trash'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn (): bool => auth()->user()->hasRole(RolesEnum::SUPER->name)),
+                ])
             ])
+            ->checkIfRecordIsSelectableUsing(
+                function ($record) {
+                    return auth()->user()?->hasRole(RolesEnum::SUPER->name);
+                }
+            )
             ->recordUrl(null)
             ->recordAction('editBrand')
             ->headerActions([
@@ -132,8 +147,6 @@ class BrandCardResource extends Resource
                             ->label(__('forms.columns.name'))
                             ->live(onBlur: true)
                             ->unique(BrandCard::class, 'name'),
-//                            ->afterStateUpdated(fn(?string $state, Set $set) => $set('slug', Str::slug($state ?? ''))),
-
                         TextInput::make('slug')
                             ->label('Slug')
                             ->disabled()
@@ -185,6 +198,43 @@ class BrandCardResource extends Resource
             'index' => Pages\ListBrandCards::route('/'),
             'create' => Pages\CreateBrandCard::route('/create'),
             'edit' => Pages\EditBrandCard::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getGridTableColumns(): array
+    {
+        return [
+            Split::make([
+                ImageColumn::make('brand')
+                    ->label(__('forms.columns.brand'))
+                    ->extraAttributes(['class' => 'w-12 h-12'])
+                    ->visible(fn ($record): bool => filled($record?->brand)),
+                Stack::make([
+                    TextColumn::make('name')
+                        ->label(__('forms.columns.name'))
+                        ->formatStateUsing(ColumnFormatter::labelValue(__('forms.columns.name')))
+                        ->searchable(),
+
+                    TextColumn::make('slug')
+                        ->formatStateUsing(ColumnFormatter::labelValue('Slug'))
+                ])
+            ])
+        ];
+    }
+
+    public static function getListTableColumns(): array
+    {
+        return [
+            ImageColumn::make('brand')
+                ->label(__('forms.columns.brand'))
+                ->height(25),
+
+            TextColumn::make('name')
+                ->label(__('forms.columns.name'))
+                ->searchable(),
+
+            TextColumn::make('slug')
+                ->label('Slug'),
         ];
     }
 }

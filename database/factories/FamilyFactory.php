@@ -2,14 +2,15 @@
 
 namespace Database\Factories;
 
+use App\Models\Family;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Category>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Family>
  */
-class CategoryFactory extends Factory
+class FamilyFactory extends Factory
 {
-    protected $model = \App\Models\Category::class;
+    protected $model = Family::class;
     /**
      * Define the model's default state.
      *
@@ -19,7 +20,8 @@ class CategoryFactory extends Factory
     {
         return [
             'name' => $this->faker->name(),
-            'family_id' => 1,
+            'type' => 'CLIENT',
+            'status' => 'ATI'
         ];
     }
 }

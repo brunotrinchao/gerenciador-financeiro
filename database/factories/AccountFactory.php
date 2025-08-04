@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Account;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class AccountFactory extends Factory
 {
+    protected $model = Account::class;
     /**
      * Define the model's default state.
      *
@@ -21,7 +23,8 @@ class AccountFactory extends Factory
             'bank_id' => $this->faker->numberBetween(1, 100),
             'type' => $this->faker->randomElement(['1', '2']),
             'balance' => $this->faker->randomFloat(2, 100),
-            'balance_currency' => 'BRL'
+            'balance_currency' => 'BRL',
+            'family_id' => 1,
         ];
     }
 }

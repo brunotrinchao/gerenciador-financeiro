@@ -46,7 +46,7 @@ class RoleResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->check() && auth()->user()->hasRole(RolesEnum::ADMIN->name);
+        return auth()->check() && auth()->user()->hasRole(RolesEnum::ADMIN->name) || auth()->user()->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function form(Form $form): Form
@@ -82,7 +82,8 @@ class RoleResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->label(__('forms.actions.delete')),
+                    Tables\Actions\DeleteBulkAction::make()->label(__('forms.actions.delete'))
+                        ->visible(fn (): bool => auth()->user()->hasRole(RolesEnum::SUPER->name)),
                 ]),
             ]);
     }
@@ -103,22 +104,22 @@ class RoleResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->can('view users');
+        return auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->can('create users');
+        return auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->can('edit users');
+        return auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->can('delete users');
+        return auth()->user()?->hasRole(RolesEnum::SUPER->name);
     }
 }
 
