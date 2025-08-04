@@ -11,6 +11,7 @@ use App\Models\Family;
 use App\Models\Transaction;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -105,6 +106,9 @@ class FamilyResource extends Resource
                             ])
                             ->reactive()
                             ->required(),
+                        TextInput::make('name')
+                            ->label(__('forms.forms.name'))
+                            ->required(),
                     ],
                     modalHeading: __('forms.modal_headings.edit_transaction'),
                     label: __('forms.buttons.edit'),
@@ -137,6 +141,9 @@ class FamilyResource extends Resource
                                 'TEST' => 'Teste',
                             ])
                             ->reactive()
+                            ->required(),
+                        TextInput::make('name')
+                            ->label(__('forms.forms.name'))
                             ->required(),
                     ],
                     modalHeading: __('forms.actions.new_category'),
