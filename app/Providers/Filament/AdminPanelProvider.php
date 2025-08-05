@@ -121,7 +121,7 @@ class AdminPanelProvider extends PanelProvider
                     ->setNavigationGroup('Group Profile')
                     ->setIcon('heroicon-o-user')
                     ->setSort(10)
-//                    ->canAccess(fn () => auth()->user()->id === auth()->id())
+                    ->canAccess(fn () => auth()->user()?->hasRole(RolesEnum::ADMIN->name) || auth()->user()?->hasRole(RolesEnum::SUPER->name))
                     ->shouldRegisterNavigation(false)
                     ->shouldShowEmailForm()
                     ->shouldShowDeleteAccountForm(false)
