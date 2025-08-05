@@ -26,7 +26,7 @@ class TransactionItemObserver
 
             Notification::make()
                 ->title('Nova transação adicionada')
-                ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount, 2, ',', '.') .
+                ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount / 100, 2, ',', '.') .
                     "<br><b>Produto:<b/> " . $transaction->description .
                     "<br><b>Vencimento:<b/> " . Carbon::parse($transactionItem->due_date)->format('d/m/Y') .
                     "<br><b>Parcelas:<b/> " . $transactionItem->installment_number .
@@ -52,7 +52,7 @@ class TransactionItemObserver
 
         Notification::make()
             ->title('Transação atualizada ('.TranslateString::getStatusLabel($transactionItem->status).')')
-            ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount, 2, ',', '.') .
+            ->body("<b>Valor:<b/> R$ " . number_format($transactionItem->amount / 100, 2, ',', '.') .
                 "<br><b>Produto:<b/> " .  $transaction->description .
                 "<br><b>Vencimento:<b/> " .  Carbon::parse($transactionItem->due_date)->format('d/m/Y') .
                 "<br><b>Parcelas:<b/> " . $transactionItem->installment_number .
@@ -78,7 +78,7 @@ class TransactionItemObserver
         Notification::make()
             ->title('Transação removida')
             ->body(
-                'Transação de <b>R$ ' . number_format($transactionItem->amount, 2, ',', '.') .
+                'Transação de <b>R$ ' . number_format($transactionItem->amount / 100, 2, ',', '.') .
                 '<b/> com vencimento em <b>' . Carbon::parse($transactionItem->payment_date)->format('d/m/Y') . '<b>.' .
                 ($transaction ? "<br><b>Produto:<b/> " . $transaction->description : '')
             )

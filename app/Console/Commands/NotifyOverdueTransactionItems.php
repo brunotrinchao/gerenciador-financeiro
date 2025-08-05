@@ -38,7 +38,7 @@ class NotifyOverdueTransactionItems extends Command
         foreach ($items as $item) {
             $transaction = $item->transaction;
 
-            $html = "Valor: R$ " . number_format($item->amount, 2, ',', '.') .
+            $html = "Valor: R$ " . number_format($item->amount / 100, 2, ',', '.') .
                 "<br>Produto: " . $transaction->description .
                 "<br>Vencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
                 "<br>Método: " . TranslateString::getMethod($item) .
