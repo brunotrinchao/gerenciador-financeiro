@@ -16,11 +16,16 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
@@ -85,28 +90,12 @@ class CardResource extends Resource
                         'xl' => 4,
                     ]
             )
-            ->actions([
-                ActionHelper::makeSlideOver(
-                    name: 'editCard',
-                    form: self::getFormSchema(),
-                    modalHeading: __('forms.actions.edit_card'),
-                    label: __('forms.actions.edit'),
-                    fillForm: fn($record) => [
-                        'bank_id' => $record->bank_id,
-                        'name' => $record->name,
-                        'number' => $record->number,
-                        'brand_id' => $record->brand_id,
-                        'due_date' => $record->due_date,
-                        'limit' => $record->limit,
-                    ]
-                ),
-            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-//            ->recordUrl(null)
+            ->recordUrl(fn (Card $record) =>  route('filament.admin.resources.cards.view', $record))
             ->recordAction('editCard')
             ->headerActions([
                 ActionHelper::makeSlideOver(
@@ -191,6 +180,29 @@ class CardResource extends Resource
         ];
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+            Section::make('Informações do cartão')
+            ->schema([
+                ImageEntry::make('brand.brand')
+                    ->label(__('forms.columns.brand'))
+                    ->height(30),
+                TextEntry::make('bank.name')
+                    ->label('Banco'),
+                TextEntry::make('number')
+                    ->label(__('forms.columns.number')),
+                TextEntry::make('due_date')
+                    ->label(__('forms.columns.due_date')),
+                TextEntry::make('limit')
+                    ->label(__('forms.columns.limit'))
+                    ->currency('BRL'),
+            ])
+            ->columns(6)
+            ]);
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -205,6 +217,7 @@ class CardResource extends Resource
             'index' => Pages\ListCards::route('/'),
             'create' => Pages\CreateCard::route('/create'),
             'edit' => Pages\EditCard::route('/{record}/edit'),
+            'view' => Pages\ViewCard::route('/{record}'),
             'import-transactions' => Pages\ImportCardTransactions::route('/{record}/import-transactions'),
         ];
     }

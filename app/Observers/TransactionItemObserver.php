@@ -15,11 +15,13 @@ class TransactionItemObserver
      */
     public function created(TransactionItem $transactionItem): void
     {
-        $recepient = Auth::user() ?? \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
-        if(!$recepient){
+        $authUser = Auth::user();
+
+        if (!$authUser || !$authUser->family_id) {
             return;
         }
 
+        $recipients = \App\Models\User::where('family_id', $authUser->family_id)->get();
         $transaction = $transactionItem->transaction;
 
         if($transaction) {
@@ -34,7 +36,7 @@ class TransactionItemObserver
                     "<br><b>Status:<b/> " . TranslateString::getStatusLabel($transactionItem->status))
                 ->icon('heroicon-o-plus-circle')
                 ->iconColor('success')
-                ->sendToDatabase($recepient);
+                ->sendToDatabase($recipients);
         }
     }
 
@@ -43,11 +45,13 @@ class TransactionItemObserver
      */
     public function updated(TransactionItem $transactionItem): void
     {
-        $recepient = Auth::user() ?? \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
-        if(!$recepient){
+        $authUser = Auth::user();
+
+        if (!$authUser || !$authUser->family_id) {
             return;
         }
 
+        $recipients = \App\Models\User::where('family_id', $authUser->family_id)->get();
         $transaction = $transactionItem->transaction;
 
         Notification::make()
@@ -60,7 +64,7 @@ class TransactionItemObserver
                 "<br><b>Status:<b/> " . TranslateString::getStatusLabel($transactionItem->status))
             ->icon('heroicon-o-pencil-square')
             ->iconColor('warning')
-            ->sendToDatabase($recepient);
+            ->sendToDatabase($recipients);
     }
 
     /**
@@ -68,11 +72,13 @@ class TransactionItemObserver
      */
     public function deleted(TransactionItem $transactionItem): void
     {
-        $recepient = Auth::user() ?? \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
-        if(!$recepient){
+        $authUser = Auth::user();
+
+        if (!$authUser || !$authUser->family_id) {
             return;
         }
 
+        $recipients = \App\Models\User::where('family_id', $authUser->family_id)->get();
         $transaction = $transactionItem->transaction;
 
         Notification::make()
@@ -84,7 +90,7 @@ class TransactionItemObserver
             )
             ->icon('heroicon-o-trash')
             ->iconColor('danger')
-            ->sendToDatabase($recepient);
+            ->sendToDatabase($recipients);
     }
 
     /**

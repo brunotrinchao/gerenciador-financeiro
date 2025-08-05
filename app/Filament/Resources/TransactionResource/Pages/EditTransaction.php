@@ -43,10 +43,4 @@ class EditTransaction extends EditRecord
         $this->fillForm();
     }
 
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            TransactionInfoWidget::class,
-        ];
-    }
 }

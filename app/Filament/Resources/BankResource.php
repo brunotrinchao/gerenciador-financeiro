@@ -83,9 +83,10 @@ class BankResource extends Resource
                         'name' => $record->name,
                         'code' => $record->code,
                     ],
-                    visible: function ($record) {
+                    clickble: function ($record) {
                         return $record?->family_id === (int) auth()->user()?->family_id;
-                    }
+                    },
+                    visible: false
                 ),
             ])
             ->bulkActions([

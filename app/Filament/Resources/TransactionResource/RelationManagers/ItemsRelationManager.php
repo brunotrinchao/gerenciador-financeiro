@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TransactionResource\RelationManagers;
 
+use App\Enum\RolesEnum;
 use App\Helpers\Filament\ActionHelper;
 use App\Helpers\Filament\MaskHelper;
 use App\Models\Account;
@@ -10,6 +11,7 @@ use App\Models\Transaction;
 use App\Models\TransactionItem;
 use App\Services\TransactionItemFilterService;
 use App\Services\TransactionItemService;
+use Carbon\Carbon;
 use Filament\Actions\CreateAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -35,6 +37,11 @@ use Illuminate\Validation\ValidationException;
 class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
+
+    public static function getTitle(Model $ownerRecord,  string $pageClass): string
+    {
+        return 'Parcelas';
+    }
 
     protected static function getModelLabel(): ?string
     {
@@ -167,11 +174,7 @@ class ItemsRelationManager extends RelationManager
                         'PENDING' => 'gray',
                     })
             ])
-//            ->striped()
             ->recordClasses(fn (Model $record) => $record->status == 'PAID' ? 'bg-red-500' : 'bg-red-500')
-            ->filters([
-                //
-            ])
             ->actions([
                 ActionHelper::makeSlideOver(
                     name: 'editTransactionItem',
@@ -217,11 +220,16 @@ class ItemsRelationManager extends RelationManager
                                 'DEBIT' => 'Débito automático',
                             ])
                             ->default('PENDING')
-//                            ->disabled(function ($get) {
-//                                return in_array($get('method'),['ACCOUNT', 'CARD']);
-//                            })
                             ->required()
-                            ->reactive(),
+                            ->reactive()
+                            ->afterStateUpdated(function ($record, $state, callable $set) {
+                                if ($state === 'PENDING') {
+                                    $set('payment_date', null);
+                                }
+                                else{
+                                    $set('payment_date', $record->payment_date ?? $record->due_date);
+                                }
+                            }),
                     ],
                     modalHeading: __('forms.modal_headings.edit_transaction_item'),
                     label: __('forms.buttons.edit'),
@@ -288,9 +296,9 @@ class ItemsRelationManager extends RelationManager
                         $this->dispatch('refreshProducts');
 
                         return true;
-                    }
+                    },
+                    visible: false
                 )
-                ->visible(fn ($record) => $record->status !== 'PAID'),
 
             ])
             ->bulkActions([
@@ -314,6 +322,8 @@ class ItemsRelationManager extends RelationManager
                                 ->title('Parcelas marcadas como pagas!')
                                 ->success()
                                 ->send();
+
+                            $this->dispatch('refreshInfolist');
                         })
                         ->deselectRecordsAfterCompletion(),
 
@@ -343,6 +353,7 @@ class ItemsRelationManager extends RelationManager
 
                                 // Atualiza a transação
                                 $transaction->update([
+                                    'is_recurring' => TransactionItem::where('transaction_id', $transaction->id)->count() > 1 ? true : false,
                                     'recurrence_interval' => TransactionItem::where('transaction_id', $transaction->id)->count(),
                                 ]);
 
@@ -354,6 +365,9 @@ class ItemsRelationManager extends RelationManager
                                 ->title('Parcelas excluídas com sucesso!')
                                 ->success()
                                 ->send();
+
+
+                            $this->dispatch('refreshInfolist');
                         })
                         ->deselectRecordsAfterCompletion(),
                 ])
@@ -376,6 +390,13 @@ class ItemsRelationManager extends RelationManager
                         $transaction = $this->ownerRecord;
                         $transactionItemService->create($transaction);
 
+                        $transaction->update([
+                            'is_recurring' => true,
+                            'recurrence_interval' => $transaction->items()->count(),
+                        ]);
+
+
+                        $this->dispatch('refreshInfolist');
                         $this->dispatch('refreshProducts'); // Atualiza formulário
                     }),
             ]);

@@ -24,6 +24,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class BrandCardResource extends Resource
@@ -100,36 +101,58 @@ class BrandCardResource extends Resource
                         'slug'  => $record->slug,
                         'brand' => $record->brand,
                     ],
-                    visible: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name)
+                    clickble: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name),
+                    visible: false
                 ),
 
-                Tables\Actions\DeleteAction::make('delete')
-                    ->label(__('forms.actions.delete'))
-                    ->visible(fn (): bool => auth()->user()->hasRole(RolesEnum::SUPER->name))
-                    ->before(function ($record, $action) {
-                        $totalCards = $record->cards()->count();
-                        if ($totalCards > 0) {
-                            Notification::make()
-                                ->color('warning')
-                                ->warning()
-                                ->title(__('forms.notifications.delete_blocked_title'))
-                                ->body(__('forms.notifications.delete_blocked_body', [
-                                    'name' => $record->name,
-                                    'count' => $totalCards,
-                                ]))
-                                ->send();
-                            $action->cancel();
-                            return false;
-                        }
-                        return true;
-                    })
-                    ->modalIcon('heroicon-o-trash'),
+//                Tables\Actions\DeleteAction::make('delete')
+//                    ->label(__('forms.actions.delete'))
+//                    ->visible(fn (): bool => auth()->user()->hasRole(RolesEnum::SUPER->name))
+//                    ->before(function ($record, $action) {
+//                        $totalCards = $record->cards()->count();
+//                        if ($totalCards > 0) {
+//                            Notification::make()
+//                                ->color('warning')
+//                                ->warning()
+//                                ->title(__('forms.notifications.delete_blocked_title'))
+//                                ->body(__('forms.notifications.delete_blocked_body', [
+//                                    'name' => $record->name,
+//                                    'count' => $totalCards,
+//                                ]))
+//                                ->send();
+//                            $action->cancel();
+//                            return false;
+//                        }
+//                        return true;
+//                    })
+//                    ->modalIcon('heroicon-o-trash'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user()->hasRole(RolesEnum::SUPER->name)),
-                ])
+                        ->visible(fn (): bool => auth()->user()->hasRole(RolesEnum::SUPER->name))
+                        ->before(function (Collection $records, $action) {
+                            $brandsList = [];
+                            foreach ($records as $record) {
+                                $totalCards = $record->cards()->count();
+                                if ($totalCards > 0) {
+                                    $brandsList[] = $record->name;
+                                }
+                            }
+
+                            if(!empty($brandsList)){
+
+                                Notification::make()
+                                    ->warning()
+                                    ->color('warning')
+                                    ->title(__('forms.notifications.delete_blocked_title'))
+                                    ->body(__('forms.notifications.delete_blocked_body', [
+                                        'name' => implode(', ', $brandsList),
+                                    ]))
+                                    ->send();
+                                $action->cancel();
+                                return false;
+                            }
+                        })
             ])
             ->checkIfRecordIsSelectableUsing(
                 function ($record) {

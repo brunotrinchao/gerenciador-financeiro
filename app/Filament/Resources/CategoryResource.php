@@ -7,6 +7,7 @@ use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Helpers\ColumnFormatter;
 use App\Helpers\Filament\ActionHelper;
+use App\Models\Card;
 use App\Models\Category;
 use Filament\Actions\DeleteAction;
 use Filament\Forms;
@@ -22,6 +23,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 use function Livewire\before;
 
 class CategoryResource extends Resource
@@ -81,33 +83,65 @@ class CategoryResource extends Resource
                     modalHeading: __('forms.actions.edit_category'),
                     label: __('forms.actions.edit'),
                     fillForm: fn($record) => ['name' => $record->name],
-                    visible: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name)
+                    clickble: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name),
+                    visible: false
                 ),
-                Tables\Actions\DeleteAction::make('delete')
-                    ->label(__('forms.actions.delete'))
-                    ->visible(function ($record) {
-                        return $record?->family_id === (int) auth()->user()?->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name);
+//                Tables\Actions\DeleteAction::make('delete')
+//                    ->label(__('forms.actions.delete'))
+//                    ->visible(function ($record) {
+//                        return $record?->family_id === (int) auth()->user()?->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name);
+//
+//                    })
+//                    ->before(function ($record, $action) {
+//                        $totalTransactions = $record->transactions()->count();
+//                        if ($totalTransactions > 0) {
+//                            Notification::make()
+//                                ->color('warning')
+//                                ->warning()
+//                                ->title(__('forms.notifications.delete_not_allowed'))
+//                                ->body(__('forms.notifications.category_has_transactions', [
+//                                    'name' => $record->name,
+//                                    'total' => $totalTransactions
+//                                ]))
+//                                ->send();
+//
+//                            $action->cancel();
+//                            return false;
+//                        }
+//                        return true;
+//                    }),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()
+                    ->before(function (Collection $records, $action) {
+                        $categoryList = [];
+                        foreach ($records as $record) {
+                            $totalCards = $record->transactions()->count();
+                            if ($totalCards > 0) {
+                                $categoryList[] = $record->name;
+                            }
+                        }
 
-                    })
-                    ->before(function ($record, $action) {
-                        $totalTransactions = $record->transactions()->count();
-                        if ($totalTransactions > 0) {
+                        if(!empty($categoryList)){
+
                             Notification::make()
-                                ->color('warning')
                                 ->warning()
+                                ->color('warning')
                                 ->title(__('forms.notifications.delete_not_allowed'))
                                 ->body(__('forms.notifications.category_has_transactions', [
-                                    'name' => $record->name,
-                                    'total' => $totalTransactions
+                                    'name' => implode(', ', $categoryList),
                                 ]))
                                 ->send();
-
                             $action->cancel();
                             return false;
                         }
-                        return true;
-                    }),
+                    })
             ])
+            ->checkIfRecordIsSelectableUsing(
+                function ($record) {
+                    return $record?->family_id === (int) auth()->user()?->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name);
+                }
+            )
             ->recordUrl(null)
             ->recordAction('editCategory')
             ->headerActions([

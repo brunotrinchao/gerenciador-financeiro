@@ -250,7 +250,7 @@ class CalendarWidget extends FullCalendarWidget
         return match ($status){
             'PAID' => 'green',
             'SCHEDULED' => 'warning',
-            'DEBIT' => 'blue',
+            'DEBIT' => 'sky',
             default => 'gray',
         };
 

@@ -15,8 +15,6 @@ class ListCards extends ListRecords
     use HasToggleableTable;
     protected static string $resource = CardResource::class;
 
-
-
     protected function getHeaderWidgets(): array
     {
         return [

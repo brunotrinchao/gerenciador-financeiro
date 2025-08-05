@@ -143,11 +143,11 @@ class TransactionItemService
                 'installment_number' => $installmentNumber,
                 'due_date' => $dueDate,
             ]);
-
-            Notification::make()
-                ->title('Registro atualizado com sucesso!')
-                ->success()
-                ->send();
         }
+
+        Notification::make()
+            ->title('Registro(s) atualizado(s) com sucesso!')
+            ->success()
+            ->send();
     }
 }
