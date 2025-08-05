@@ -6,13 +6,12 @@
 
 @section('content')
     @foreach ($items as $item)
-        <div class="item" style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ddd;">
-            <div><strong>Valor:</strong> R$ {{ $item['amount'] }}</div>
-            <div><strong>Produto:</strong> {{ $item['description'] }}</div>
-            <div><strong>Vencimento:</strong> {{ $item['due_date'] }}</div>
-            <div><strong>Método:</strong> {{ $item['method'] }}</div>
+        <div style="background-color: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 16px; border: 1px solid #e5e7eb;">
+            <div style="margin-bottom: 6px;"><strong>Valor:</strong> R$ {{ $item['amount'] }}</div>
+            <div style="margin-bottom: 6px;"><strong>Produto:</strong> {{ $item['description'] }}</div>
+            <div style="margin-bottom: 6px;"><strong>Vencimento:</strong> {{ $item['due_date'] }}</div>
+            <div style="margin-bottom: 6px;"><strong>Método:</strong> {{ $item['method'] }}</div>
             <div><strong>Status:</strong> {{ $item['status'] }}</div>
         </div>
     @endforeach
 @endsection
-

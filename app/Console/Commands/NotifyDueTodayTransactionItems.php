@@ -23,7 +23,9 @@ class NotifyDueTodayTransactionItems extends Command
     {
         $items = TransactionItem::with('transaction')
             ->where('status', 'PENDING')
-            ->where('type', 'EXPENSE')
+            ->whereHas('transaction', function ($query) {
+                $query->where('type', 'EXPENSE');
+            })
             ->whereDate('due_date', now()->toDateString())
             ->get();
 
