@@ -1,7 +1,12 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-UBDFZLvY.css",
+    "file": "assets/app-T31Be60u.css",
     "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/custom-login.css": {
+    "file": "assets/custom-login-Dc5Z4452.css",
+    "src": "resources/css/custom-login.css",
     "isEntry": true
   },
   "resources/js/app.js": {

@@ -7,7 +7,10 @@ use App\Notifications\UpcomingTransactionItemNotification;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\Support\Colors\Color;
 use Filament\Support\Facades\FilamentColor;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -30,6 +33,11 @@ class AppServiceProvider extends ServiceProvider
         if(env('APP_ENV') === 'production') {
             URL::forceScheme('https');
         }
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+            fn (): string => Blade::render('@vite(\'resources/css/custom-login.css\')')
+        );
 
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
             $switch

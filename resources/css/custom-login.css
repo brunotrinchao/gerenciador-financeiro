@@ -1,0 +1,27 @@
+body{
+    /*background-color: #00bb00 !important;*/
+}
+
+.fi-simple-main-ctn{
+    @apply justify-end bg-blend-multiply;
+    background-color: #ccc;
+    background-image: url("/images/bg-people.jpg");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.fi-simple-main{
+    @apply rounded-none h-screen;
+    justify-content: center;
+    align-content: center;
+    margin: 0;
+
+    & .fin-simples-page{
+        @apply w-full
+    }
+
+    /*& .fi-logo, h1{*/
+    /*    @apply text-amber-400*/
+    /*}*/
+}
