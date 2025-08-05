@@ -73,6 +73,7 @@ class CalendarWidget extends FullCalendarWidget
                     'end' => $item->due_date,
                     'due_date' => $item->due_date,
                     'amount' => $item->amount,
+                    'icon' => $item->transaction->type == 'EXPENSE' ? '🔻' : '🔺',
                     'shouldOpenUrlInNewTab' => true
                 ]
             )
@@ -112,6 +113,7 @@ class CalendarWidget extends FullCalendarWidget
                             'end' => $dueDate->toDateString(),
                             'color' => $this->colorStatus($color),
                             'amount' => $monthlyAmount,
+                            'icon' => '💳',
                             'shouldOpenUrlInNewTab' => false,
                         ];
                     }
@@ -228,6 +230,14 @@ class CalendarWidget extends FullCalendarWidget
             currency: 'BRL',
             minimumFractionDigits: 2
         }).format(event.extendedProps.amount / 100);
+
+            const icon = event.extendedProps.icon ?? ' -- ';
+            const titleEl = el.querySelector('.fc-event-title');
+
+            if (titleEl) {
+                titleEl.innerHTML = icon + ' ' + event.title;
+            }
+
             el.setAttribute("x-tooltip", "tooltip");
             el.setAttribute("x-data", "{ " +
              "tooltip: '"+event.title+" : "+amountFormatted+"' }");
