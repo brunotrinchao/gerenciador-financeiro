@@ -18,7 +18,8 @@ class Card extends Model
         'number',
         'logo',
         'due_date',
-        'limit'
+        'limit',
+        'used_limit'
     ];
 
     public function user()

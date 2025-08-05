@@ -76,24 +76,33 @@ class TransactionService
             $paidValue += $currentCents;
         }
 
-        if (!in_array($transaction->method, ['CARD', 'ACCOUNT']) || $paidValue <= 0) {
-            return;
-        }
+//        if ($paidValue <= 0) {
+//            return;
+//        }
 
-        $multiplier = $transaction->type === 'EXPENSE' ? -1 : 1;
-        $adjustedValue = $multiplier * $paidValue;
 
         if ($transaction->method === 'CARD' && $transaction->card_id) {
-            $card = Card::find($transaction->card->id);
-            $card->balance = (int) $transaction->card->balance + $adjustedValue;
-            $card->save();
-            $transaction->account->refresh();
+            $card = $transaction->card;
+            $adjustedLimit = $transaction->type === 'EXPENSE'
+                ? $card->used_limit + $paidValue
+                : $card->used_limit - $paidValue;
+
+            $card->update([
+                'used_limit' => max(0, $adjustedLimit),
+            ]);
+
+            $transaction->card->refresh();
         }
 
         if ($transaction->method === 'ACCOUNT' && $transaction->account_id) {
-            $account = Account::find($transaction->account->id);
-            $account->balance = (int) $transaction->account->balance + $adjustedValue;
+            $adjustedValue = $transaction->type === 'EXPENSE'
+                ? -$paidValue
+                : $paidValue;
+
+            $account = $transaction->account;
+            $account->balance = (int) $account->balance + $adjustedValue;
             $account->save();
+
             $transaction->account->refresh();
         }
     }

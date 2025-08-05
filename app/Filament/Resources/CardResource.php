@@ -259,6 +259,7 @@ class CardResource extends Resource
             TextColumn::make('number')->label(__('forms.columns.number')),
             TextColumn::make('bank.name')->label(__('forms.columns.bank')),
             TextColumn::make('limit')->label(__('forms.columns.limit'))->currency('BRL'),
+            TextColumn::make('used_limit')->label('Limite usado')->currency('BRL'),
             TextColumn::make('due_date')->label(__('forms.columns.due_date'))->alignCenter(),
         ];
     }
