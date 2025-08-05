@@ -19,7 +19,7 @@
         </td>
     </tr>
     <tr>
-        <td align="center" style="border-radius: 0 0 6px 6px; padding: 20px; font-size: 12px; color: #fff; background-color: rgb(59 130 246);">
+        <td style="text-align: center; border-radius: 0 0 6px 6px; padding: 20px; font-size: 12px; color: #fff; background-color: rgb(59 130 246);">
             © {{ date('Y') }} {{ config('app.url') }} — Todos os direitos reservados.
         </td>
     </tr>
