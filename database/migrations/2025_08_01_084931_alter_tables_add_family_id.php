@@ -48,7 +48,6 @@ return new class extends Migration
             'accounts',
             'cards',
             'transactions',
-            'job',
             'category',
             'notifications',
             'action_logs',
