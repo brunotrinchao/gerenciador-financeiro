@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TransactionResource\RelationManagers;
 
 use App\Enum\RolesEnum;
+use App\Helpers\ColumnFormatter;
 use App\Helpers\Filament\ActionHelper;
 use App\Helpers\Filament\MaskHelper;
 use App\Models\Account;
@@ -23,19 +24,24 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Hydrat\TableLayoutToggle\Concerns\HasToggleableTable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
 class ItemsRelationManager extends RelationManager
 {
+    use HasToggleableTable;
     protected static string $relationship = 'items';
 
     public static function getTitle(Model $ownerRecord,  string $pageClass): string
@@ -119,60 +125,37 @@ class ItemsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        $livewire = $table->getLivewire();
+
         return $table
             ->recordTitleAttribute('transaction_id')
-            ->columns([
-                TextColumn::make('installment_number')
-                ->label('Parcela'),
-                TextColumn::make('amount')
-                    ->label('Valor')
-                    ->sortable()
-                    ->currency('BRL'),
-                TextColumn::make('due_date')
-                    ->label('Vencimento')
-                    ->date('d/m/Y'),
-                TextColumn::make('transaction.method')
-                    ->label('Método')
-                    ->formatStateUsing(function (string $state) {
-                        return match ($state) {
-                            'CARD' => __('forms.enums.method.card'),
-                            'ACCOUNT' => __('forms.enums.method.account'),
-                            'CASH' => __('forms.enums.method.cash'),
-                            default => ''
-                        };
-                    }),
-                TextColumn::make('source')
-                    ->label('Fonte pagamento')
-                    ->getStateUsing(function ($record) {
-                        if ($record->transaction->card_id && $record->transaction->card) {
-                            return $record->transaction->card->name;
-                        }
-
-                        if ($record->transaction->account_id && $record->transaction->account?->bank) {
-                            return $record->transaction->account->bank->name;
-                        }
-                        return null;
-                    }),
-                TextColumn::make('payment_date')
-                    ->label('Pagamento')
-                    ->date('d/m/Y'),
-                TextColumn::make('status')
-                    ->default('Status')
-                    ->formatStateUsing(function (string $state) {
-                        return match ($state) {
-                            'PAID' => 'Pago',
-                            'SCHEDULED' => 'Agendado',
-                            'DEBIT' => 'Débito automático',
-                            'PENDING' => 'Pendente',
-                        };
-                    })
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'PAID' => 'success',
-                        'SCHEDULED' => 'warning',
-                        'DEBIT' => 'info',
-                        'PENDING' => 'gray',
-                    })
+            ->columns(
+                $livewire->isGridLayout()
+                    ? static::getGridTableColumns()
+                    : static::getListTableColumns()
+            )
+            ->contentGrid(
+                fn () => $livewire->isListLayout()
+                    ? null
+                    : [
+                        'md' => 2,
+                        'lg' => 3,
+                        'xl' => 4,
+                    ]
+            )
+            ->filters([
+                Filter::make('filter')
+                    ->label(__('forms.columns.filter'))
+                    ->form([
+                        Select::make('status')
+                            ->label(__('forms.forms.status'))
+                            ->options([
+                                'PENDING' => __('forms.enums.status.pending'),
+                                'PAID' => __('forms.enums.status.paid'),
+                                'SCHEDULED' => __('forms.enums.status.scheduled'),
+                                'DEBIT' => __('forms.enums.status.debit'),
+                            ])
+                    ])
             ])
             ->recordClasses(fn (Model $record) => $record->status == 'PAID' ? 'bg-red-500' : 'bg-red-500')
             ->actions([
@@ -402,5 +385,124 @@ class ItemsRelationManager extends RelationManager
             ]);
     }
 
+    public static function getListTableColumns(): array
+    {
+        return [
+            TextColumn::make('installment_number')
+                ->label('Parcela'),
+            TextColumn::make('amount')
+                ->label('Valor')
+                ->sortable()
+                ->currency('BRL'),
+            TextColumn::make('due_date')
+                ->label('Vencimento')
+                ->date('d/m/Y'),
+            TextColumn::make('transaction.method')
+                ->label('Método')
+                ->formatStateUsing(function (string $state) {
+                    return match ($state) {
+                        'CARD' => __('forms.enums.method.card'),
+                        'ACCOUNT' => __('forms.enums.method.account'),
+                        'CASH' => __('forms.enums.method.cash'),
+                        default => ''
+                    };
+                }),
+            TextColumn::make('source')
+                ->label('Fonte pagamento')
+                ->getStateUsing(function ($record) {
+                    if ($record->transaction->card_id && $record->transaction->card) {
+                        return $record->transaction->card->name;
+                    }
 
+                    if ($record->transaction->account_id && $record->transaction->account?->bank) {
+                        return $record->transaction->account->bank->name;
+                    }
+                    return null;
+                }),
+            TextColumn::make('payment_date')
+                ->label('Pagamento')
+                ->date('d/m/Y'),
+            TextColumn::make('status')
+                ->default('Status')
+                ->formatStateUsing(function (string $state) {
+                    return match ($state) {
+                        'PAID' => 'Pago',
+                        'SCHEDULED' => 'Agendado',
+                        'DEBIT' => 'Débito automático',
+                        'PENDING' => 'Pendente',
+                    };
+                })
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'PAID' => 'success',
+                    'SCHEDULED' => 'warning',
+                    'DEBIT' => 'info',
+                    'PENDING' => 'gray',
+                })
+        ];
+
+    }
+
+    public static function getGridTableColumns(): array
+    {
+        return [
+            Stack::make([
+                    TextColumn::make('installment_number')
+                        ->label('Parcela')
+                        ->formatStateUsing(ColumnFormatter::labelValue('Parcela')),
+                    TextColumn::make('amount')
+                        ->label('Valor')
+                        ->sortable()
+                        ->formatStateUsing(ColumnFormatter::money('Valor')),
+                    TextColumn::make('due_date')
+                        ->label('Vencimento')
+                        ->formatStateUsing(ColumnFormatter::date('Vencimento')),
+                    TextColumn::make('transaction.method')
+                        ->label('Método')
+                        ->formatStateUsing(function (string $state) {
+                            $label = match ($state) {
+                                'CARD' => __('forms.enums.method.card'),
+                                'ACCOUNT' => __('forms.enums.method.account'),
+                                'CASH' => __('forms.enums.method.cash'),
+                                default => '',
+                            };
+
+                            return (ColumnFormatter::labelValue('Método'))($label);
+                        }),
+                    TextColumn::make('source')
+                        ->label('Fonte pagamento')
+                        ->getStateUsing(function ($record) {
+                            if ($record->transaction->card_id && $record->transaction->card) {
+                                return $record->transaction->card->name;
+                            }
+
+                            if ($record->transaction->account_id && $record->transaction->account?->bank) {
+                                return $record->transaction->account->bank->name;
+                            }
+                            return null;
+                        })
+                        ->formatStateUsing(ColumnFormatter::labelValue('Fonte pagamento')),
+                    TextColumn::make('payment_date')
+                        ->label('Pagamento')
+                        ->formatStateUsing(ColumnFormatter::date('Pagamento')),
+                    TextColumn::make('status')
+                        ->default('Status')
+                        ->formatStateUsing(function (string $state) {
+                            return match ($state) {
+                                'PAID' => 'Pago',
+                                'SCHEDULED' => 'Agendado',
+                                'DEBIT' => 'Débito automático',
+                                'PENDING' => 'Pendente',
+                            };
+                        })
+                        ->badge()
+                        ->color(fn (string $state): string => match ($state) {
+                            'PAID' => 'success',
+                            'SCHEDULED' => 'warning',
+                            'DEBIT' => 'info',
+                            'PENDING' => 'gray',
+                        })
+            ])
+        ];
+    }
 }
