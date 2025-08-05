@@ -51,18 +51,22 @@ class NotifyDueTodayTransactionItems extends Command
             $dueDate = Carbon::parse($item->due_date)->format('d/m/Y');
             $method = TranslateString::getMethod($item);
             $status = TranslateString::getStatusLabel($item->status);
+            $installment = $item->installment_number;
+            $recurrence_interval = $transaction->recurrence_interval;
 
             $html = "Valor: R$ {$amount}" .
                 "<br>Produto: {$description}" .
                 "<br>Vencimento: {$dueDate}" .
                 "<br>Método: {$method}" .
-                "<br>Status: {$status}";
+                "<br>Status: {$status}" .
+                "<br>Parcela: {$installment}/{$recurrence_interval}";
 
             $htmlEmail[] = [
                 'amount' => $amount,
                 'description' => $description,
                 'due_date' => $dueDate,
                 'method' => $method,
+                'installment' => "{$installment}/{$recurrence_interval}",
                 'status' => $status,
             ];
 
