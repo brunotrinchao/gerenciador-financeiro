@@ -10,7 +10,7 @@
     <tr>
         <td align="center" style="padding: 30px 20px;">
             <img src="{{ asset('logo.png') }}" alt="Logo do {{ config('app.name') }}" width="80" style="margin-bottom: 20px;">
-            <h2 style="color: #333333;">@yield('header', config('app.name'))</h2>
+            <h2 style="color: #333333; margin-top: 0px; margin-bottom: 15px">@yield('header', config('app.name'))</h2>
         </td>
     </tr>
     <tr>
@@ -19,7 +19,7 @@
         </td>
     </tr>
     <tr>
-        <td style="text-align: center; border-radius: 0 0 6px 6px; padding: 20px; font-size: 12px; color: #fff; background-color: rgb(59 130 246);">
+        <td align="center" bgcolor="#3b82f6" style="border-radius: 0 0 6px 6px; padding: 20px; font-size: 12px; color: #999;">
             © {{ date('Y') }} {{ config('app.url') }} — Todos os direitos reservados.
         </td>
     </tr>
