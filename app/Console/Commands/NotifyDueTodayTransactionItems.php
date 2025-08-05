@@ -46,7 +46,7 @@ class NotifyDueTodayTransactionItems extends Command
         foreach ($items as $item) {
             $transaction = $item->transaction;
 
-            $amount = number_format($item->amount, 2, ',', '.');
+            $amount = number_format($item->amount / 100, 2, ',', '.');
             $description = $transaction->description;
             $dueDate = Carbon::parse($item->due_date)->format('d/m/Y');
             $method = TranslateString::getMethod($item);

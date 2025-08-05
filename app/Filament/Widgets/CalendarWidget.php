@@ -73,7 +73,7 @@ class CalendarWidget extends FullCalendarWidget
                     'end' => $item->due_date,
                     'due_date' => $item->due_date,
                     'amount' => $item->amount,
-                    'icon' => $item->transaction->type == 'EXPENSE' ? '🔻' : '🔺',
+                    'icon' => $item->transaction->type == 'EXPENSE' ? '🡇' : '🡅',
                     'shouldOpenUrlInNewTab' => true
                 ]
             )
