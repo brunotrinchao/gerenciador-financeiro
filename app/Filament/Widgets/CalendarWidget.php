@@ -74,6 +74,7 @@ class CalendarWidget extends FullCalendarWidget
                     'due_date' => $item->due_date,
                     'amount' => $item->amount,
                     'icon' => $item->transaction->type == 'EXPENSE' ? '🡇' : '🡅',
+                    'isCard' => false,
                     'shouldOpenUrlInNewTab' => true
                 ]
             )
@@ -108,12 +109,14 @@ class CalendarWidget extends FullCalendarWidget
                     if ($dueDate->between($start, $end)) {
                         $events[] = [
                             'id' => 'card-due-' . $card->id . '-' . $dueDate->format('Y-m-d'),
+                            'cardId' => $card->id,
                             'title' => $card->name,
                             'start' => $dueDate->toDateString(),
                             'end' => $dueDate->toDateString(),
                             'color' => $this->colorStatus($color),
                             'amount' => $monthlyAmount,
                             'icon' => '💳',
+                            'isCard' => true,
                             'shouldOpenUrlInNewTab' => false,
                         ];
                     }
@@ -241,9 +244,19 @@ class CalendarWidget extends FullCalendarWidget
             el.setAttribute("x-tooltip", "tooltip");
             el.setAttribute("x-data", "{ " +
              "tooltip: '"+event.title+" : "+amountFormatted+"' }");
+
+            if (event.extendedProps.isCard) {
+                el.style.cursor = 'pointer';
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    window.location.href = '/cards/' + event.extendedProps.cardId;
+                }, true);
+            }
         }
     JS;
     }
+
 
     private function colorStatus(string $status): string
     {
