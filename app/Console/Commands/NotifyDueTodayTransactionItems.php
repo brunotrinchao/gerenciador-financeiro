@@ -23,6 +23,7 @@ class NotifyDueTodayTransactionItems extends Command
     {
         $items = TransactionItem::with('transaction')
             ->where('status', 'PENDING')
+            ->where('type', 'EXPENSE')
             ->whereDate('due_date', now()->toDateString())
             ->get();
 
@@ -43,13 +44,25 @@ class NotifyDueTodayTransactionItems extends Command
         foreach ($items as $item) {
             $transaction = $item->transaction;
 
-            $html = "Valor: R$ " . number_format($item->amount, 2, ',', '.') .
-                "<br>Produto: " . $transaction->description .
-                "<br>Vencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
-                "<br>Método: " . TranslateString::getMethod($item) .
-                "<br>Status: " . TranslateString::getStatusLabel($item->status);
+            $amount = number_format($item->amount, 2, ',', '.');
+            $description = $transaction->description;
+            $dueDate = Carbon::parse($item->due_date)->format('d/m/Y');
+            $method = TranslateString::getMethod($item);
+            $status = TranslateString::getStatusLabel($item->status);
 
-            $htmlEmail[] = $html;
+            $html = "Valor: R$ {$amount}" .
+                "<br>Produto: {$description}" .
+                "<br>Vencimento: {$dueDate}" .
+                "<br>Método: {$method}" .
+                "<br>Status: {$status}";
+
+            $htmlEmail[] = [
+                'amount' => $amount,
+                'description' => $description,
+                'due_date' => $dueDate,
+                'method' => $method,
+                'status' => $status,
+            ];
 
             Notification::make()
                 ->title('Transação vence hoje')
@@ -59,8 +72,7 @@ class NotifyDueTodayTransactionItems extends Command
                 ->sendToDatabase($recipient);
         }
 
-        $ccRecipients = \App\Models\User::pluck('email')->toArray();
-        $ccRecipients = array_diff($ccRecipients, [$recipient->email]);
+        $ccRecipients = \App\Models\User::where('email', '!=', $recipient->email)->pluck('email')->toArray();
 
         Mail::to($recipient->email)->cc($ccRecipients)->send(new DueTodayTransactionItemsMail($htmlEmail));
 
