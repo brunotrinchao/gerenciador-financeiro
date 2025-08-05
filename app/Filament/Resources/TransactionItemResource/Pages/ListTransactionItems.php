@@ -75,6 +75,11 @@ class ListTransactionItems extends ListRecords
         return false;
     }
 
+    public function getDefaultActiveTab(): string | int | null
+    {
+        return 'Pendente';
+    }
+
     public function getTabs(): array
     {
         return [
@@ -82,9 +87,6 @@ class ListTransactionItems extends ListRecords
             'Pendente' => Tab::make()
                 ->modifyQueryUsing(function (Builder $query) {
                     $query->where('status', '=', 'PENDING');
-//                $query->whereHas('transaction', function ($q){
-//                    $q->where('type', 'INCOME');
-//                });
             }),
             'Agendado/Débito' => Tab::make()
                 ->modifyQueryUsing(function (Builder $query) {

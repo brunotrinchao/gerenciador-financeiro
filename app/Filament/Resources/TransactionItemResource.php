@@ -8,6 +8,7 @@ use App\Filament\Resources\TransactionItemResource\Pages;
 use App\Filament\Resources\TransactionItemResource\RelationManagers;
 use App\Helpers\ColumnFormatter;
 use App\Helpers\Filament\ActionHelper;
+use App\Helpers\Filament\MaskHelper;
 use App\Models\Account;
 use App\Models\ActionLog;
 use App\Models\Card;
@@ -99,7 +100,7 @@ class TransactionItemResource extends Resource
                     form: [
                         TextInput::make('amount')
                             ->label(__('forms.columns.amount'))
-                            ->currencyMask(thousandSeparator: '.', decimalSeparator: ',', precision: 2)
+                            ->mask(MaskHelper::maskMoney())
                             ->prefix('R$')
                             ->required(),
                         DatePicker::make('due_date')
@@ -137,7 +138,8 @@ class TransactionItemResource extends Resource
                         'payment_date' => $record->payment_date ?? $record->due_date,
                         'status' => $record->status,
                     ],
-                    visible: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name)
+                    clickble: fn ($record) => $record->family_id === (int) auth()->user()->family_id || auth()->user()->hasRole(RolesEnum::SUPER->name),
+                    visible: false
                 )
             ])
             ->recordUrl(null)

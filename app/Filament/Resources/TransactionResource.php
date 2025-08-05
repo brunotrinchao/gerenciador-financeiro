@@ -568,8 +568,8 @@ class TransactionResource extends Resource
                         TextEntry::make('amount')
                             ->label('Valor')->currency('BRL'),
                         TextEntry::make('date')
-                            ->label('Data')->since()
-                            ->dateTime(),
+                            ->label('Data')
+                            ->date('d/m/Y'),
                         TextEntry::make('is_recurring')
                             ->label('Parcelado?')
                             ->formatStateUsing(fn ($state) => $state ? 'Sim' : 'Não'),
