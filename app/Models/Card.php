@@ -46,6 +46,19 @@ class Card extends Model
         return $this->hasManyThrough(TransactionItem::class, Transaction::class);
     }
 
+    public function transactionItems()
+    {
+        return $this->hasManyThrough(
+            \App\Models\TransactionItem::class,
+            \App\Models\Transaction::class,
+            'card_id',         // Foreign key on transactions
+            'transaction_id',  // Foreign key on transaction_items
+            'id',              // Local key on cards
+            'id'               // Local key on transactions
+        );
+    }
+
+
     public function family()
     {
         return $this->belongsTo(Family::class);

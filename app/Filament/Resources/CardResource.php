@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CardResource\Pages;
 use App\Filament\Resources\CardResource\RelationManagers;
+use App\Filament\Resources\CardResource\RelationManagers\CardTransactionItemRelationManager;
 use App\Filament\Resources\TransactionResource\RelationManagers\ItemsRelationManager;
 use App\Filament\Widgets\InstallmentEvolutionChart;
 use App\Helpers\ColumnFormatter;
@@ -206,7 +207,7 @@ class CardResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\CardTransactionRelationManager::class,
+            CardTransactionItemRelationManager::class,
         ];
     }
 
