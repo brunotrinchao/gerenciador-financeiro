@@ -26,16 +26,21 @@ class CardTransactionItemRelationManager extends RelationManager
 
     protected static ?string $title = 'Parcelas do Cartão';
 
+
     public function table(Table $table): Table
     {
         return $table
+            ->pluralModelLabel('itens')
             ->columns([
                 TextColumn::make('transaction.description')
                     ->label('Descrição'),
                 TextColumn::make('amount')
                     ->label('Valor')
                     ->currency('BRL')
-                    ->summarize(Sum::make()->label('Total')->currency('BRL')),
+                    ->summarize(Sum::make()
+                        ->label('Total')
+                        ->currency('BRL')
+                    ),
                 TextColumn::make('due_date')
                     ->label('Vencimento')
                     ->date('d/m/Y'),
