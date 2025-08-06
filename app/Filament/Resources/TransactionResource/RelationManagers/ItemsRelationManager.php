@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\TransactionResource\RelationManagers;
 
+use App\Enum\MethodPaymentEnum;
 use App\Enum\RolesEnum;
+use App\Enum\TransactionStatusEnum;
 use App\Helpers\ColumnFormatter;
 use App\Helpers\Filament\ActionHelper;
 use App\Helpers\Filament\MaskHelper;
@@ -75,11 +77,7 @@ class ItemsRelationManager extends RelationManager
                     }),
                 Select::make('payment_method')
                     ->label('Método')
-                    ->options([
-                        'CARD' => 'Cartão de crédito',
-                        'ACCOUNT' => 'Conta corrente',
-                        'CASH' => 'Dinheiro',
-                    ])
+                    ->options(MethodPaymentEnum::class)
                     ->reactive()
                     ->required(function ($get) {
                         return $get('status') == 'PAID';
@@ -110,12 +108,7 @@ class ItemsRelationManager extends RelationManager
                     }),
                 Select::make('status')
                     ->label('Status')
-                    ->options([
-                    'PENDING' => 'Pendente',
-                    'PAID' => 'Pago',
-                    'SCHEDULED' => 'Agendado',
-                    'DEBIT' => 'Débito automático',
-                ])
+                    ->options(TransactionStatusEnum::class)
                     ->default('PENDING')
                     ->required()
                     ->reactive(),

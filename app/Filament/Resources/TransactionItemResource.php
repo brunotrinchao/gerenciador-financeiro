@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\MethodPaymentEnum;
 use App\Enum\RolesEnum;
+use App\Enum\TransactionStatusEnum;
 use App\Filament\Exports\TransactionItemExporter;
 use App\Filament\Resources\TransactionItemResource\Pages;
 use App\Filament\Resources\TransactionItemResource\RelationManagers;
@@ -115,13 +117,8 @@ class TransactionItemResource extends Resource
                             ->required(fn ($get) => $get('status') !== 'PENDING'),
                         Select::make('status')
                             ->label(__('forms.columns.status'))
-                            ->options([
-                                'PENDING' => __('forms.enums.status.pending'),
-                                'PAID' => __('forms.enums.status.paid'),
-                                'SCHEDULED' => __('forms.enums.status.scheduled'),
-                                'DEBIT' => __('forms.enums.status.debit'),
-                            ])
-                            ->default('PENDING')
+                            ->options(TransactionStatusEnum::class)
+                            ->default(TransactionStatusEnum::PENDING)
                             ->required(fn ($get) => filled($get('payment_date')))
                             ->rules([
                                 fn ($get) => filled($get('payment_date')) && $get('status') === 'PENDING'

@@ -83,12 +83,12 @@ class TransactionService
         $multiplier = $transaction->type === 'EXPENSE' ? -1 : 1;
         $adjustedValue = $multiplier * $paidValue;
 
-        if ($transaction->method === 'CARD' && $transaction->card_id) {
-            $card = Card::find($transaction->card->id);
-            $card->balance = (int) $transaction->card->balance + $adjustedValue;
-            $card->save();
-            $transaction->account->refresh();
-        }
+//        if ($transaction->method === 'CARD' && $transaction->card_id) {
+//            $card = Card::find($transaction->card->id);
+//            $card->balance = (int) $transaction->card->balance + $adjustedValue;
+//            $card->save();
+//            $transaction->account->refresh();
+//        }
 
         if ($transaction->method === 'ACCOUNT' && $transaction->account_id) {
             $account = Account::find($transaction->account->id);

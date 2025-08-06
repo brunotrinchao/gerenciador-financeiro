@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Enum\MethodPaymentEnum;
+use App\Enum\RecurrenceTypeEnum;
 use App\Enum\RolesEnum;
+use App\Enum\TransactionStatusEnum;
 use App\Enum\TransactionTypeEnum;
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
@@ -121,19 +124,10 @@ class TransactionResource extends Resource
                             ->relationship('category', 'name'),
                         Select::make('method')
                             ->label(__('forms.forms.method'))
-                            ->options([
-                                'CARD' => __('forms.enums.method.card'),
-                                'ACCOUNT' => __('forms.enums.method.account'),
-                                'CASH' => __('forms.enums.method.cash'),
-                            ]),
+                            ->options(MethodPaymentEnum::class),
                         Select::make('status')
                             ->label(__('forms.forms.status'))
-                            ->options([
-                                'PENDING' => __('forms.enums.status.pending'),
-                                'PAID' => __('forms.enums.status.paid'),
-                                'SCHEDULED' => __('forms.enums.status.scheduled'),
-                                'DEBIT' => __('forms.enums.status.debit'),
-                            ])
+                            ->options(TransactionStatusEnum::class)
                     ])
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
@@ -375,11 +369,7 @@ class TransactionResource extends Resource
                             [
                                 Select::make('type')
                                     ->label(__('forms.forms.type'))
-                                    ->options([
-                                        TransactionTypeEnum::INCOME->name => __('forms.enums.transaction_type.INCOME'),
-                                        TransactionTypeEnum::EXPENSE->name => __('forms.enums.transaction_type.EXPENSE'),
-                                        TransactionTypeEnum::TRANSFER->name => __('forms.enums.transaction_type.TRANSFER'),
-                                    ])
+                                    ->options(TransactionTypeEnum::class)
                                     ->reactive()
                                     ->required(),
                                 Select::make('method')
@@ -523,12 +513,7 @@ class TransactionResource extends Resource
                                 ->reactive(),
                             Select::make('recurrence_type')
                                 ->label(__('forms.forms.recurrence_type'))
-                                ->options([
-                                    'DAILY' => __('forms.enums.recurrence_type.DAILY'),
-                                    'WEEKLY' => __('forms.enums.recurrence_type.WEEKLY'),
-                                    'MONTHLY' => __('forms.enums.recurrence_type.MONTHLY'),
-                                    'YEARLY' => __('forms.enums.recurrence_type.YEARLY'),
-                                ])
+                                ->options(RecurrenceTypeEnum::class)
                                 ->hidden(fn ($get) => !$get('is_recurring')),
                             TextInput::make('paid_interval')
                                 ->label('Parcelas já pagas')
