@@ -90,7 +90,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser, MustVerif
 
     protected static function booted()
     {
-        if(auth()->check() && auth()->user()->hasRole(RolesEnum::ADMIN->name)) {
+        if(auth()->check() && auth()->user()->hasRole(RolesEnum::ADMIN->name) ||  auth()->user()->hasRole(RolesEnum::SUPER->name)) {
             static::creating(function ($model) {
                 $model->family_id ??= auth()->user()->family_id;
             });

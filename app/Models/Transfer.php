@@ -30,5 +30,9 @@ class Transfer extends Model
                 $builder->where('family_id', auth()->user()->family_id);
             }
         });
+
+        static::creating(function ($model) {
+            $model->family_id ??= auth()->user()->family_id;
+        });
     }
 }

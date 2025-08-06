@@ -129,7 +129,6 @@ class AccountResource extends Resource
                     modalHeading: __('forms.forms.new_bank_account'),
                     label: __('forms.forms.create'),
                     action: function (array $data, Action $action) {
-                        $data['user_id'] = auth()->id();
                         $data['balance'] = (float) str_replace(['.', ','], ['', '.'], $data['balance']);
 
                         Account::create($data);

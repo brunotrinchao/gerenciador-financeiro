@@ -39,5 +39,11 @@ class Account extends Model
                 $builder->where('family_id', auth()->user()->family_id);
             }
         });
+
+        static::creating(function ($model) {
+            $model->family_id ??= auth()->user()->family_id;
+            $model->user_id = auth()->user()->id;
+        });
     }
+
 }
