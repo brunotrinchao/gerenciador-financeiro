@@ -3,8 +3,6 @@
 namespace App\Filament\Resources\CardResource\Pages;
 
 use App\Filament\Resources\CardResource;
-use App\Filament\Widgets\CardInfoWidget;
-use App\Filament\Widgets\TransactionInfoWidget;
 use Filament\Actions;
 use Filament\Resources\Pages\ContentTabPosition;
 use Filament\Resources\Pages\EditRecord;
@@ -54,10 +52,4 @@ class EditCard extends EditRecord
         return $this->record->name ?? parent::getTitle();
     }
 
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            CardInfoWidget::class,
-        ];
-    }
 }

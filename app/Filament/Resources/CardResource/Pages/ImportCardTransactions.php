@@ -130,6 +130,13 @@ class ImportCardTransactions extends Page implements HasForms
 
             $cardDueDay = (int) $this->selectedCard->due_date;
 
+//            if ($cardDueDay) {
+//                $diffDays = $cardDueDay - $date->day;
+//                if ($diffDays >= 0 && $diffDays <= 5) {
+//                    $date->addMonth();
+//                }
+//            }
+
             for ($i = 0; $i < $installmentsCount; $i++) {
                 $currentAmount = $i === $installmentsCount - 1 ? $baseValue + $remaining : $baseValue;
                 $paymentDate = (clone $date)->addMonths($i);
@@ -155,7 +162,7 @@ class ImportCardTransactions extends Page implements HasForms
             ->success()
             ->send();
 
-        return redirect(CardResource::getUrl('edit', [$this->selectedCard->id]));
+        return redirect(CardResource::getUrl('view', [$this->selectedCard->id]));
 
     }
 
