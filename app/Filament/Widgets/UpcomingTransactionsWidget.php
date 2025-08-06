@@ -61,7 +61,7 @@ class UpcomingTransactionsWidget extends BaseWidget
                 ->getStateUsing(function ($record) {
                     $dueDate = Carbon::parse($record->due_date);
                     $today = Carbon::now();
-                    $diff = intval($today->diffInDays($dueDate));
+                    $diff = $today->diffInDays($dueDate, false);
 
                     if ($diff === 0) {
                         return __('forms.widgets.expires_today');
