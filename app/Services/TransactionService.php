@@ -111,6 +111,13 @@ class TransactionService
             ? (int) $transaction->card->due_date
             : null;
 
+        if ($cardDueDay) {
+            $diffDays = $cardDueDay - $date->day;
+            if ($diffDays >= 0 && $diffDays <= 5) {
+                $date->addMonth();
+            }
+        }
+
         $paidInterval = (int) ($data['paid_interval'] ?? 0);
         for ($i = 0; $i < $installmentsCount; $i++) {
             $currentCents = $i === $installmentsCount - 1 ? $baseValue + $remaining : $baseValue;
