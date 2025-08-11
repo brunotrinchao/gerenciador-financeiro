@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Helpers\TranslateString;
+use App\Mail\DueTodayTransactionItemsMail;
 use App\Mail\OverdueTransactionItemsMail;
 use App\Models\TransactionItem;
 use App\Models\User;
@@ -27,9 +28,9 @@ class NotifyOverdueTransactionItems extends Command
             return;
         }
 
-        $recepient = Auth::user() ?? \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
+        $recipient = \App\Models\User::where('email', env('EMAIL_USER_ADMIN'))->first();
 
-        if (!$recepient) {
+        if (!$recipient) {
             $this->error('Usuário destinatário não encontrado.');
             return;
         }
@@ -38,27 +39,44 @@ class NotifyOverdueTransactionItems extends Command
         foreach ($items as $item) {
             $transaction = $item->transaction;
 
-            $html = "Valor: R$ " . number_format($item->amount / 100, 2, ',', '.') .
-                "<br>Produto: " . $transaction->description .
-                "<br>Vencimento: " . Carbon::parse($item->due_date)->format('d/m/Y') .
-                "<br>Método: " . TranslateString::getMethod($item) .
-                "<br>Status: " . TranslateString::getStatusLabel($item->status);
-            $htmlEmail[] = $html;
+            $amount = number_format($item->amount, 2, ',', '.');
+            $description = $transaction->description;
+            $dueDate = \Illuminate\Support\Carbon::parse($item->due_date)->format('d/m/Y');
+            $method = TranslateString::getMethod($item);
+            $status = TranslateString::getStatusLabel($item->status);
+            $installment = $item->installment_number;
+            $recurrence_interval = $transaction->recurrence_interval;
+
+            $html = "Valor: R$ {$amount}" .
+                "<br>Produto: {$description}" .
+                "<br>Vencimento: {$dueDate}" .
+                "<br>Método: {$method}" .
+                "<br>Status: {$status}" .
+                "<br>Parcela: {$installment}/{$recurrence_interval}";
+
+            $htmlEmail[] = [
+                'amount' => $amount,
+                'description' => $description,
+                'due_date' => $dueDate,
+                'method' => $method,
+                'installment' => "{$installment}/{$recurrence_interval}",
+                'status' => $status,
+            ];
+
+
             Notification::make()
                 ->title('Transação em atraso')
                 ->body($html)
                 ->icon('heroicon-o-exclamation-circle')
                 ->iconColor('danger')
-                ->sendToDatabase($recepient);
+                ->sendToDatabase($recipient);
         }
+
+        $ccRecipients = \App\Models\User::where('email', '!=', $recipient->email)->pluck('email')->toArray();
+
+        Mail::to($recipient->email)->cc($ccRecipients)->send(new DueTodayTransactionItemsMail($htmlEmail));
 
         $this->info("Foram notificadas {$items->count()} transações em atraso.");
 
-        $ccRecipients = \App\Models\User::pluck('email')->toArray();
-        $ccRecipients = array_diff($ccRecipients, [$recepient->email]);
-
-
-        // Envia email com todas as transações vencidas
-        Mail::to($recepient->email)->cc($ccRecipients)->send(new OverdueTransactionItemsMail($htmlEmail));
     }
 }
