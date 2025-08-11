@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -118,6 +119,9 @@ class CardTransactionItemRelationManager extends RelationManager
                 ActionHelper::makeSlideOver(
                     name: 'editTransactionItem',
                     form: [
+                        TextInput::make('description')
+                            ->label('Nome')
+                        ->disabled(),
                         TextInput::make('amount')
                             ->label('Valor')
                             ->mask(MaskHelper::maskMoney())
@@ -174,6 +178,7 @@ class CardTransactionItemRelationManager extends RelationManager
                     label: __('forms.buttons.edit'),
                     fillForm: function ($record) {
                         return [
+                            'description' => $record->transaction->description,
                             'amount' => (int) $record->amount,
                             'due_date' => $record->due_date,
                             'payment_date' =>  $record->payment_date ?? $record->due_date,
@@ -234,6 +239,29 @@ class CardTransactionItemRelationManager extends RelationManager
                     visible: false
                 )
 
+            ])
+            ->bulkActions([
+                BulkAction::make('paid_fast')
+                    ->label('Marcar como pago')
+                    ->icon('heroicon-m-currency-dollar')
+                    ->requiresConfirmation()
+                    ->color('success')
+                    ->action(function ($records) {
+                        foreach ($records as $record) {
+                            if ($record->status !== 'PAID') {
+                                $record->update([
+                                    'payment_date' => $record->due_date,
+                                    'status' => 'PAID',
+                                ]);
+                            }
+                        }
+
+                        Notification::make()
+                            ->title('Parcelas marcadas como pagas!')
+                            ->success()
+                            ->send();
+                    })
+                    ->deselectRecordsAfterCompletion()
             ])
             ->recordUrl(null)
             ->recordAction('editTransactionItem')
