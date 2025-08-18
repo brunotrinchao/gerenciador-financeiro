@@ -39,7 +39,9 @@ class Bank extends Model
         });
 
         static::creating(function ($model) {
-            $model->family_id ??= auth()->user()->family_id;
+            if (auth()->check()) {
+                $model->family_id ??= auth()->user()->family_id;
+            }
         });
     }
 }

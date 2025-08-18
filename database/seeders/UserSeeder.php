@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enum\RolesEnum;
+use App\Models\Family;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -22,6 +23,7 @@ class UserSeeder extends Seeder
             'name' => 'Admin',
             'email' => env('EMAIL_USER_ADMIN'),
             'password' => bcrypt(env('PASSWORD_USER_ADMIN')),
+            'family_id' => Family::query()->value('id'),
         ]);
 
 

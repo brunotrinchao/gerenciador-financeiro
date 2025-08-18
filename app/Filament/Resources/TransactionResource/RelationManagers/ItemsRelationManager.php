@@ -254,14 +254,13 @@ class ItemsRelationManager extends RelationManager
                                 'amount' => "O valor da parcela não pode ser maior que o valor restante da transação (R$ " . number_format($maxAmount / 100, 2, ',', '.') . ").",
                             ]);
                         }
-
                         // Atualiza e recalcula
-                        $record->update([
-                            'amount' => $newAmount,
-                            'due_date' => $data['due_date'],
-                            'payment_date' => $data['payment_date'],
-                            'status' => $data['status'],
-                        ]);
+                        $record->update(array_filter([
+                            'amount'       => $newAmount ?? null,
+                            'due_date'     => $data['due_date'] ?? null,
+                            'payment_date' => $data['payment_date'] ?? null,
+                            'status'       => $data['status'] ?? null,
+                        ], fn ($value) => !is_null($value)));
 
                         (new TransactionItemService())->recalcAmountTransactionItem($record);
                     },
