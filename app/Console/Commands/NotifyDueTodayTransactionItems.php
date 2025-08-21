@@ -80,7 +80,7 @@ class NotifyDueTodayTransactionItems extends Command
             }
 
             // Envia o e-mail para todos os usuários da família
-            Mail::to($emails)->send(new DueTodayTransactionItemsMail($htmlEmail));
+//            Mail::to($emails)->send(new DueTodayTransactionItemsMail($htmlEmail));
 
             $this->info("Família {$familyId}: notificadas {$familyItems->count()} transações com vencimento hoje.");
         }
